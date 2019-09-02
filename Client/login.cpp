@@ -1,18 +1,18 @@
 #include "login.h"
 #include "ui_login.h"
 #include <QtWidgets>
+#include <QPixmap>
+#include <QRegularExpression>
 
 Login::Login(QWidget *parent) :
     QWidget (parent),
     ui(new Ui::Login)
 {
     ui->setupUi(this);
-    home = new Home(this);
-
-    ui->stackedWidget->addWidget(home);
-    connect(home, &Home::move_to_login_clicked, this, &Login::move_to_login);
-    connect(home, &Home::move_to_editor_clicked, this, &Login::move_to_editor);
-    connect(home, &Home::move_to_home_clicked, this, &Login::show_home);
+    QPixmap pix(":/images/bold.png");
+    int w=ui->label->width();
+    int h=ui->label->height();
+    ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 Login::~Login()
@@ -27,25 +27,41 @@ void Login::on_pushButtonLogin_clicked()
 
     if (username == "test" && password == "test") {
         QMessageBox::information(this, "Login", "Success.");
-//        this->hide();
-//        home->show();
-        ui->stackedWidget->setCurrentWidget(home);
+        emit access(2);
     } else {
-        QMessageBox::warning(this, "Login", "Not correct.");
+        ui->label_3->setText("Username/Password errati!");
     }
 }
 
-void Login::move_to_login()
+void Login::on_pushButtonLogin_2_clicked()
 {
-    ui->stackedWidget->setCurrentWidget(ui->pageLogin);
+    ui->lineEditUsername->clear();
+    ui->lineEditPassword->clear();
+    emit access(1);
 }
 
-void Login::move_to_editor()
+void Login::on_lineEditUsername_editingFinished()
 {
-    this->hide();
+
+    QString username = ui->lineEditUsername->text();
+    QRegularExpression re("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
+    QRegularExpressionMatch match = re.match(username);
+    bool hasMatch = match.hasMatch();
+
+    if (!hasMatch)
+        ui->label_3->setText("Username errato!");
+
 }
 
-void Login::show_home()
+void Login::on_lineEditUsername_textChanged(const QString &arg1)
 {
-    this->show();
+    ui->label_3->clear();
 }
+
+
+
+void Login::on_lineEditPassword_textChanged(const QString &arg1)
+{
+    ui->label_3->clear();
+}
+

@@ -1,14 +1,13 @@
 #include <QFontDialog>
 #include "editor.h"
 #include "ui_editor.h"
-#include <QDebug>
 
 Editor::Editor(QWidget *parent) :
-    QMainWindow(parent),
+    QWidget(parent),
     ui(new Ui::Editor)
 {
     ui->setupUi(this);
-    this->setCentralWidget(ui->textEdit);
+   // this->setCentralWidget(ui->textEdit);
 
     connect(ui->actionPrint, &QAction::triggered, this, &Editor::print);
     connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
@@ -43,8 +42,7 @@ void Editor::print()
 
 void Editor::exit()
 {
-    this->hide();
-    emit home_clicked();
+    emit action(1);
 }
 
 void Editor::copy()

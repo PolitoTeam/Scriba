@@ -7,13 +7,16 @@ namespace Ui {
 class Editor;
 }
 
-class Editor : public QMainWindow
+class Editor : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit Editor(QWidget *parent = 0);
     ~Editor();
+
+signals:
+    void action(int);
 
 private slots:
     void print();
@@ -27,9 +30,6 @@ private slots:
     void setFontBold(bool bold);
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
-
-signals:
-    void home_clicked();
 
 private:
     Ui::Editor *ui;

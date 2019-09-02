@@ -1,7 +1,7 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include "home.h"
 
 namespace Ui {
@@ -18,15 +18,21 @@ public:
 
 private slots:
     void on_pushButtonLogin_clicked();
-    void move_to_login();
-    void move_to_editor();
-    void show_home();
-//    public slots:
-//    void move_to_home();
+
+    void on_pushButtonLogin_2_clicked();
+
+    void on_lineEditUsername_editingFinished();
+
+    void on_lineEditUsername_textChanged(const QString &arg1);
+
+
+    void on_lineEditPassword_textChanged(const QString &arg1);
+
+signals:
+    void access(int i);
 
 private:
     Ui::Login *ui;
-    Home *home;
 };
 
 #endif // LOGIN_H

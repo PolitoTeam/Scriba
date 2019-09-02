@@ -1,7 +1,7 @@
 #ifndef HOME_H
 #define HOME_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include "editor.h"
 
 namespace Ui {
@@ -17,18 +17,15 @@ public:
     ~Home();
 
 private slots:
-    void on_pushButtonLogOut_clicked();
-    void on_pushButtonNewFile_clicked();
-    void move_to_home();
+     void on_pushButtonLogOut_clicked();
+     void on_pushButtonNewFile_clicked();
 
 signals:
-    void move_to_login_clicked();
-    void move_to_editor_clicked();
-    void move_to_home_clicked();
+     void action(int);
 
 private:
     Ui::Home *ui;
-    Editor *editor;
+
 };
 
 #endif // HOME_H
