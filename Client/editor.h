@@ -28,6 +28,9 @@ private slots:
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
 
+signals:
+    void home_clicked();
+
 private:
     Ui::Editor *ui;
 };

@@ -75,7 +75,6 @@
    <addaction name="separator"/>
    <addaction name="actionExit"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
    <property name="icon">
     <iconset resource="client.qrc">

@@ -1,6 +1,7 @@
 #include <QFontDialog>
 #include "editor.h"
 #include "ui_editor.h"
+#include <QDebug>
 
 Editor::Editor(QWidget *parent) :
     QMainWindow(parent),
@@ -43,7 +44,7 @@ void Editor::print()
 void Editor::exit()
 {
     this->hide();
-    parentWidget()->show();
+    emit home_clicked();
 }
 
 void Editor::copy()
