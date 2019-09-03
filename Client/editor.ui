@@ -13,78 +13,63 @@
   <property name="windowTitle">
    <string>Editor</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>258</width>
-     <height>194</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QTextEdit" name="textEdit"/>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionPrint"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
-   </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-    <addaction name="actionCopy"/>
-    <addaction name="actionCut"/>
-    <addaction name="actionPaste"/>
-    <addaction name="separator"/>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
-    <addaction name="actionFont"/>
-   </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>544</width>
-     <height>44</height>
-    </rect>
-   </property>
-   <addaction name="actionPrint"/>
-   <addaction name="separator"/>
-   <addaction name="actionCopy"/>
-   <addaction name="actionCut"/>
-   <addaction name="actionPaste"/>
-   <addaction name="actionUndo"/>
-   <addaction name="actionRedo"/>
-   <addaction name="separator"/>
-   <addaction name="actionFont"/>
-   <addaction name="actionBold"/>
-   <addaction name="actionItalic"/>
-   <addaction name="actionUnderline"/>
-   <addaction name="separator"/>
-   <addaction name="separator"/>
-   <addaction name="actionExit"/>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QMenuBar" name="menuBar">
+       <widget class="QMenu" name="menuFile">
+        <property name="title">
+         <string>File</string>
+        </property>
+        <addaction name="actionPrint"/>
+        <addaction name="separator"/>
+        <addaction name="actionExit"/>
+       </widget>
+       <widget class="QMenu" name="menuEdit">
+        <property name="title">
+         <string>Edit</string>
+        </property>
+        <addaction name="actionCopy"/>
+        <addaction name="actionCut"/>
+        <addaction name="actionPaste"/>
+        <addaction name="separator"/>
+        <addaction name="actionUndo"/>
+        <addaction name="actionRedo"/>
+        <addaction name="actionFont"/>
+       </widget>
+       <addaction name="menuFile"/>
+       <addaction name="menuEdit"/>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QToolBar" name="mainToolBar">
+         <addaction name="actionPrint"/>
+         <addaction name="separator"/>
+         <addaction name="actionCopy"/>
+         <addaction name="actionCut"/>
+         <addaction name="actionPaste"/>
+         <addaction name="actionRedo"/>
+         <addaction name="separator"/>
+         <addaction name="actionFont"/>
+         <addaction name="actionBold"/>
+         <addaction name="actionItalic"/>
+         <addaction name="actionUnderline"/>
+         <addaction name="separator"/>
+         <addaction name="separator"/>
+         <addaction name="actionExit"/>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textEdit"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
   <action name="actionNew">
    <property name="icon">
     <iconset resource="client.qrc">
