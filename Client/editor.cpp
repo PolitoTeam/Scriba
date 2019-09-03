@@ -42,7 +42,7 @@ void Editor::print()
 
 void Editor::exit()
 {
-    emit action(1);
+    emit action(2);
 }
 
 void Editor::copy()
