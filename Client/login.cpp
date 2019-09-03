@@ -3,16 +3,22 @@
 #include <QtWidgets>
 #include <QPixmap>
 #include <QRegularExpression>
+#include <QHostAddress>
 
 Login::Login(QWidget *parent) :
     QWidget (parent),
-    ui(new Ui::Login)
+    ui(new Ui::Login),
+    client(new Client(this))
 {
     ui->setupUi(this);
     QPixmap pix(":/images/bold.png");
     int w=ui->label->width();
     int h=ui->label->height();
     ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+
+    connect(client, &Client::connected, this, &Login::connectedToServer);
+    connect(client, &Client::loggedIn, this, &Login::loggedIn);
+//    connect(client, &Client::loginError, this, &Login::loginFailed);
 }
 
 Login::~Login()
@@ -31,14 +37,41 @@ void Login::on_pushButtonLogin_clicked()
     } else {
         ui->label_3->setText("Username/Password errati!");
     }
+
+    // disable the connect button to prevent the user clicking it again
+//    ui->pushButtonLogin->setEnabled(false);
+    // tell the client to connect to the host using the port 1967
+//    client->connectToServer(QHostAddress(QStringLiteral("127.0.0.1")), 1967);
+//    client->login(QStringLiteral("test"), QStringLiteral("test"));
 }
 
-void Login::on_pushButtonLogin_2_clicked()
+void Login::connectedToServer()
 {
-    ui->lineEditUsername->clear();
-    ui->lineEditPassword->clear();
-    emit access(1);
+    const QString username = ui->lineEditUsername->text();
+    const QString password = ui->lineEditPassword->text();
+    qDebug() << username << " " << password;
+    attemptLogin(username, password);
 }
+
+void Login::attemptLogin(const QString &username, const QString &password)
+{
+    // use the client to attempt a log in with the given username
+    client->login(username, password);
+}
+
+void Login::loggedIn()
+{
+    ui->pushButtonLogin->setEnabled(true);
+    emit access(2);
+
+}
+
+//void Login::on_pushButtonLogin_2_clicked()
+//{
+//    ui->lineEditUsername->clear();
+//    ui->lineEditPassword->clear();
+//    emit access(1);
+//}
 
 void Login::on_lineEditUsername_editingFinished()
 {
