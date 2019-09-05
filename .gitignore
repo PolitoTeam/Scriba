@@ -51,3 +51,8 @@ compile_commands.json
 
 # executable files
 Client/Client
+Server/Server
+
+### OSX ###
+# General
+.DS_Store
