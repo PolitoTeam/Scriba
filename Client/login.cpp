@@ -31,18 +31,18 @@ void Login::on_pushButtonLogin_clicked()
     QString username = ui->lineEditUsername->text();
     QString password = ui->lineEditPassword->text();
 
-    if (username == "test" && password == "test") {
-//        QMessageBox::information(this, "Login", "Success.");
-        emit access(2);
-    } else {
-        ui->label_3->setText("Username/Password errati!");
-    }
+//    if (username == "test" && password == "test") {
+////        QMessageBox::information(this, "Login", "Success.");
+//        emit access(2);
+//    } else {
+//        ui->label_3->setText("Username/Password errati!");
+//    }
 
     // disable the connect button to prevent the user clicking it again
-//    ui->pushButtonLogin->setEnabled(false);
+    ui->pushButtonLogin->setEnabled(false);
     // tell the client to connect to the host using the port 1967
-//    client->connectToServer(QHostAddress(QStringLiteral("127.0.0.1")), 1967);
-//    client->login(QStringLiteral("test"), QStringLiteral("test"));
+    client->connectToServer(QHostAddress::Any, 1500);
+    client->login(username, password);
 }
 
 void Login::connectedToServer()
