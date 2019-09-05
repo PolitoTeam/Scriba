@@ -31,7 +31,13 @@ private slots:
     void connectedToServer();
     void attemptLogin(const QString &username, const QString &password);
     void loggedIn();
-//    void loginFailed(const QString &reason);
+    void loginFailed(const QString &reason);
+//    void messageReceived(const QString &sender, const QString &text);
+//    void sendMessage();
+//    void disconnectedFromServer();
+//    void userJoined(const QString &username);
+//    void userLeft(const QString &username);
+//    void error(QAbstractSocket::SocketError socketError);
 
 signals:
     void access(int i);

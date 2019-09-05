@@ -129,18 +129,28 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 //    }
 //    sender->setUserName(newUserName);
 
-    const QJsonValue pass = docObj.value(QLatin1String("username"));
+    const QJsonValue pass = docObj.value(QLatin1String("password"));
     if (pass.isNull() || !pass.isString())
         return;
     const QString password = pass.toString().simplified();
-    if (username.isEmpty())
+    if (password.isEmpty())
         return;
-    if (username != "test" && password != "test")
+
+    // login failed
+    if (username != "test" || password != "test") {
+        QJsonObject message;
+        message["type"] = QStringLiteral("login");
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username/password");
+        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        sendJson(sender, message);
         return;
+    }
 
     QJsonObject successMessage;
     successMessage["type"] = QStringLiteral("login");
     successMessage["success"] = true;
+    qDebug().noquote() << QString::fromUtf8(QJsonDocument(successMessage).toJson(QJsonDocument::Compact));
     sendJson(sender, successMessage);
 //    QJsonObject connectedMessage;
 //    connectedMessage["type"] = QStringLiteral("newuser");

@@ -18,7 +18,12 @@ Login::Login(QWidget *parent) :
 
     connect(client, &Client::connected, this, &Login::connectedToServer);
     connect(client, &Client::loggedIn, this, &Login::loggedIn);
-//    connect(client, &Client::loginError, this, &Login::loginFailed);
+    connect(client, &Client::loginError, this, &Login::loginFailed);
+//    connect(client, &Client::messageReceived, this, &Login::messageReceived);
+//    connect(client, &Client::disconnected, this, &Login::disconnectedFromServer);
+//    connect(client, &Client::error, this, &Login::error);
+//    connect(client, &Client::userJoined, this, &Login::userJoined);
+//    connect(client, &Client::userLeft, this, &Login::userLeft);
 }
 
 Login::~Login()
@@ -31,13 +36,6 @@ void Login::on_pushButtonLogin_clicked()
     QString username = ui->lineEditUsername->text();
     QString password = ui->lineEditPassword->text();
 
-//    if (username == "test" && password == "test") {
-////        QMessageBox::information(this, "Login", "Success.");
-//        emit access(2);
-//    } else {
-//        ui->label_3->setText("Username/Password errati!");
-//    }
-
     // disable the connect button to prevent the user clicking it again
     ui->pushButtonLogin->setEnabled(false);
     // tell the client to connect to the host using the port 1967
@@ -49,7 +47,7 @@ void Login::connectedToServer()
 {
     const QString username = ui->lineEditUsername->text();
     const QString password = ui->lineEditPassword->text();
-    qDebug() << username << " " << password;
+    qDebug().noquote().nospace() << "Trying login: " << username << ":" << password;
     attemptLogin(username, password);
 }
 
@@ -62,9 +60,24 @@ void Login::attemptLogin(const QString &username, const QString &password)
 void Login::loggedIn()
 {
     ui->pushButtonLogin->setEnabled(true);
+    ui->lineEditUsername->clear();
+    ui->lineEditPassword->clear();
     emit access(2);
-
 }
+
+void Login::loginFailed(const QString &reason)
+{
+    ui->labelMessage->setText(reason);
+    ui->pushButtonLogin->setEnabled(true);
+}
+
+//void Login::disconnectedFromServer()
+//{
+//    // if the client loses connection to the server
+//    // comunicate the event to the user via a message box
+//    QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
+//    ui->pushButtonLogin->setEnabled(true);
+//}
 
 //void Login::on_pushButtonLogin_2_clicked()
 //{
@@ -82,19 +95,19 @@ void Login::on_lineEditUsername_editingFinished()
     bool hasMatch = match.hasMatch();
 
     if (!hasMatch)
-        ui->label_3->setText("Username errato!");
+        ui->labelMessage->setText("Username errato!");
 
 }
 
 void Login::on_lineEditUsername_textChanged(const QString &arg1)
 {
-    ui->label_3->clear();
+    ui->labelMessage->clear();
 }
 
 
 
 void Login::on_lineEditPassword_textChanged(const QString &arg1)
 {
-    ui->label_3->clear();
+    ui->labelMessage->clear();
 }
 
