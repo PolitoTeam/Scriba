@@ -14,13 +14,14 @@ class Login : public QWidget
     Q_OBJECT
 
 public:
-    explicit Login(QWidget *parent = 0);
+    Login(QWidget *parent = 0,Client* client=0);
+    void setClient(Client* client);
     ~Login();
 
 private slots:
     void on_pushButtonLogin_clicked();
 
-//    void on_pushButtonLogin_2_clicked();
+    void on_pushButtonLogin_2_clicked();
 
     void on_lineEditUsername_editingFinished();
 

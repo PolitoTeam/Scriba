@@ -2,6 +2,7 @@
 #define EDITOR_H
 
 #include <QMainWindow>
+#include "client.h"
 
 namespace Ui {
 class Editor;
@@ -13,6 +14,7 @@ class Editor : public QWidget
 
 public:
     explicit Editor(QWidget *parent = 0);
+    void setClient(Client* client);
     ~Editor();
 
 signals:
@@ -33,6 +35,7 @@ private slots:
 
 private:
     Ui::Editor *ui;
+    Client* client;
 };
 
 #endif // EDITOR_H

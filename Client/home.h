@@ -14,6 +14,7 @@ class Home : public QWidget
 
 public:
     explicit Home(QWidget *parent = 0);
+    void setClient(Client* client);
     ~Home();
 
 private slots:
@@ -25,6 +26,7 @@ signals:
      void logOut();
 private:
     Ui::Home *ui;
+    Client* client;
 
 };
 

@@ -7,12 +7,13 @@
 #include <QJsonValue>
 #include <QTimer>
 
-Server::Server(QObject *parent)
+Server::Server(QObject *parent,Database* db)
     : QTcpServer(parent)
-    , m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))
+    , m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
+    , db(db)
 {
-    m_availableThreads.reserve(m_idealThreadCount);
-    m_threadsLoad.reserve(m_idealThreadCount);
+    m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
+    m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
 }
 
 Server::~Server()
@@ -22,9 +23,12 @@ Server::~Server()
         singleThread->wait();
     }
 }
+
+//Override from QTcpServer. This gets executed every time a client attempts a connection with the server
 void Server::incomingConnection(qintptr socketDescriptor)
 {
     ServerWorker *worker = new ServerWorker;
+    //Sets the socket descriptor this server should use when listening for incoming connections to socketDescriptor. Returns true if the socket is set successfully; otherwise returns false.
     if (!worker->setSocketDescriptor(socketDescriptor)) {
         worker->deleteLater();
         return;
@@ -39,11 +43,18 @@ void Server::incomingConnection(qintptr socketDescriptor)
         threadIdx = std::distance(m_threadsLoad.cbegin(), std::min_element(m_threadsLoad.cbegin(), m_threadsLoad.cend()));
         ++m_threadsLoad[threadIdx];
     }
-    worker->moveToThread(m_availableThreads.at(threadIdx));
+    worker->moveToThread(m_availableThreads.at(threadIdx)); //asssegnazione client al thread scelto.
+
+    //appena il thread finisce, inserisce nella coda degli eventi la cancellazione del worker...domanda:viene tolto anche dal vettore?
     connect(m_availableThreads.at(threadIdx), &QThread::finished, worker, &QObject::deleteLater);
+    //viene invocata userDIsconnected quando la connessione viene chiusa dal client.
     connect(worker, &ServerWorker::disconnectedFromClient, this, std::bind(&Server::userDisconnected, this, worker, threadIdx));
+
+    //ONLY FOR NOTIFICATION
     connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
+
     connect(worker, &ServerWorker::jsonReceived, this, std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
+
     connect(this, &Server::stopAllClients, worker, &ServerWorker::disconnectFromClient);
     m_clients.append(worker);
     emit logMessage("New client Connected");
@@ -72,6 +83,7 @@ void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 //    jsonFromLoggedIn(sender, json);
 }
 
+//rimuove client disconnesso e notifica
 void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 {
     --m_threadsLoad[threadIdx];
@@ -89,7 +101,7 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 
 void Server::userError(ServerWorker *sender)
 {
-    Q_UNUSED(sender)
+    Q_UNUSED(sender) // Indicates to the compiler that the parameter with the specified name is not used in the body of a function.
     emit logMessage("Error from " + sender->getNickname());
 }
 
@@ -102,11 +114,31 @@ void Server::stopServer()
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
     Q_ASSERT(sender);
-    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
+    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact))<<"a";
 
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;
+
+    if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+        const QJsonValue user = docObj.value(QLatin1String("username"));
+        if (user.isNull() || !user.isString())
+            return;
+        const QString username = user.toString().simplified();
+        if (username.isEmpty())
+            return;
+        const QJsonValue pass = docObj.value(QLatin1String("password"));
+        if (pass.isNull() || !pass.isString())
+            return;
+        const QString password = pass.toString().simplified();
+        if (password.isEmpty())
+            return;
+
+        this->db->signup(username,password);
+    }
+
+
+   /*
     if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) != 0)
         return;
     const QJsonValue user = docObj.value(QLatin1String("username"));
@@ -156,6 +188,7 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 //    connectedMessage["type"] = QStringLiteral("newuser");
 //    connectedMessage["username"] = newUserName;
 //    broadcast(connectedMessage, sender);
+*/
 }
 
 //void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)

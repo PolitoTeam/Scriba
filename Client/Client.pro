@@ -25,7 +25,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     client.cpp \
-    database.cpp \
     index.cpp \
         login.cpp \
     editor.cpp \
@@ -35,7 +34,6 @@ SOURCES += \
 
 HEADERS += \
     client.h \
-    database.h \
     index.h \
         login.h \
     editor.h \

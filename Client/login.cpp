@@ -5,10 +5,10 @@
 #include <QRegularExpression>
 #include <QHostAddress>
 
-Login::Login(QWidget *parent) :
+Login::Login(QWidget *parent,Client* client) :
     QWidget (parent),
     ui(new Ui::Login),
-    client(new Client(this))
+    client(client)
 {
     ui->setupUi(this);
     QPixmap pix(":/images/bold.png");
@@ -31,6 +31,11 @@ Login::~Login()
     delete ui;
 }
 
+void Login::setClient(Client *client){
+    qDebug()<<"verifica"<<client->i;
+    this->client=client;
+}
+
 void Login::on_pushButtonLogin_clicked()
 {
     QString username = ui->lineEditUsername->text();
@@ -45,10 +50,11 @@ void Login::on_pushButtonLogin_clicked()
 
 void Login::connectedToServer()
 {
-    const QString username = ui->lineEditUsername->text();
+  /*  const QString username = ui->lineEditUsername->text();
     const QString password = ui->lineEditPassword->text();
     qDebug().noquote().nospace() << "Trying login: " << username << ":" << password;
     attemptLogin(username, password);
+    */
 }
 
 void Login::attemptLogin(const QString &username, const QString &password)
@@ -132,12 +138,12 @@ void Login::error(QAbstractSocket::SocketError socketError)
     ui->pushButtonLogin->setEnabled(true);
 }
 
-//void Login::on_pushButtonLogin_2_clicked()
-//{
-//    ui->lineEditUsername->clear();
-//    ui->lineEditPassword->clear();
-//    emit access(1);
-//}
+void Login::on_pushButtonLogin_2_clicked()
+{
+    ui->lineEditUsername->clear();
+    ui->lineEditPassword->clear();
+    emit access(1);
+}
 
 void Login::disconnect() {
     qDebug() << "Logging out.";

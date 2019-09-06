@@ -6,7 +6,7 @@
 ServerWindow::ServerWindow(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ServerWindow)
-    , m_Server(new Server(this))
+    , m_Server(new Server(this,new Database()))
 {
     ui->setupUi(this);
     connect(ui->pushButton_startStop, &QPushButton::clicked, this, &ServerWindow::toggleStartServer);

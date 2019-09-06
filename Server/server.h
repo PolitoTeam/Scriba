@@ -3,15 +3,18 @@
 
 #include <QTcpServer>
 #include <QVector>
+#include "database.h"
 class QThread;
 class ServerWorker;
 class QJsonObject;
+
+
 class Server : public QTcpServer
 {
     Q_OBJECT
     Q_DISABLE_COPY(Server)
 public:
-    explicit Server(QObject *parent = nullptr);
+    Server(QObject *parent = nullptr,Database* db=0);
     ~Server() override;
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
@@ -20,6 +23,7 @@ private:
     QVector<QThread *> m_availableThreads;
     QVector<int> m_threadsLoad;
     QVector<ServerWorker *> m_clients;
+    Database* db;
 private slots:
 //    void broadcast(const QJsonObject &message, ServerWorker *exclude);
     void jsonReceived(ServerWorker *sender, const QJsonObject &doc);

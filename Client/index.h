@@ -11,6 +11,7 @@ class Login;
 class Signup;
 class Home;
 class Editor;
+class Client;
 
 class Index : public QMainWindow
 {
@@ -29,6 +30,7 @@ private:
     Signup* signup;
     Home* home;
     Editor* editor;
+    Client* client;
 };
 
 #endif // INDEX_H

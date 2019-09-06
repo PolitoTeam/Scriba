@@ -10,11 +10,10 @@
 
 Index::Index(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Index)
+    ui(new Ui::Index),
+    client(new Client(this))
 {
     ui->setupUi(this);
-
-    Database b;
 
     QStackedWidget *stackedWidget=new QStackedWidget(this);
     QWidget* w=ui->widget;
@@ -24,19 +23,21 @@ Index::Index(QWidget *parent) :
 
 
 
-    login = new Login(stackedWidget);
+    login = new Login(stackedWidget,client);
     stackedWidget->addWidget(login);
     QObject::connect(login, &Login::access,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    signup = new Signup(stackedWidget);
+    signup = new Signup(stackedWidget,client);
     stackedWidget->addWidget(signup);
     QObject::connect(signup, &Signup::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     home = new Home(stackedWidget);
+    home->setClient(client);
     stackedWidget->addWidget(home);
     QObject::connect(home, &Home::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     editor = new Editor(stackedWidget);
+    editor->setClient(client);
     stackedWidget->addWidget(editor);
     QObject::connect(editor, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 

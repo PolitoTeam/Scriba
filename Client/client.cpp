@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QHostAddress>
+#include <QDebug>
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -14,12 +16,21 @@ Client::Client(QObject *parent)
     // Forward the connected and disconnected signals
     connect(m_clientSocket, &QTcpSocket::connected, this, &Client::connected);
     connect(m_clientSocket, &QTcpSocket::disconnected, this, &Client::disconnected);
+
+    connect(this,&Client::connected,this,[this]()->void{qDebug()<<"New client Connected";});
     // connect readyRead() to the slot that will take care of reading the data in
     connect(m_clientSocket, &QTcpSocket::readyRead, this, &Client::onReadyRead);
+
     // Forward the error signal, QOverload is necessary as error() is overloaded, see the Qt docs
     connect(m_clientSocket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this, &Client::error);
+
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
     connect(m_clientSocket, &QTcpSocket::disconnected, this, [this]()->void{m_loggedIn = false;});
+    i=1;
+    connectToServer(QHostAddress("127.0.0.1"), 1500); //porta da stabilire
+     if (m_clientSocket->state() != QAbstractSocket::ConnectedState)
+         qDebug()<<"Problemi di connessione"<<i;
+
 }
 
 void Client::login(const QString &username, const QString &password)
@@ -33,6 +44,25 @@ void Client::login(const QString &username, const QString &password)
         QJsonObject message;
         message["type"] = QStringLiteral("login");
         message["username"] = username;
+        //aggiungere cifratura oppure passare a QSSLsocket
+        message["password"] = password;
+        // send the JSON using QDataStream
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
+}
+
+void Client::signup(const QString &username, const QString &password)
+{
+    if (m_clientSocket->state() == QAbstractSocket::ConnectedState) { // if the client is connected
+        // create a QDataStream operating on the socket
+        QDataStream clientStream(m_clientSocket);
+        // set the version so that programs compiled with different versions of Qt can agree on how to serialise
+        clientStream.setVersion(QDataStream::Qt_5_7);
+        // Create the JSON we want to send
+        QJsonObject message;
+        message["type"] = QStringLiteral("signup");
+        message["username"] = username;
+        //aggiungere cifratura oppure passare a QSSLsocket
         message["password"] = password;
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
@@ -55,6 +85,8 @@ void Client::login(const QString &username, const QString &password)
 //    clientStream << QJsonDocument(message).toJson();
 //}
 
+
+//Attempts to close the socket. If there is pending data waiting to be written, QAbstractSocket will enter ClosingState and wait until all data has been written.
 void Client::disconnectFromHost()
 {
     m_clientSocket->disconnectFromHost();
@@ -83,7 +115,8 @@ void Client::jsonReceived(const QJsonObject &docObj)
         // and notify it via the loginError signal
         const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
         emit loginError(reasonVal.toString());
-    } else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
+    }
+    /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
         const QJsonValue textVal = docObj.value(QLatin1String("text"));
         // we extract the sender field containing the username of the sender
@@ -108,7 +141,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             return; // the username was invalid so we ignore
         // we notify of the user disconnection the userLeft signal
         emit userLeft(usernameVal.toString());
-    }
+    }*/
 }
 
 void Client::connectToServer(const QHostAddress &address, quint16 port)

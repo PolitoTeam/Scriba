@@ -7,8 +7,8 @@ class Database
 {
 public:
     Database();
-    int signup(QString &username,QString &password);
-    int login(QString &username,QString &password);
+    int signup(const QString &username,const QString &password);
+    int login(const QString &username,const QString &password);
 
 private:
     QSqlDatabase db;

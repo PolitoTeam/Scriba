@@ -1,6 +1,7 @@
 #include <QFontDialog>
 #include "editor.h"
 #include "ui_editor.h"
+#include "client.h"
 
 Editor::Editor(QWidget *parent) :
     QWidget(parent),
@@ -25,6 +26,10 @@ Editor::Editor(QWidget *parent) :
 Editor::~Editor()
 {
     delete ui;
+}
+
+void Editor::setClient(Client *client){
+    this->client=client;
 }
 
 void Editor::print()

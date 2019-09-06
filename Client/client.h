@@ -12,9 +12,11 @@ class Client : public QObject
     Q_DISABLE_COPY(Client)
 public:
     explicit Client(QObject *parent = nullptr);
+    int i;
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
     void login(const QString &username, const QString &password);
+    void signup(const QString &username, const QString &password);
 //    void sendMessage(const QString &text);
     void disconnectFromHost();
 private slots:
@@ -32,6 +34,7 @@ private:
     QTcpSocket *m_clientSocket;
     bool m_loggedIn;
     void jsonReceived(const QJsonObject &doc);
+
 };
 
 #endif // CLIENT_H

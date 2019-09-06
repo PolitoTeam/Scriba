@@ -1,5 +1,6 @@
 #include "home.h"
 #include "ui_home.h"
+#include "client.h"
 
 Home::Home(QWidget *parent) :
     QWidget(parent),
@@ -11,6 +12,10 @@ Home::Home(QWidget *parent) :
 Home::~Home()
 {
     delete ui;
+}
+
+void Home::setClient(Client *client){
+    this->client=client;
 }
 
 void Home::on_pushButtonLogOut_clicked()

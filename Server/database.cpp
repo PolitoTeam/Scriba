@@ -9,7 +9,7 @@
 Database::Database()
 {
     db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
+    db.setHostName("127.0.0.1");
     db.setDatabaseName("editor");
     db.setUserName("root");
     bool ok = db.open();
@@ -17,7 +17,7 @@ Database::Database()
         qDebug()<<"false";
 }
 
-int Database::signup(QString &username,QString &password){
+int Database::signup(const QString &username,const QString &password){
     QSqlQuery qry;
     qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
     qry.bindValue(":username",username);
@@ -26,8 +26,10 @@ int Database::signup(QString &username,QString &password){
     qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
 
 
+    qry.exec();
+
 }
 
-int Database::login(QString &username, QString &password){
+int Database::login(const QString &username,const QString &password){
 
 }

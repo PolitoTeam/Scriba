@@ -3,13 +3,20 @@
 #include <QRegularExpression>
 #include <QDebug>
 
-Signup::Signup(QWidget *parent) :
+Signup::Signup(QWidget *parent,Client* client) :
     QWidget(parent),
-    ui(new Ui::Signup)
+    ui(new Ui::Signup),
+    client(client)
 {
     ui->setupUi(this);
     ui->lineEditPassword_3->setDisabled(true);
     valid=false;
+
+
+}
+
+void Signup::setClient(Client *client){
+    this->client=client;
 }
 
 Signup::~Signup()
@@ -30,26 +37,76 @@ void Signup::on_pushButtonLogin_2_clicked()
 
 void Signup::on_pushButtonLogin_clicked()
 {
-     emit action(0);
+    QString username=ui->lineEditUsername->text();
+    QString password=ui->lineEditPassword->text();
+    QString confirm=ui->lineEditPassword_3->text();
+
+   // ui->pushButtonLogin->setEnabled(false); //pulsante disabilitato in attesa della risosta dal server
+    if (checkUsername(username) && valid && checkConfirmation(password,confirm)){
+        client->signup(username,password);
+        emit action(0);
+    }
 }
 
 void Signup::on_lineEditUsername_editingFinished()
 {
     QString username = ui->lineEditUsername->text();
-    QRegularExpression re("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
-    QRegularExpressionMatch match = re.match(username);
-    bool hasMatch = match.hasMatch();
+    checkUsername(username);
 
-    if (username.size()>0 && !hasMatch)
-        ui->label_info_user->setText("Username non valido");
 }
 
 
 void Signup::on_lineEditPassword_editingFinished()
 {
     QString password=ui->lineEditPassword->text();
+    checkPassword(password);
+}
 
+void Signup::on_lineEditPassword_3_editingFinished()
+{
+     QString password1=ui->lineEditPassword->text();
+     QString password2=ui->lineEditPassword_3->text();
 
+     checkConfirmation(password1,password2);
+
+}
+
+void Signup::on_lineEditUsername_textChanged(const QString &arg1)
+{
+    ui->label_info_user->clear();
+}
+
+void Signup::on_lineEditPassword_textChanged(const QString &arg1)
+{
+    ui->label_info_pass->setText("");
+    if (arg1.size()>0)
+        ui->lineEditPassword_3->setDisabled(false);
+    else {
+        ui->lineEditPassword_3->setDisabled(true);
+        ui->lineEditPassword_3->clear();
+    }
+}
+
+void Signup::on_lineEditPassword_3_textChanged(const QString &arg1)
+{
+    if(valid==true)
+         ui->label_info_pass->setText("");
+}
+
+bool Signup::checkUsername(const QString &username){
+    QRegularExpression re("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
+    QRegularExpressionMatch match = re.match(username);
+    bool hasMatch = match.hasMatch();
+
+    if (username.size()>0 && !hasMatch){
+        ui->label_info_user->setText("Username non valido");
+        return false;
+    }
+    return true;
+
+}
+
+void Signup::checkPassword(const QString &password){
     if (password.size()>0){
         bool t=true;
         //lunghezza
@@ -106,38 +163,12 @@ void Signup::on_lineEditPassword_editingFinished()
     }
 }
 
-void Signup::on_lineEditPassword_3_editingFinished()
-{
-     QString password1=ui->lineEditPassword->text();
-     QString password2=ui->lineEditPassword_3->text();
-
-     if (password2.size()>0 && valid==true){
-         int x = QString::compare(password1, password2, Qt::CaseSensitive);
-         if (x!=0){
-             ui->label_info_pass->setText("Le password non corrispondono");
-         }
-     }
-
-}
-
-void Signup::on_lineEditUsername_textChanged(const QString &arg1)
-{
-    ui->label_info_user->clear();
-}
-
-void Signup::on_lineEditPassword_textChanged(const QString &arg1)
-{
-    ui->label_info_pass->setText("");
-    if (arg1.size()>0)
-        ui->lineEditPassword_3->setDisabled(false);
-    else {
-        ui->lineEditPassword_3->setDisabled(true);
-        ui->lineEditPassword_3->clear();
+bool Signup::checkConfirmation(const QString &pass,const QString &conf){
+    if (conf.size()>0 && valid==true){
+        int x = QString::compare(pass, conf, Qt::CaseSensitive);
+        if (x!=0){
+            ui->label_info_pass->setText("Le password non corrispondono");
+        }
     }
 }
 
-void Signup::on_lineEditPassword_3_textChanged(const QString &arg1)
-{
-    if(valid==true)
-         ui->label_info_pass->setText("");
-}

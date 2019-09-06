@@ -2,6 +2,7 @@
 #define SIGNUP_H
 
 #include <QWidget>
+#include "client.h"
 
 namespace Ui {
 class Signup;
@@ -12,7 +13,8 @@ class Signup : public QWidget
     Q_OBJECT
 
 public:
-    explicit Signup(QWidget *parent = nullptr);
+    explicit Signup(QWidget *parent = nullptr,Client* client=0);
+    void setClient(Client* client);
     ~Signup();
 
 private slots:
@@ -38,6 +40,11 @@ signals:
 private:
     Ui::Signup *ui;
     bool valid;
+    Client* client;
+
+    bool checkUsername(const QString &username);
+    void checkPassword(const QString &password);
+    bool checkConfirmation(const QString &pass,const QString &conf);
 };
 
 #endif // SIGNUP_H
