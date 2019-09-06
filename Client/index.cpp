@@ -6,7 +6,6 @@
 #include "editor.h"
 #include "home.h"
 #include "signup.h"
-#include "database.h"
 
 Index::Index(QWidget *parent) :
     QMainWindow(parent),
