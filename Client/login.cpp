@@ -69,6 +69,7 @@ void Login::loggedIn()
 void Login::loginFailed(const QString &reason)
 {
     qDebug() << "Login failed.";
+    client->disconnectFromHost();
     ui->labelMessage->setText(reason);
     ui->pushButtonLogin->setEnabled(true);
 }
