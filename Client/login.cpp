@@ -79,7 +79,9 @@ void Login::error(QAbstractSocket::SocketError socketError)
     switch (socketError) {
     case QAbstractSocket::RemoteHostClosedError:
     case QAbstractSocket::ProxyConnectionClosedError:
-        return; // handled by disconnectedFromServer
+        QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
+        emit access(0);
+        break;
     case QAbstractSocket::ConnectionRefusedError:
         QMessageBox::critical(this, tr("Error"), tr("The host refused the connection"));
         break;
@@ -129,14 +131,6 @@ void Login::error(QAbstractSocket::SocketError socketError)
     // enable the button to connect to the server again
     ui->pushButtonLogin->setEnabled(true);
 }
-
-//void Login::disconnectedFromServer()
-//{
-//    // if the client loses connection to the server
-//    // comunicate the event to the user via a message box
-//    QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
-//    ui->pushButtonLogin->setEnabled(true);
-//}
 
 //void Login::on_pushButtonLogin_2_clicked()
 //{
