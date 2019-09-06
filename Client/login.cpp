@@ -133,12 +133,12 @@ void Login::error(QAbstractSocket::SocketError socketError)
     ui->pushButtonLogin->setEnabled(true);
 }
 
-//void Login::on_pushButtonLogin_2_clicked()
-//{
-//    ui->lineEditUsername->clear();
-//    ui->lineEditPassword->clear();
-//    emit access(1);
-//}
+void Login::on_pushButtonNewAccount_clicked()
+{
+    ui->lineEditUsername->clear();
+    ui->lineEditPassword->clear();
+    emit access(1);
+}
 
 void Login::disconnect() {
     qDebug() << "Logging out.";
