@@ -21,7 +21,7 @@ public:
 private slots:
     void on_pushButtonLogin_clicked();
 
-    void on_pushButtonLogin_2_clicked();
+    void on_pushButtonNewAccount_clicked();
 
     void on_lineEditUsername_editingFinished();
 

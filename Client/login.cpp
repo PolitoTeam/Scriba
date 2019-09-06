@@ -75,6 +75,7 @@ void Login::loggedIn()
 void Login::loginFailed(const QString &reason)
 {
     qDebug() << "Login failed.";
+    client->disconnectFromHost();
     ui->labelMessage->setText(reason);
     ui->pushButtonLogin->setEnabled(true);
 }
@@ -138,7 +139,9 @@ void Login::error(QAbstractSocket::SocketError socketError)
     ui->pushButtonLogin->setEnabled(true);
 }
 
-void Login::on_pushButtonLogin_2_clicked()
+
+void Login::on_pushButtonNewAccount_clicked()
+
 {
     ui->lineEditUsername->clear();
     ui->lineEditPassword->clear();
