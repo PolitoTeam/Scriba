@@ -37,7 +37,10 @@ private slots:
 //    void disconnectedFromServer();
 //    void userJoined(const QString &username);
 //    void userLeft(const QString &username);
-//    void error(QAbstractSocket::SocketError socketError);
+    void error(QAbstractSocket::SocketError socketError);
+
+public slots:
+    void disconnect();
 
 signals:
     void access(int i);

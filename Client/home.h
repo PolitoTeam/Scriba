@@ -22,7 +22,7 @@ private slots:
 
 signals:
      void action(int);
-
+     void logOut();
 private:
     Ui::Home *ui;
 

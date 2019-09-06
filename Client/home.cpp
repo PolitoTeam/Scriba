@@ -6,7 +6,6 @@ Home::Home(QWidget *parent) :
     ui(new Ui::Home)
 {
     ui->setupUi(this);
-
 }
 
 Home::~Home()
@@ -16,6 +15,7 @@ Home::~Home()
 
 void Home::on_pushButtonLogOut_clicked()
 {
+    emit logOut();
     emit action(0);
 }
 

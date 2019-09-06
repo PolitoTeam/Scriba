@@ -24,25 +24,31 @@ Index::Index(QWidget *parent) :
 
 
 
-    Login* l=new Login(stackedWidget);
-    stackedWidget->addWidget(l);
-    QObject::connect(l, &Login::access,stackedWidget,&QStackedWidget::setCurrentIndex);
+    login = new Login(stackedWidget);
+    stackedWidget->addWidget(login);
+    QObject::connect(login, &Login::access,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    Signup* s=new Signup(stackedWidget);
-    stackedWidget->addWidget(s);
-    QObject::connect(s, &Signup::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+    signup = new Signup(stackedWidget);
+    stackedWidget->addWidget(signup);
+    QObject::connect(signup, &Signup::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    Home* h=new Home(stackedWidget);
-     stackedWidget->addWidget(h);
-    QObject::connect(h, &Home::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+    home = new Home(stackedWidget);
+    stackedWidget->addWidget(home);
+    QObject::connect(home, &Home::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    Editor* e=new Editor(stackedWidget);
-    stackedWidget->addWidget(e);
-    QObject::connect(e, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+    editor = new Editor(stackedWidget);
+    stackedWidget->addWidget(editor);
+    QObject::connect(editor, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
+    connect(home, &Home::logOut, this, &Index::on_logOut);
 }
 
 Index::~Index()
 {
     delete ui;
+}
+
+void Index::on_logOut()
+{
+    login->disconnect();
 }
