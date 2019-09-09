@@ -17,7 +17,7 @@ Database::Database()
         qDebug()<<"false";
 }
 
-int Database::signup(const QString &username,const QString &password){
+enum Error Database::signup(const QString &username,const QString &password){
     QSqlQuery qry;
     qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
     qry.bindValue(":username",username);
@@ -26,22 +26,22 @@ int Database::signup(const QString &username,const QString &password){
     qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
     if (!qry.exec()){
         qDebug()<<"PROBlemi qui";
-        return -1;
+        return DB_QUERY_ERROR;
     }
-    return 1;
+    return SUCCESS;
 }
 
-int Database::login(const QString &username,const QString &password){
+enum Error Database::login(const QString &username,const QString &password){
     QSqlQuery qry;
     qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
     qry.bindValue(":username",username);
     if (!qry.exec())
-        return -2;  //valutare se usare codici di errore o segnali
+        return DB_QUERY_ERROR;  //valutare se usare codici di errore o segnali
     if (!qry.next())
         //non esiste nessun utente con questo username
-        return -1;
+        return NON_EXISTING_USER;
 
     if (QString::compare(password,qry.value(1).toString(),Qt::CaseSensitive)==0)
-            return 1;
-    return 0;
+            return SUCCESS;
+    return WRONG_PASSWORD;
 }

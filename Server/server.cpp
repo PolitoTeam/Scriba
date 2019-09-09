@@ -57,7 +57,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
 
     connect(this, &Server::stopAllClients, worker, &ServerWorker::disconnectFromClient);
     m_clients.append(worker);
-    emit logMessage("New client Connected");
+    qDebug() << "New client Connected";
 }
 void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
 {
@@ -77,7 +77,7 @@ void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
     Q_ASSERT(sender);
-//    emit logMessage("JSON received " + QString::fromUtf8(QJsonDocument(json).toJson()));
+    qDebug().nospace() << "JSON received " << QString::fromUtf8(QJsonDocument(json).toJson());
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
 //    jsonFromLoggedIn(sender, json);
@@ -102,7 +102,7 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 void Server::userError(ServerWorker *sender)
 {
     Q_UNUSED(sender) // Indicates to the compiler that the parameter with the specified name is not used in the body of a function.
-    emit logMessage("Error from " + sender->getNickname());
+    qDebug().nospace() << "Error from " << sender->getNickname();
 }
 
 void Server::stopServer()
@@ -114,7 +114,7 @@ void Server::stopServer()
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
     Q_ASSERT(sender);
-    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact))<<"a";
+    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
 
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
@@ -212,7 +212,7 @@ QJsonObject Server::signup(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty password");
         return message;
     }
-    if (this->db->signup(username,password)<0){
+    if (this->db->signup(username,password) == DB_QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
         return message;
@@ -253,21 +253,21 @@ QJsonObject Server::login(const QJsonObject &doc){
         return message;
     }
     int r=this->db->login(username,password);
-    if (r==1){
+    if (r == SUCCESS){
         message["success"] = true;
         return message;
     }
-    else if (r==-1){
+    else if (r == NON_EXISTING_USER){
         message["success"] = false;
         message["reason"] = QStringLiteral("No account found for this username");
         return message;
     }
-    else if (r==-1){
+    else if (r == WRONG_PASSWORD){
         message["success"] = false;
         message["reason"] = QStringLiteral("Password is wrong");
         return message;
     }
-    else {
+    else { // DB_QUERY_ERROR
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
         return message;
