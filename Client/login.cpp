@@ -16,7 +16,6 @@ Login::Login(QWidget *parent,Client* client) :
     int h=ui->label->height();
     ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 
-    connect(client, &Client::connected, this, &Login::connectedToServer);
     connect(client, &Client::loggedIn, this, &Login::loggedIn);
     connect(client, &Client::loginError, this, &Login::loginFailed);
 //    connect(client, &Client::messageReceived, this, &Login::messageReceived);
@@ -31,10 +30,7 @@ Login::~Login()
     delete ui;
 }
 
-void Login::setClient(Client *client){
-    qDebug()<<"verifica"<<client->i;
-    this->client=client;
-}
+
 
 void Login::on_pushButtonLogin_clicked()
 {
@@ -43,30 +39,17 @@ void Login::on_pushButtonLogin_clicked()
 
     // disable the connect button to prevent the user clicking it again
     ui->pushButtonLogin->setEnabled(false);
-    // tell the client to connect to the host using the port 1967
-    client->connectToServer(QHostAddress::Any, 1500);
+    ui->pushButtonNewAccount->setEnabled(false);
     client->login(username, password);
 }
 
-void Login::connectedToServer()
-{
-  /*  const QString username = ui->lineEditUsername->text();
-    const QString password = ui->lineEditPassword->text();
-    qDebug().noquote().nospace() << "Trying login: " << username << ":" << password;
-    attemptLogin(username, password);
-    */
-}
 
-void Login::attemptLogin(const QString &username, const QString &password)
-{
-    // use the client to attempt a log in with the given username
-    client->login(username, password);
-}
 
 void Login::loggedIn()
 {
     qDebug() << "Login succeeded.";
     ui->pushButtonLogin->setEnabled(true);
+    ui->pushButtonNewAccount->setEnabled(true);
     ui->lineEditUsername->clear();
     ui->lineEditPassword->clear();
     emit access(2);
@@ -75,9 +58,10 @@ void Login::loggedIn()
 void Login::loginFailed(const QString &reason)
 {
     qDebug() << "Login failed.";
-    client->disconnectFromHost();
-    ui->labelMessage->setText(reason);
     ui->pushButtonLogin->setEnabled(true);
+    ui->pushButtonNewAccount->setEnabled(true);
+   // client->disconnectFromHost();
+    ui->labelMessage->setText(reason);
 }
 
 void Login::error(QAbstractSocket::SocketError socketError)
@@ -139,12 +123,20 @@ void Login::error(QAbstractSocket::SocketError socketError)
     ui->pushButtonLogin->setEnabled(true);
 }
 
+void Login::clearLabel(){
+    ui->labelMessage->clear();
+}
+
+void Login::clearLineEdit(){
+    ui->lineEditPassword->clear();
+    ui->lineEditUsername->clear();
+}
 
 void Login::on_pushButtonNewAccount_clicked()
 
 {
-    ui->lineEditUsername->clear();
-    ui->lineEditPassword->clear();
+    this->clearLabel();
+    this->clearLineEdit();
     emit access(1);
 }
 
@@ -153,27 +145,10 @@ void Login::disconnect() {
     client->disconnectFromHost();
 }
 
-void Login::on_lineEditUsername_editingFinished()
-{
-    QString username = ui->lineEditUsername->text();
-    QRegularExpression re("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$");
-    QRegularExpressionMatch match = re.match(username);
-    bool hasMatch = match.hasMatch();
 
-    if (!hasMatch)
-        ui->labelMessage->setText("Username errato!");
 
-}
 
 void Login::on_lineEditUsername_textChanged(const QString &arg1)
 {
-    ui->labelMessage->clear();
+    this->clearLabel();
 }
-
-
-
-void Login::on_lineEditPassword_textChanged(const QString &arg1)
-{
-    ui->labelMessage->clear();
-}
-

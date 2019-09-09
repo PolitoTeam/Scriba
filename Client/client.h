@@ -24,6 +24,8 @@ private slots:
 signals:
     void connected();
     void loggedIn();
+    void signedUp();
+    void signupError(const QString &reason);
     void loginError(const QString &reason);
     void disconnected();
     void messageReceived(const QString &sender, const QString &text);

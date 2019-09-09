@@ -24,8 +24,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    AppMainWindows.cpp \
     client.cpp \
-    index.cpp \
         login.cpp \
     editor.cpp \
     main.cpp \
@@ -33,8 +33,8 @@ SOURCES += \
     signup.cpp
 
 HEADERS += \
+    AppMainWindow.h \
     client.h \
-    index.h \
         login.h \
     editor.h \
     home.h \

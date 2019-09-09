@@ -16,46 +16,7 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="0">
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="3" column="2" rowspan="2" colspan="2">
-      <widget class="QPushButton" name="pushButtonLogin">
-       <property name="text">
-        <string>DONE</string>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
-       </property>
-       <property name="default">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" colspan="3">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-       <property name="margin">
-        <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="4">
+     <item row="2" column="5">
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -68,7 +29,7 @@
        </property>
       </spacer>
      </item>
-     <item row="0" column="1" colspan="3">
+     <item row="0" column="2" colspan="3">
       <spacer name="verticalSpacer_4">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -81,33 +42,7 @@
        </property>
       </spacer>
      </item>
-     <item row="3" column="1" rowspan="2">
-      <widget class="QPushButton" name="pushButtonLogin_2">
-       <property name="text">
-        <string>Clear</string>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
-       </property>
-       <property name="default">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1" colspan="3">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="2" column="1" colspan="3">
+     <item row="2" column="2" colspan="3">
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -147,7 +82,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_info_user">
+         <widget class="QLabel" name="labelInfoUser">
           <property name="styleSheet">
            <string notr="true">color:red;
 font-style:italic;</string>
@@ -181,14 +116,14 @@ font-style:italic;</string>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QLabel" name="labelPassword_3">
+           <widget class="QLabel" name="labelConfirmPassword">
             <property name="text">
              <string>Confirm password</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEditPassword_3">
+           <widget class="QLineEdit" name="lineEditConfirmPassword">
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>
             </property>
@@ -197,7 +132,7 @@ font-style:italic;</string>
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="label_info_pass">
+         <widget class="QLabel" name="labelInfoPass">
           <property name="styleSheet">
            <string notr="true">color:red;
 font-style:italic;</string>
@@ -208,6 +143,78 @@ font-style:italic;</string>
          </widget>
         </item>
        </layout>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="5" column="2" colspan="3">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="2" colspan="3">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4" rowspan="2">
+      <widget class="QPushButton" name="pushButtonSignup">
+       <property name="text">
+        <string>DONE</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3" rowspan="2">
+      <widget class="QPushButton" name="pushButtonClear">
+       <property name="text">
+        <string>Clear</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" rowspan="2">
+      <widget class="QPushButton" name="pushButtonBackLogin">
+       <property name="text">
+        <string>Login</string>
+       </property>
       </widget>
      </item>
     </layout>

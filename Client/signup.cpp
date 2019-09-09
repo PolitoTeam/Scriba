@@ -9,42 +9,62 @@ Signup::Signup(QWidget *parent,Client* client) :
     client(client)
 {
     ui->setupUi(this);
-    ui->lineEditPassword_3->setDisabled(true);
+    ui->lineEditConfirmPassword->setDisabled(true);
     valid=false;
 
+    connect(client, &Client::signedUp, this, &Signup::signedUp);
+    connect(client, &Client::signupError, this, &Signup::signupFailed);
+    //connect(client, &Client::error, this, &Signup::error);
+
 
 }
 
-void Signup::setClient(Client *client){
-    this->client=client;
-}
 
 Signup::~Signup()
 {
     delete ui;
 }
 
-void Signup::on_pushButtonLogin_2_clicked()
+void Signup::on_pushButtonClear_clicked()
 {
-    ui->lineEditUsername->clear();
-    ui->lineEditPassword->clear();
-    ui->lineEditPassword_3->clear();
-    ui->label_info_pass->clear();
-    ui->label_info_user->clear();
-    ui->lineEditPassword_3->setDisabled(true);
+    this->clearLineEdit();
+    this->clearLabel();
+    ui->lineEditConfirmPassword->setDisabled(true);
     valid=false;
 }
 
-void Signup::on_pushButtonLogin_clicked()
+void Signup::signedUp()
+{
+    qDebug() << "Singup succeeded.";
+    ui->pushButtonSignup->setEnabled(true); //pulsante disabilitato in attesa della risosta dal server
+    ui->pushButtonClear->setEnabled(true);
+    ui->pushButtonBackLogin->setEnabled(true);
+    ui->lineEditUsername->clear();
+    ui->lineEditPassword->clear();
+    ui->labelInfoPass->setText("Correclty signed up");
+}
+
+void Signup::signupFailed(const QString &reason){
+    qDebug() << "Signup failed.";
+    client->disconnectFromHost();
+    ui->labelInfoPass->setText(reason);
+    ui->pushButtonSignup->setEnabled(true); //pulsante disabilitato in attesa della risosta dal server
+    ui->pushButtonClear->setEnabled(true);
+    ui->pushButtonBackLogin->setEnabled(true);
+}
+
+void Signup::on_pushButtonSignup_clicked()
 {
     QString username=ui->lineEditUsername->text();
     QString password=ui->lineEditPassword->text();
-    QString confirm=ui->lineEditPassword_3->text();
+    QString confirm=ui->lineEditConfirmPassword->text();
 
-   // ui->pushButtonLogin->setEnabled(false); //pulsante disabilitato in attesa della risosta dal server
+
     if (checkUsername(username) && valid && checkConfirmation(password,confirm)){
+        ui->pushButtonSignup->setEnabled(false); //pulsante disabilitato in attesa della risosta dal server
+        ui->pushButtonClear->setEnabled(false);
+        ui->pushButtonBackLogin->setEnabled(false);
         client->signup(username,password);
-        emit action(0);
     }
 }
 
@@ -62,10 +82,10 @@ void Signup::on_lineEditPassword_editingFinished()
     checkPassword(password);
 }
 
-void Signup::on_lineEditPassword_3_editingFinished()
+void Signup::on_lineEditConfirmPassword_editingFinished()
 {
      QString password1=ui->lineEditPassword->text();
-     QString password2=ui->lineEditPassword_3->text();
+     QString password2=ui->lineEditConfirmPassword->text();
 
      checkConfirmation(password1,password2);
 
@@ -73,24 +93,24 @@ void Signup::on_lineEditPassword_3_editingFinished()
 
 void Signup::on_lineEditUsername_textChanged(const QString &arg1)
 {
-    ui->label_info_user->clear();
+    ui->labelInfoUser->clear();
 }
 
 void Signup::on_lineEditPassword_textChanged(const QString &arg1)
 {
-    ui->label_info_pass->setText("");
+    ui->labelInfoPass->setText("");
     if (arg1.size()>0)
-        ui->lineEditPassword_3->setDisabled(false);
+        ui->lineEditConfirmPassword->setDisabled(false);
     else {
-        ui->lineEditPassword_3->setDisabled(true);
-        ui->lineEditPassword_3->clear();
+        ui->lineEditConfirmPassword->setDisabled(true);
+        ui->lineEditConfirmPassword->clear();
     }
 }
 
-void Signup::on_lineEditPassword_3_textChanged(const QString &arg1)
+void Signup::on_lineEditConfirmPassword_textChanged(const QString &arg1)
 {
     if(valid==true)
-         ui->label_info_pass->setText("");
+         ui->labelInfoPass->setText("");
 }
 
 bool Signup::checkUsername(const QString &username){
@@ -99,7 +119,7 @@ bool Signup::checkUsername(const QString &username){
     bool hasMatch = match.hasMatch();
 
     if (username.size()>0 && !hasMatch){
-        ui->label_info_user->setText("Username non valido");
+        ui->labelInfoUser->setText("Username non valido");
         return false;
     }
     return true;
@@ -113,7 +133,7 @@ void Signup::checkPassword(const QString &password){
         if (password.size()<8 || password.size()>12)
         {
             t=false;
-            ui->label_info_pass->setText("Min. 8 caratteri, Max 12 caratteri");
+            ui->labelInfoPass->setText("Min. 8 caratteri, Max 12 caratteri");
         }
         else
         {
@@ -157,7 +177,7 @@ void Signup::checkPassword(const QString &password){
                 t=false;
                 info.append("Almeno 1 carattere speciale");
             }
-            ui->label_info_pass->setText(info);
+            ui->labelInfoPass->setText(info);
          }
         valid=t;
     }
@@ -167,8 +187,26 @@ bool Signup::checkConfirmation(const QString &pass,const QString &conf){
     if (conf.size()>0 && valid==true){
         int x = QString::compare(pass, conf, Qt::CaseSensitive);
         if (x!=0){
-            ui->label_info_pass->setText("Le password non corrispondono");
+            ui->labelInfoPass->setText("Le password non corrispondono");
         }
     }
 }
 
+
+void Signup::on_pushButtonBackLogin_clicked()
+{
+    this->clearLabel();
+    this->clearLineEdit();
+    emit action(0);
+}
+
+void Signup::clearLabel(){
+    ui->labelInfoPass->clear();
+    ui->labelInfoUser->clear();
+}
+
+void Signup::clearLineEdit(){
+    ui->lineEditUsername->clear();
+    ui->lineEditPassword->clear();
+    ui->lineEditConfirmPassword->clear();
+}

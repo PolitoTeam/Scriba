@@ -116,6 +116,24 @@ void Client::jsonReceived(const QJsonObject &docObj)
         const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
         emit loginError(reasonVal.toString());
     }
+    else if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0) { //It's a login message
+        if (m_loggedIn)
+            return; // if we are already logged in we ignore
+        // the success field will contain the result of our attempt to login
+        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+        if (resultVal.isNull() || !resultVal.isBool())
+            return; // the message had no success field so we ignore
+        const bool signupSuccess = resultVal.toBool();
+        if (signupSuccess) {
+            // we logged in succesfully and we notify it via the signedUp signal
+            emit signedUp();
+            return;
+        }
+        // the signup attempt failed, we extract the reason of the failure from the JSON
+        // and notify it via the signupError signal
+        const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+        emit signupError(reasonVal.toString());
+    }
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
         const QJsonValue textVal = docObj.value(QLatin1String("text"));

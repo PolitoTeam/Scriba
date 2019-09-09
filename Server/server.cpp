@@ -121,21 +121,14 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
         return;
 
     if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
-        const QJsonValue user = docObj.value(QLatin1String("username"));
-        if (user.isNull() || !user.isString())
-            return;
-        const QString username = user.toString().simplified();
-        if (username.isEmpty())
-            return;
-        const QJsonValue pass = docObj.value(QLatin1String("password"));
-        if (pass.isNull() || !pass.isString())
-            return;
-        const QString password = pass.toString().simplified();
-        if (password.isEmpty())
-            return;
-
-        this->db->signup(username,password);
+        QJsonObject message=this->signup(docObj);
+        this->sendJson(sender,message);
     }
+    else if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
+        QJsonObject message=this->login(docObj);
+        this->sendJson(sender,message);
+    }
+
 
 
    /*
@@ -190,6 +183,99 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 //    broadcast(connectedMessage, sender);
 */
 }
+
+QJsonObject Server::signup(const QJsonObject &doc){
+    const QJsonValue user = doc.value(QLatin1String("username"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("signup");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+    const QJsonValue pass = doc.value(QLatin1String("password"));
+    if (pass.isNull() || !pass.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong password format");
+        return message;
+    }
+    const QString password = pass.toString().simplified();
+    if (password.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty password");
+        return message;
+    }
+    if (this->db->signup(username,password)<0){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error");
+        return message;
+    }
+
+    message["success"] = true;
+    return message;
+
+}
+
+
+QJsonObject Server::login(const QJsonObject &doc){
+    const QJsonValue user = doc.value(QLatin1String("username"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("login");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+    const QJsonValue pass = doc.value(QLatin1String("password"));
+    if (pass.isNull() || !pass.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong password format");
+        return message;
+    }
+    const QString password = pass.toString().simplified();
+    if (password.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty password");
+        return message;
+    }
+    int r=this->db->login(username,password);
+    if (r==1){
+        message["success"] = true;
+        return message;
+    }
+    else if (r==-1){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("No account found for this username");
+        return message;
+    }
+    else if (r==-1){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Password is wrong");
+        return message;
+    }
+    else {
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error");
+        return message;
+    }
+}
+
+
+
 
 //void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 //{

@@ -1,4 +1,4 @@
-#include "index.h"
+#include "AppMainWindow.h"
 #include "ui_index.h"
 #include <QStackedWidget>
 #include <QLayout>
@@ -7,20 +7,19 @@
 #include "home.h"
 #include "signup.h"
 
-Index::Index(QWidget *parent) :
+AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     QMainWindow(parent),
     ui(new Ui::Index),
-    client(new Client(this))
+    client(c)
 {
     ui->setupUi(this);
+    client->setParent(this);
 
     QStackedWidget *stackedWidget=new QStackedWidget(this);
     QWidget* w=ui->widget;
     QLayout* layout=new QGridLayout(w);
     w->setLayout(layout);
     layout->addWidget(stackedWidget);
-
-
 
     login = new Login(stackedWidget,client);
     stackedWidget->addWidget(login);
@@ -40,15 +39,15 @@ Index::Index(QWidget *parent) :
     stackedWidget->addWidget(editor);
     QObject::connect(editor, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    connect(home, &Home::logOut, this, &Index::on_logOut);
+    connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
 }
 
-Index::~Index()
+AppMainWindow::~AppMainWindow()
 {
     delete ui;
 }
 
-void Index::on_logOut()
+void AppMainWindow::on_logOut()
 {
     login->disconnect();
 }

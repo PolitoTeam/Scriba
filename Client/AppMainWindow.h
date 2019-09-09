@@ -13,13 +13,13 @@ class Home;
 class Editor;
 class Client;
 
-class Index : public QMainWindow
+class AppMainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit Index(QWidget *parent = nullptr);
-    ~Index();
+    AppMainWindow(QWidget *parent = nullptr,Client* c=nullptr);
+    ~AppMainWindow();
 
 private slots:
     void on_logOut();

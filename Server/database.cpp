@@ -24,12 +24,24 @@ int Database::signup(const QString &username,const QString &password){
     qry.bindValue(":nickname",username);
     qry.bindValue(":password",password); //va cifrata
     qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
-
-
-    qry.exec();
-
+    if (!qry.exec()){
+        qDebug()<<"PROBlemi qui";
+        return -1;
+    }
+    return 1;
 }
 
 int Database::login(const QString &username,const QString &password){
+    QSqlQuery qry;
+    qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
+    qry.bindValue(":username",username);
+    if (!qry.exec())
+        return -2;  //valutare se usare codici di errore o segnali
+    if (!qry.next())
+        //non esiste nessun utente con questo username
+        return -1;
 
+    if (QString::compare(password,qry.value(1).toString(),Qt::CaseSensitive)==0)
+            return 1;
+    return 0;
 }

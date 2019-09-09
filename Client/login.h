@@ -15,7 +15,6 @@ class Login : public QWidget
 
 public:
     Login(QWidget *parent = 0,Client* client=0);
-    void setClient(Client* client);
     ~Login();
 
 private slots:
@@ -23,14 +22,6 @@ private slots:
 
     void on_pushButtonNewAccount_clicked();
 
-    void on_lineEditUsername_editingFinished();
-
-    void on_lineEditUsername_textChanged(const QString &arg1);
-
-    void on_lineEditPassword_textChanged(const QString &arg1);
-
-    void connectedToServer();
-    void attemptLogin(const QString &username, const QString &password);
     void loggedIn();
     void loginFailed(const QString &reason);
 //    void messageReceived(const QString &sender, const QString &text);
@@ -39,6 +30,8 @@ private slots:
 //    void userJoined(const QString &username);
 //    void userLeft(const QString &username);
     void error(QAbstractSocket::SocketError socketError);
+
+    void on_lineEditUsername_textChanged(const QString &arg1);
 
 public slots:
     void disconnect();
@@ -49,6 +42,8 @@ signals:
 private:
     Ui::Login *ui;
     Client *client;
+    void clearLabel();
+    void clearLineEdit();
 };
 
 #endif // LOGIN_H

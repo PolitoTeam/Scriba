@@ -1,12 +1,14 @@
 #include <QApplication>
 
 #include <QDebug>
-#include <index.h>
+#include <AppMainWindow.h>
+#include "client.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    Index m;
+
+    AppMainWindow m(nullptr,new Client()); //instanziazione finestra grafica
 
     m.show();
 
