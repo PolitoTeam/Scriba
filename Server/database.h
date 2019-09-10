@@ -3,6 +3,7 @@
 #include <QtSql>
 
 typedef enum {NON_EXISTING_USER, ALREADY_EXISTING_USER, WRONG_PASSWORD, QUERY_ERROR, CONNECTION_ERROR, SUCCESS} DatabaseError;
+
 class Database
 {
 public:

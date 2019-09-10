@@ -120,8 +120,9 @@ void Login::error(QAbstractSocket::SocketError socketError)
     default:
         Q_UNREACHABLE();
     }
-    // enable the button to connect to the server again
+    // enable the buttons to connect to the server again
     ui->pushButtonLogin->setEnabled(true);
+    ui->pushButtonNewAccount->setEnabled(true);
 }
 
 void Login::clearLabel(){

@@ -37,7 +37,6 @@ DatabaseError Database::signup(const QString &username,const QString &password){
     qry.bindValue(":username", username);
     if (qry.exec()) {
         if (!qry.next()) {
-            qDebug() << "AAA";
             qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
             qry.bindValue(":username",username);
             qry.bindValue(":nickname",username);

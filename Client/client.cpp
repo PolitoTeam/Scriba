@@ -32,8 +32,6 @@ void Client::login(const QString &username, const QString &password)
 {
     connectToServer(QHostAddress::Any, 1500); //porta da stabilire
     if (m_clientSocket->waitForConnected()) {
-        qDebug() << m_clientSocket->state();
-//    if (m_clientSocket->state() == QAbstractSocket::ConnectedState) { // if the client is connected
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -51,7 +49,8 @@ void Client::login(const QString &username, const QString &password)
 
 void Client::signup(const QString &username, const QString &password)
 {
-    if (m_clientSocket->state() == QAbstractSocket::ConnectedState) { // if the client is connected
+    connectToServer(QHostAddress::Any, 1500); //porta da stabilire
+    if (m_clientSocket->waitForConnected()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise

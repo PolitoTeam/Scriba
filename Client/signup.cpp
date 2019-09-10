@@ -42,6 +42,8 @@ void Signup::signedUp()
     ui->lineEditUsername->clear();
     ui->lineEditPassword->clear();
     ui->labelInfoPass->setText("Correclty signed up");
+
+    client->disconnectFromHost();
 }
 
 void Signup::signupFailed(const QString &reason){
@@ -51,6 +53,8 @@ void Signup::signupFailed(const QString &reason){
     ui->pushButtonSignup->setEnabled(true); //pulsante disabilitato in attesa della risosta dal server
     ui->pushButtonClear->setEnabled(true);
     ui->pushButtonBackLogin->setEnabled(true);
+
+    client->disconnectFromHost();
 }
 
 void Signup::on_pushButtonSignup_clicked()
