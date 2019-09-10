@@ -223,6 +223,11 @@ QJsonObject Server::signup(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Database error");
         return message;
     }
+    if (result == ALREADY_EXISTING_USER){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("The username already exists");
+        return message;
+    }
 
     message["success"] = true;
     return message;

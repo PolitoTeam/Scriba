@@ -29,18 +29,33 @@ DatabaseError Database::signup(const QString &username,const QString &password){
     if (!db.open())
         err = CONNECTION_ERROR;
 
+    QSqlDatabase::database().transaction();
     QSqlQuery qry;
-    qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
-    qry.bindValue(":username",username);
-    qry.bindValue(":nickname",username);
-    qry.bindValue(":password",password); //va cifrata
-    qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
-    if (!qry.exec()){
-        qDebug() << db.lastError();
+    qry.prepare("SELECT Username "
+                "FROM USER WHERE "
+                "Username = :username FOR UPDATE");
+    qry.bindValue(":username", username);
+    if (qry.exec()) {
+        if (!qry.next()) {
+            qDebug() << "AAA";
+            qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
+            qry.bindValue(":username",username);
+            qry.bindValue(":nickname",username);
+            qry.bindValue(":password",password); //va cifrata
+            qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
+            if (!qry.exec()){
+                err = QUERY_ERROR;
+            }
+        } else {
+            err = ALREADY_EXISTING_USER;
+        }
+    } else {
         err = QUERY_ERROR;
     }
+    QSqlDatabase::database().commit();
 
     db.close();
+    qDebug().nospace() << "Error " << err;
     return err;
 }
 
