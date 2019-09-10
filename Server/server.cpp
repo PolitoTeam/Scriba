@@ -64,6 +64,11 @@ void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
     Q_ASSERT(destination);
     QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendJson, destination, message));
 }
+
+bool Server::tryConnectionToDatabase()
+{
+    return db->checkConnection();
+}
 //void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 //{
 //    for (ServerWorker *worker : m_clients) {

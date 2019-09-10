@@ -37,6 +37,9 @@ private:
     QJsonObject login(const QJsonObject &doc);
 //    void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);
+
+public:
+    bool tryConnectionToDatabase();
 signals:
     void logMessage(const QString &msg);
     void stopAllClients();

@@ -24,10 +24,17 @@ void ServerWindow::toggleStartServer()
         ui->pushButton_startStop->setText(tr("START"));
         ui->label_status->setText("Stopped");
     } else {
-        if (!m_Server->listen(QHostAddress::Any, 1500)) {
-            QMessageBox::critical(this, tr("Error"), tr("Unable to start the server"));
+        if (!m_Server->tryConnectionToDatabase()) {
+            QMessageBox::critical(this, tr("Cannot open database"),
+                        tr("Unable to establish a database connection.\n"), QMessageBox::Close);
             return;
         }
+
+        if (!m_Server->listen(QHostAddress::Any, 1500)) {
+            QMessageBox::critical(this, tr("Error"), tr("Unable to start the server"), QMessageBox::Close);
+            return;
+        }
+
         ui->pushButton_startStop->setText(tr("STOP"));
         ui->label_status->setText("Running");
     }

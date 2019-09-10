@@ -12,12 +12,19 @@ Database::Database()
     db.setHostName("127.0.0.1");
     db.setDatabaseName("editor");
     db.setUserName("root");
-    bool ok = db.open();
-    if (!ok)
-        qDebug()<<"false";
 }
 
-enum Error Database::signup(const QString &username,const QString &password){
+bool Database::checkConnection() {
+    if (!db.open()) {
+        qDebug() << db.lastError();
+        return false;
+    } else {
+        db.close();
+        return true;
+    }
+}
+
+DatabaseError Database::signup(const QString &username,const QString &password){
     QSqlQuery qry;
     qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
     qry.bindValue(":username",username);
@@ -31,7 +38,10 @@ enum Error Database::signup(const QString &username,const QString &password){
     return SUCCESS;
 }
 
-enum Error Database::login(const QString &username,const QString &password){
+DatabaseError Database::login(const QString &username,const QString &password){
+    if (!db.open())
+            return DB_CONNECTION_ERROR;
+
     QSqlQuery qry;
     qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
     qry.bindValue(":username",username);
@@ -42,6 +52,6 @@ enum Error Database::login(const QString &username,const QString &password){
         return NON_EXISTING_USER;
 
     if (QString::compare(password,qry.value(1).toString(),Qt::CaseSensitive)==0)
-            return SUCCESS;
+        return SUCCESS;
     return WRONG_PASSWORD;
 }
