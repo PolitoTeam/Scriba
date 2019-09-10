@@ -216,3 +216,10 @@ void Signup::clearLineEdit(){
     ui->lineEditPassword->clear();
     ui->lineEditConfirmPassword->clear();
 }
+
+void Signup::enableAllButtons()
+{
+    ui->pushButtonSignup->setEnabled(true);
+    ui->pushButtonClear->setEnabled(true);
+    ui->pushButtonBackLogin->setEnabled(true);
+}

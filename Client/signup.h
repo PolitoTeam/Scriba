@@ -15,6 +15,7 @@ class Signup : public QWidget
 public:
     Signup(QWidget *parent = nullptr,Client* client=0);
     ~Signup();
+    void enableAllButtons();
 
 private slots:
     void on_pushButtonClear_clicked();

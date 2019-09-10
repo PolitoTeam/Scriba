@@ -2,6 +2,8 @@
 #define INDEX_H
 
 #include <QMainWindow>
+#include <QTcpSocket>
+#include <QStackedWidget>
 
 namespace Ui {
 class Index;
@@ -23,9 +25,11 @@ public:
 
 private slots:
     void on_logOut();
+    void error(QAbstractSocket::SocketError socketError);
 
 private:
     Ui::Index *ui;
+    QStackedWidget *stackedWidget;
     Login* login;
     Signup* signup;
     Home* home;

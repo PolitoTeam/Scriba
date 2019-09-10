@@ -20,7 +20,6 @@ Login::Login(QWidget *parent,Client* client) :
     connect(client, &Client::loginError, this, &Login::loginFailed);
 //    connect(client, &Client::messageReceived, this, &Login::messageReceived);
 //    connect(client, &Client::disconnected, this, &Login::disconnectedFromServer);
-    connect(client, &Client::error, this, &Login::error);
 //    connect(client, &Client::userJoined, this, &Login::userJoined);
 //    connect(client, &Client::userLeft, this, &Login::userLeft);
 }
@@ -30,7 +29,11 @@ Login::~Login()
     delete ui;
 }
 
-
+void Login::enableAllButtons()
+{
+    ui->pushButtonLogin->setEnabled(true);
+    ui->pushButtonNewAccount->setEnabled(true);
+}
 
 void Login::on_pushButtonLogin_clicked()
 {
@@ -63,66 +66,6 @@ void Login::loginFailed(const QString &reason)
     ui->labelMessage->setText(reason);
 
     client->disconnectFromHost();
-}
-
-void Login::error(QAbstractSocket::SocketError socketError)
-{
-    // show a message to the user that informs of what kind of error occurred
-    switch (socketError) {
-    case QAbstractSocket::RemoteHostClosedError:
-    case QAbstractSocket::ProxyConnectionClosedError:
-        QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
-        emit access(0);
-        break;
-    case QAbstractSocket::ConnectionRefusedError:
-        QMessageBox::critical(this, tr("Error"), tr("The host refused the connection"));
-        break;
-    case QAbstractSocket::ProxyConnectionRefusedError:
-        QMessageBox::critical(this, tr("Error"), tr("The proxy refused the connection"));
-        break;
-    case QAbstractSocket::ProxyNotFoundError:
-        QMessageBox::critical(this, tr("Error"), tr("Could not find the proxy"));
-        break;
-    case QAbstractSocket::HostNotFoundError:
-        QMessageBox::critical(this, tr("Error"), tr("Could not find the server"));
-        break;
-    case QAbstractSocket::SocketAccessError:
-        QMessageBox::critical(this, tr("Error"), tr("You don't have permissions to execute this operation"));
-        break;
-    case QAbstractSocket::SocketResourceError:
-        QMessageBox::critical(this, tr("Error"), tr("Too many connections opened"));
-        break;
-    case QAbstractSocket::SocketTimeoutError:
-        QMessageBox::warning(this, tr("Error"), tr("Operation timed out"));
-        return;
-    case QAbstractSocket::ProxyConnectionTimeoutError:
-        QMessageBox::critical(this, tr("Error"), tr("Proxy timed out"));
-        break;
-    case QAbstractSocket::NetworkError:
-        QMessageBox::critical(this, tr("Error"), tr("Unable to reach the network"));
-        break;
-    case QAbstractSocket::UnknownSocketError:
-        QMessageBox::critical(this, tr("Error"), tr("An unknown error occured"));
-        break;
-    case QAbstractSocket::UnsupportedSocketOperationError:
-        QMessageBox::critical(this, tr("Error"), tr("Operation not supported"));
-        break;
-    case QAbstractSocket::ProxyAuthenticationRequiredError:
-        QMessageBox::critical(this, tr("Error"), tr("Your proxy requires authentication"));
-        break;
-    case QAbstractSocket::ProxyProtocolError:
-        QMessageBox::critical(this, tr("Error"), tr("Proxy comunication failed"));
-        break;
-    case QAbstractSocket::TemporaryError:
-    case QAbstractSocket::OperationError:
-        QMessageBox::warning(this, tr("Error"), tr("Operation failed, please try again"));
-        return;
-    default:
-        Q_UNREACHABLE();
-    }
-    // enable the buttons to connect to the server again
-    ui->pushButtonLogin->setEnabled(true);
-    ui->pushButtonNewAccount->setEnabled(true);
 }
 
 void Login::clearLabel(){

@@ -2,7 +2,6 @@
 #define LOGIN_H
 
 #include <QMainWindow>
-#include "home.h"
 #include "client.h"
 
 namespace Ui {
@@ -16,6 +15,7 @@ class Login : public QWidget
 public:
     Login(QWidget *parent = 0,Client* client=0);
     ~Login();
+    void enableAllButtons();
 
 private slots:
     void on_pushButtonLogin_clicked();
@@ -29,7 +29,6 @@ private slots:
 //    void disconnectedFromServer();
 //    void userJoined(const QString &username);
 //    void userLeft(const QString &username);
-    void error(QAbstractSocket::SocketError socketError);
 
     void on_lineEditUsername_textChanged(const QString &arg1);
 
