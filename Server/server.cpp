@@ -217,7 +217,8 @@ QJsonObject Server::signup(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty password");
         return message;
     }
-    if (this->db->signup(username,password) == DB_QUERY_ERROR){
+    if (this->db->signup(username,password) == CONNECTION_ERROR
+            || this->db->signup(username,password) == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
         return message;
@@ -272,7 +273,7 @@ QJsonObject Server::login(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Password is wrong");
         return message;
     }
-    else { // DB_QUERY_ERROR
+    else { // QUERY_ERROR or CONNECTION_ERROR
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
         return message;
