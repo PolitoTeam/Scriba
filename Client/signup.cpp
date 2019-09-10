@@ -188,8 +188,10 @@ bool Signup::checkConfirmation(const QString &pass,const QString &conf){
         int x = QString::compare(pass, conf, Qt::CaseSensitive);
         if (x!=0){
             ui->labelInfoPass->setText("Le password non corrispondono");
+            return false;
         }
     }
+    return true;
 }
 
 
