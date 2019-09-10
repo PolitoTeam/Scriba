@@ -82,7 +82,6 @@ bool Server::tryConnectionToDatabase()
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
     Q_ASSERT(sender);
-    qDebug().nospace() << "JSON received " << QString::fromUtf8(QJsonDocument(json).toJson());
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
 //    jsonFromLoggedIn(sender, json);
@@ -275,7 +274,7 @@ QJsonObject Server::login(const QJsonObject &doc){
     }
     else if (r == WRONG_PASSWORD){
         message["success"] = false;
-        message["reason"] = QStringLiteral("Password is wrong");
+        message["reason"] = QStringLiteral("Wrong password");
         return message;
     }
     else { // QUERY_ERROR or CONNECTION_ERROR

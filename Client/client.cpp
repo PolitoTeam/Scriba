@@ -26,16 +26,14 @@ Client::Client(QObject *parent)
 
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
     connect(m_clientSocket, &QTcpSocket::disconnected, this, [this]()->void{m_loggedIn = false;});
-    i=1;
-    connectToServer(QHostAddress("127.0.0.1"), 1500); //porta da stabilire
-     if (m_clientSocket->state() != QAbstractSocket::ConnectedState)
-         qDebug()<<"Problemi di connessione"<<i;
-
 }
 
 void Client::login(const QString &username, const QString &password)
 {
-    if (m_clientSocket->state() == QAbstractSocket::ConnectedState) { // if the client is connected
+    connectToServer(QHostAddress::Any, 1500); //porta da stabilire
+    if (m_clientSocket->waitForConnected()) {
+        qDebug() << m_clientSocket->state();
+//    if (m_clientSocket->state() == QAbstractSocket::ConnectedState) { // if the client is connected
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise

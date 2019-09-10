@@ -69,11 +69,10 @@ DatabaseError Database::login(const QString &username,const QString &password){
     qry.bindValue(":username",username);
     if (!qry.exec())
         err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
-    if (!qry.next())
+    else if (!qry.next())
         //non esiste nessun utente con questo username
         err = NON_EXISTING_USER;
-
-    if (QString::compare(password,qry.value(1).toString(),Qt::CaseSensitive) != 0)
+    else if (QString::compare(password,qry.value(1).toString(),Qt::CaseSensitive) != 0)
         err = WRONG_PASSWORD;
 
     db.close();

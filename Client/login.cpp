@@ -60,8 +60,9 @@ void Login::loginFailed(const QString &reason)
     qDebug() << "Login failed.";
     ui->pushButtonLogin->setEnabled(true);
     ui->pushButtonNewAccount->setEnabled(true);
-   // client->disconnectFromHost();
     ui->labelMessage->setText(reason);
+
+    client->disconnectFromHost();
 }
 
 void Login::error(QAbstractSocket::SocketError socketError)
