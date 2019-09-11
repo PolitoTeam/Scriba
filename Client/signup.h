@@ -13,7 +13,7 @@ class Signup : public QWidget
     Q_OBJECT
 
 public:
-    Signup(QWidget *parent = nullptr,Client* client=0);
+    Signup(QWidget *parent = nullptr,Client* client = nullptr);
     ~Signup();
     void enableAllButtons();
 

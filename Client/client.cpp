@@ -17,7 +17,7 @@ Client::Client(QObject *parent)
     connect(m_clientSocket, &QTcpSocket::connected, this, &Client::connected);
     connect(m_clientSocket, &QTcpSocket::disconnected, this, &Client::disconnected);
 
-    connect(this,&Client::connected,this,[this]()->void{qDebug()<<"New client Connected";});
+    connect(this,&Client::connected,this, []()->void{qDebug()<<"New client Connected";});
     // connect readyRead() to the slot that will take care of reading the data in
     connect(m_clientSocket, &QTcpSocket::readyRead, this, &Client::onReadyRead);
 

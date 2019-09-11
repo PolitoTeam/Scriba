@@ -113,6 +113,4 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
 
     login->enableAllButtons();
     signup->enableAllButtons();
-//    login->ui->pushButtonLogin->setEnabled(true);
-//    ui->pushButtonNewAccount->setEnabled(true);
 }

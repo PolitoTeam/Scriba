@@ -22,6 +22,10 @@ Login::Login(QWidget *parent,Client* client) :
 //    connect(client, &Client::disconnected, this, &Login::disconnectedFromServer);
 //    connect(client, &Client::userJoined, this, &Login::userJoined);
 //    connect(client, &Client::userLeft, this, &Login::userLeft);
+
+    // try to login by clicking login button or pressing 'enter'
+    connect(ui->pushButtonLogin, &QPushButton::clicked, this, &Login::try_to_log);
+    connect(ui->lineEditPassword, &QLineEdit::returnPressed, this, &Login::try_to_log);
 }
 
 Login::~Login()
@@ -35,7 +39,7 @@ void Login::enableAllButtons()
     ui->pushButtonNewAccount->setEnabled(true);
 }
 
-void Login::on_pushButtonLogin_clicked()
+void Login::try_to_log()
 {
     QString username = ui->lineEditUsername->text();
     QString password = ui->lineEditPassword->text();
@@ -45,8 +49,6 @@ void Login::on_pushButtonLogin_clicked()
     ui->pushButtonNewAccount->setEnabled(false);
     client->login(username, password);
 }
-
-
 
 void Login::loggedIn()
 {
@@ -90,10 +92,7 @@ void Login::disconnect() {
     client->disconnectFromHost();
 }
 
-
-
-
-void Login::on_lineEditUsername_textChanged(const QString &arg1)
+void Login::on_lineEditUsername_textChanged(const QString&)
 {
     this->clearLabel();
 }

@@ -13,7 +13,7 @@ class Home : public QWidget
     Q_OBJECT
 
 public:
-    explicit Home(QWidget *parent = 0);
+    explicit Home(QWidget *parent = nullptr);
     void setClient(Client* client);
     ~Home();
 

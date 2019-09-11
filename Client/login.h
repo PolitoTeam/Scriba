@@ -13,12 +13,12 @@ class Login : public QWidget
     Q_OBJECT
 
 public:
-    Login(QWidget *parent = 0,Client* client=0);
+    Login(QWidget *parent = nullptr,Client* client = nullptr);
     ~Login();
     void enableAllButtons();
 
 private slots:
-    void on_pushButtonLogin_clicked();
+    void try_to_log();
 
     void on_pushButtonNewAccount_clicked();
 
@@ -30,7 +30,7 @@ private slots:
 //    void userJoined(const QString &username);
 //    void userLeft(const QString &username);
 
-    void on_lineEditUsername_textChanged(const QString &arg1);
+    void on_lineEditUsername_textChanged(const QString &arg);
 
 public slots:
     void disconnect();

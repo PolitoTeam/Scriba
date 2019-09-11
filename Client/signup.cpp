@@ -95,15 +95,15 @@ void Signup::on_lineEditConfirmPassword_editingFinished()
 
 }
 
-void Signup::on_lineEditUsername_textChanged(const QString &arg1)
+void Signup::on_lineEditUsername_textChanged(const QString&)
 {
     ui->labelInfoUser->clear();
 }
 
-void Signup::on_lineEditPassword_textChanged(const QString &arg1)
+void Signup::on_lineEditPassword_textChanged(const QString& arg)
 {
     ui->labelInfoPass->setText("");
-    if (arg1.size()>0)
+    if (arg.size()>0)
         ui->lineEditConfirmPassword->setDisabled(false);
     else {
         ui->lineEditConfirmPassword->setDisabled(true);
@@ -111,7 +111,7 @@ void Signup::on_lineEditPassword_textChanged(const QString &arg1)
     }
 }
 
-void Signup::on_lineEditConfirmPassword_textChanged(const QString &arg1)
+void Signup::on_lineEditConfirmPassword_textChanged(const QString&)
 {
     if(valid==true)
          ui->labelInfoPass->setText("");
