@@ -12,7 +12,7 @@ DROP TABLE IF EXISTS USER;
 CREATE TABLE USER (
 	Username CHAR(255) ,
 	Nickname CHAR(255) ,
-	Password CHAR(50) NOT NULL,
+	Password CHAR(255) NOT NULL,
 	Icon	 CHAR(50),
 	PRIMARY KEY (Username)
 );
