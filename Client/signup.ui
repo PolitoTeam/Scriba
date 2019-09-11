@@ -190,10 +190,10 @@ font-style:italic;</string>
         <string>DONE</string>
        </property>
        <property name="autoDefault">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="default">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -203,10 +203,10 @@ font-style:italic;</string>
         <string>Clear</string>
        </property>
        <property name="autoDefault">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="default">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
