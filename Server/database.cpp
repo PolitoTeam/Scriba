@@ -2,10 +2,8 @@
 #include <QtSql>
 #include <QDebug>
 #include <QMessageBox>
+#include <sodium/crypto_pwhash.h>
 
-
-
-//decidere dove creare la connessione...all'inizio dell'aertura della finestra principale oppure ogni volta pagina di login e signup
 Database::Database()
 {
     db=QSqlDatabase::addDatabase("QMYSQL");
@@ -35,12 +33,24 @@ DatabaseError Database::signup(const QString &username,const QString &password){
                 "FROM USER WHERE "
                 "Username = :username FOR UPDATE");
     qry.bindValue(":username", username);
+
     if (qry.exec()) {
         if (!qry.next()) {
+            char hashed_password[crypto_pwhash_STRBYTES];
+            // conversion from QString to char *
+            const char *password_char = password.toLocal8Bit().data();
+
+            if (crypto_pwhash_str
+                (hashed_password, password_char, strlen(password_char),
+                 crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+                qDebug() << "Error while hashing...";
+            }
+
+            QString hashed_password_qstring = QString::fromUtf8(hashed_password);
             qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
             qry.bindValue(":username",username);
             qry.bindValue(":nickname",username);
-            qry.bindValue(":password",password); //va cifrata
+            qry.bindValue(":password", hashed_password_qstring);
             qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
             if (!qry.exec()){
                 err = QUERY_ERROR;
@@ -54,7 +64,6 @@ DatabaseError Database::signup(const QString &username,const QString &password){
     QSqlDatabase::database().commit();
 
     db.close();
-    qDebug().nospace() << "Error " << err;
     return err;
 }
 
@@ -71,8 +80,14 @@ DatabaseError Database::login(const QString &username,const QString &password){
     else if (!qry.next())
         //non esiste nessun utente con questo username
         err = NON_EXISTING_USER;
-    else if (QString::compare(password,qry.value(1).toString(),Qt::CaseSensitive) != 0)
-        err = WRONG_PASSWORD;
+    else {
+        const char *password_char = password.toLocal8Bit().data();
+        QString hashed_password = qry.value(1).toString();
+        const char *hashed_password_char = hashed_password.toLocal8Bit().data();
+        if (crypto_pwhash_str_verify(hashed_password_char, password_char, strlen(password_char)) != 0) {
+            err = WRONG_PASSWORD;
+        }
+    }
 
     db.close();
     return err;
