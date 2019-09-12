@@ -46,4 +46,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 # library for password hashing
-LIBS += -L3rdparty/sodium -lsodium
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/release/ -lsodium.23
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/debug/ -lsodium.23
+else:unix: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/ -lsodium.23
+
+INCLUDEPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
+DEPENDPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
