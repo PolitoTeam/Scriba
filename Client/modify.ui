@@ -115,6 +115,13 @@ font-style:italic;</string>
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="pushSaveNickname">
+            <property name="text">
+             <string>Save nickname</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_10">
             <item>
              <widget class="QLabel" name="labelOldPass">
@@ -175,6 +182,13 @@ font-style:italic;</string>
            </layout>
           </item>
           <item>
+           <widget class="QPushButton" name="pushButton_2">
+            <property name="text">
+             <string>Save password</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLabel" name="labelInfoPass">
             <property name="styleSheet">
              <string notr="true">color:red;
@@ -194,19 +208,6 @@ font-style:italic;</string>
       <widget class="QPushButton" name="pushButtonCancel">
        <property name="text">
         <string>Cancel</string>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2" rowspan="2" colspan="2">
-      <widget class="QPushButton" name="pushButtonLogin">
-       <property name="text">
-        <string>Save</string>
        </property>
        <property name="autoDefault">
         <bool>true</bool>
@@ -254,6 +255,19 @@ font-style:italic;</string>
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="2" column="2" rowspan="2" colspan="2">
+      <widget class="QPushButton" name="pushButtonLogin">
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

@@ -92,3 +92,78 @@ DatabaseError Database::login(const QString &username,const QString &password){
     db.close();
     return err;
 }
+
+DatabaseError Database::updateNickname(const QString &username,const QString &nickname){
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
+    qry.bindValue(":username",username);
+    if (!qry.exec())
+        err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
+    else if (!qry.next())
+        //non esiste nessun utente con questo username
+        err = NON_EXISTING_USER;
+    else {
+
+        QSqlQuery qry;
+        qry.prepare("UPDATE USER SET Nickname=:nicknae WHERE Username=:username");
+        qry.bindValue(":username",username);
+        qry.bindValue(":nickname",nickname);
+        if (!qry.exec()){
+            err = QUERY_ERROR;
+        }
+
+    }
+
+    db.close();
+    return err;
+}
+
+DatabaseError  Database::updatePassword(const QString &username,const QString &oldpass,const QString &newpass){
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
+    qry.bindValue(":username",username);
+    if (!qry.exec())
+        err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
+    else if (!qry.next())
+        //non esiste nessun utente con questo username
+        err = NON_EXISTING_USER;
+    else {
+        const char *password_char = oldpass.toLocal8Bit().data();
+        QString hashed_password = qry.value(1).toString();
+        const char *hashed_password_char = hashed_password.toLocal8Bit().data();
+        if (crypto_pwhash_str_verify(hashed_password_char, password_char, strlen(password_char)) != 0) {
+            err = WRONG_PASSWORD;
+        }
+        QSqlQuery qry;
+        qry.prepare("UPDATE USER SET Password=:newpassword WHERE Username=:username");
+        qry.bindValue(":username",username);
+
+        char hashed_newpassword[crypto_pwhash_STRBYTES];
+        // conversion from QString to char *
+        const char *password_newchar = newpass.toLocal8Bit().data();
+
+        if (crypto_pwhash_str(hashed_newpassword, password_newchar, strlen(password_newchar),
+             crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+            qDebug() << "Error while hashing...";
+        }
+
+        QString hashed_password_qstring = QString::fromUtf8(hashed_newpassword);
+        qry.bindValue(":newpassword",hashed_password_qstring);
+
+        if (!qry.exec()){
+            err = QUERY_ERROR;
+        }
+
+    }
+
+    db.close();
+    return err;
+}

@@ -68,9 +68,9 @@ void Client::signup(const QString &username, const QString &password)
     }
 }
 
-void Client::update(const QString &nickname,const QString &oldpassword,const QString &newpassword)
+void Client::updateNickname(const QString &nickname)
 {
-    connectToServer(QHostAddress::Any, 1500); //porta da stabilire
+
     if (m_clientSocket->waitForConnected()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
@@ -78,12 +78,29 @@ void Client::update(const QString &nickname,const QString &oldpassword,const QSt
         clientStream.setVersion(QDataStream::Qt_5_7);
         // Create the JSON we want to send
         QJsonObject message;
-        message["type"] = QStringLiteral("update");
+        message["type"] = QStringLiteral("nickname");
         message["username"] = this->username;
         message["nickname"] = nickname;
         //aggiungere cifratura oppure passare a QSSLsocket
+        // send the JSON using QDataStream
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
+}
+
+void  Client::updatePassword(const QString &oldpassword,const QString &newpassword){
+
+    if (m_clientSocket->waitForConnected()) {
+        // create a QDataStream operating on the socket
+        QDataStream clientStream(m_clientSocket);
+        // set the version so that programs compiled with different versions of Qt can agree on how to serialise
+        clientStream.setVersion(QDataStream::Qt_5_7);
+        // Create the JSON we want to send
+        QJsonObject message;
+        message["type"] = QStringLiteral("password");
+        message["username"] = this->username;
         message["oldpass"] = oldpassword;
         message["newpass"] = newpassword;
+        //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
     }

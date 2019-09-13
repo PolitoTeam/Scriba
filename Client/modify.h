@@ -41,6 +41,10 @@ private slots:
 
     void on_lineEditConfirmPass_editingFinished();
 
+    void on_pushSaveNickname_clicked();
+
+    void on_pushButton_2_clicked();
+
 public slots:
     void upload();
 
@@ -51,7 +55,7 @@ private:
     bool valid;
     void checkPassword(const QString &password);
     bool checkConfirmation(const QString &pass,const QString &conf);
-    bool checkUsername(const QString &username);
+    bool checkNickname(const QString &nickname);
 };
 
 #endif // MODIFY_PROFILE_H

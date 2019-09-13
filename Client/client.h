@@ -21,7 +21,8 @@ public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
     void login(const QString &username, const QString &password);
     void signup(const QString &username, const QString &password);
-    void update(const QString &nickname, const QString &oldpassword,const QString &newpassword);
+    void updateNickname(const QString &nickname);
+    void updatePassword(const QString &oldpassword,const QString &newpassword);
 //    void sendMessage(const QString &text);
     void disconnectFromHost();
 private slots:

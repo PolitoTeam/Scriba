@@ -84,7 +84,7 @@ void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
     Q_ASSERT(sender);
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
-//    jsonFromLoggedIn(sender, json);
+    jsonFromLoggedIn(sender, json);
 }
 
 //rimuove client disconnesso e notifica
@@ -294,17 +294,21 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;
-    if (typeVal.toString().compare(QLatin1String("update"), Qt::CaseInsensitive) != 0){
-        QJsonObject message=this->signup(docObj);
+    if (typeVal.toString().compare(QLatin1String("nickname"), Qt::CaseInsensitive) != 0){
+        QJsonObject message=this->updateNick(docObj);
+        this->sendJson(sender,message);
+    }
+    if (typeVal.toString().compare(QLatin1String("password"), Qt::CaseInsensitive) != 0){
+        QJsonObject message=this->updatePass(docObj);
         this->sendJson(sender,message);
     }
 }
 
 
-QJsonObject Server::update(const QJsonObject &doc){
+QJsonObject Server::updateNick(const QJsonObject &doc){
     const QJsonValue user = doc.value(QLatin1String("username"));
     QJsonObject message;
-    message["type"] = QStringLiteral("update");
+    message["type"] = QStringLiteral("nickname");
 
     if (user.isNull() || !user.isString()){
         message["success"] = false;
@@ -355,7 +359,7 @@ QJsonObject Server::update(const QJsonObject &doc){
         return message;
     }
 
-    DatabaseError result = this->db->update(username,nickname,oldpassword,newpassword);
+    DatabaseError result = this->db->updateNickname(username,nickname);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
@@ -371,5 +375,80 @@ QJsonObject Server::update(const QJsonObject &doc){
     return message;
 
 }
+
+
+QJsonObject Server::updatePass(const QJsonObject &doc){
+    const QJsonValue user = doc.value(QLatin1String("username"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("password");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+
+    const QJsonValue oldpass = doc.value(QLatin1String("oldpass"));
+    if (oldpass.isNull() || !oldpass.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong oldpassword format");
+        return message;
+    }
+    const QString oldpassword = oldpass.toString().simplified();
+    if (oldpassword.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty old password");
+        return message;
+    }
+
+    const QJsonValue newpass = doc.value(QLatin1String("newpass"));
+    if (newpass.isNull() || !newpass.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong new password format");
+        return message;
+    }
+    const QString newpassword = newpass.toString().simplified();
+    if (newpassword.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty new password");
+        return message;
+    }
+
+    DatabaseError result = this->db->updatePassword(username,oldpassword,newpassword);
+
+    if (result == NON_EXISTING_USER){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("The username doens't exists");
+        return message;
+    }
+    else if (result == NON_EXISTING_USER){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("No account found for this username");
+        return message;
+    }
+    else if (result == WRONG_PASSWORD){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong password");
+        return message;
+    }
+    else{
+
+            message["success"] = false;
+            message["reason"] = QStringLiteral("Database error");
+            return message;
+
+    }
+
+    message["success"] = true;
+    return message;
+
+}
+
 
 

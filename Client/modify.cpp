@@ -52,8 +52,8 @@ void Modify::clearLabels(){
 
 void Modify::on_lineEditNickname_editingFinished()
 {
-    QString username = ui->lineEditNickname->text();
-    checkUsername(username);
+    QString nickname = ui->lineEditNickname->text();
+    checkNickname(nickname);
 
 }
 
@@ -150,17 +150,7 @@ void Modify::on_lineEditConfirmPass_textChanged(const QString &arg1)
 
 void Modify::on_pushButtonLogin_clicked()
 {
-    QString nickname=ui->lineEditNickname->text();
-    QString oldpass=ui->lineEditOldPass->text();
-    QString newpass=ui->lineEditNewPass->text();
-    QString confirm=ui->lineEditConfirmPass->text();
-    QString username=client->getUsername();
 
-
-    if ( checkUsername(username) && valid && checkConfirmation(newpass,confirm)){
-      client->update(nickname,oldpass,newpass);
-        //disabilita pulsanti;
-    }
 }
 
 void Modify::on_lineEditNewPass_editingFinished()
@@ -177,12 +167,32 @@ void Modify::on_lineEditConfirmPass_editingFinished()
     checkConfirmation(password1,password2);
 }
 
-bool Modify::checkUsername(const QString &username){
+bool Modify::checkNickname(const QString &nickname){
 
-    if (username.isEmpty() || username.isNull()){
+    if (nickname.isEmpty() || nickname.isNull()){
         ui->labelInfoNick->setText("Nickname empty");
         return false;
     }
     return true;
 
+}
+
+void Modify::on_pushSaveNickname_clicked()
+{
+    QString nickname=ui->lineEditNickname->text();
+    if (checkNickname(nickname))
+        client->updateNickname(nickname);
+}
+
+void Modify::on_pushButton_2_clicked()
+{
+    QString oldpass=ui->lineEditOldPass->text();
+    QString newpass=ui->lineEditNewPass->text();
+    QString confirm=ui->lineEditConfirmPass->text();
+
+
+    if ( valid && checkConfirmation(newpass,confirm)){
+      client->updatePassword(oldpass,newpass);
+        //disabilita pulsanti;
+    }
 }
