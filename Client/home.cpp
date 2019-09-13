@@ -34,5 +34,6 @@ void Home::on_pushButtonNewFile_clicked()
 
 void Home::on_pushButtonModify_clicked()
 {
+    emit modify();
     emit action(4);
 }

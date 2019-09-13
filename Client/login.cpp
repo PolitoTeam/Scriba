@@ -57,6 +57,9 @@ void Login::loggedIn()
     ui->pushButtonNewAccount->setEnabled(true);
     ui->lineEditUsername->clear();
     ui->lineEditPassword->clear();
+   // client->getProfile()->load();  caricare l'immagine scaricata dal server
+
+
     emit access(2);
 }
 

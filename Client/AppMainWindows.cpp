@@ -35,6 +35,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     stackedWidget->addWidget(home);
     QObject::connect(home, &Home::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
+
     editor = new Editor(stackedWidget,client);
     stackedWidget->addWidget(editor);
     QObject::connect(editor, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
@@ -43,6 +44,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     stackedWidget->addWidget(modify);
     QObject::connect(modify, &Modify::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
+    QObject::connect(home,&Home::modify,modify,&Modify::upload);
     connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
     connect(client, &Client::error, this, &AppMainWindow::error);
 

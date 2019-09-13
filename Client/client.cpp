@@ -7,6 +7,7 @@
 #include <QJsonValue>
 #include <QHostAddress>
 #include <QDebug>
+#include <QPixmap>
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -26,6 +27,7 @@ Client::Client(QObject *parent)
 
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
     connect(m_clientSocket, &QTcpSocket::disconnected, this, [this]()->void{m_loggedIn = false;});
+    profile=new QPixmap(":/images/anonymous");
 }
 
 void Client::login(const QString &username, const QString &password)
@@ -66,6 +68,27 @@ void Client::signup(const QString &username, const QString &password)
     }
 }
 
+void Client::update(const QString &nickname,const QString &oldpassword,const QString &newpassword)
+{
+    connectToServer(QHostAddress::Any, 1500); //porta da stabilire
+    if (m_clientSocket->waitForConnected()) {
+        // create a QDataStream operating on the socket
+        QDataStream clientStream(m_clientSocket);
+        // set the version so that programs compiled with different versions of Qt can agree on how to serialise
+        clientStream.setVersion(QDataStream::Qt_5_7);
+        // Create the JSON we want to send
+        QJsonObject message;
+        message["type"] = QStringLiteral("update");
+        message["username"] = this->username;
+        message["nickname"] = nickname;
+        //aggiungere cifratura oppure passare a QSSLsocket
+        message["oldpass"] = oldpassword;
+        message["newpass"] = newpassword;
+        // send the JSON using QDataStream
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
+}
+
 //void Client::sendMessage(const QString &text)
 //{
 //    if (text.isEmpty())
@@ -86,6 +109,8 @@ void Client::signup(const QString &username, const QString &password)
 //Attempts to close the socket. If there is pending data waiting to be written, QAbstractSocket will enter ClosingState and wait until all data has been written.
 void Client::disconnectFromHost()
 {
+    this->username.clear();
+    this->nickname.clear();
     m_clientSocket->disconnectFromHost();
 }
 
@@ -104,7 +129,18 @@ void Client::jsonReceived(const QJsonObject &docObj)
             return; // the message had no success field so we ignore
         const bool loginSuccess = resultVal.toBool();
         if (loginSuccess) {
-            // we logged in succesfully and we notify it via the loggedIn signal
+            const QJsonValue user = docObj.value(QLatin1String("username"));
+
+            if (user.isNull() || !user.isString())
+                return;
+
+            const QString username = user.toString().simplified();
+            if (username.isEmpty()){
+                return;
+            }
+            this->username=username;
+            this->nickname=username;
+            m_loggedIn=true;// we logged in succesfully and we notify it via the loggedIn signal
             emit loggedIn();
             return;
         }
@@ -196,4 +232,18 @@ void Client::onReadyRead()
             break;
         }
     }
+}
+
+QString Client::getNickname(){
+    return this->nickname;
+}
+QString Client::getUsername(){
+    return this->username;
+}
+void Client::setNickname(const QString& nickname){
+    this->nickname=nickname;
+}
+
+QPixmap* Client::getProfile(){
+    return profile;
 }

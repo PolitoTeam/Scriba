@@ -23,7 +23,6 @@ class AppMainWindow : public QMainWindow
 public:
     AppMainWindow(QWidget *parent = nullptr,Client* c=nullptr);
     ~AppMainWindow();
-
 private slots:
     void on_logOut();
     void error(QAbstractSocket::SocketError socketError);
@@ -37,6 +36,7 @@ private:
     Editor* editor;
     Client* client;
     Modify* modify;
+
 };
 
 #endif // INDEX_H

@@ -64,6 +64,12 @@
           </property>
           <item>
            <widget class="QLabel" name="profile_image">
+            <property name="minimumSize">
+             <size>
+              <width>170</width>
+              <height>170</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>170</width>
@@ -72,6 +78,9 @@
             </property>
             <property name="text">
              <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
            </widget>
           </item>

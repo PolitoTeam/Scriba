@@ -4,6 +4,9 @@
 #include <QWidget>
 #include "client.h"
 
+#define IMAGE_WIDTH 170
+#define IMAGE_HEIGHT 170
+
 namespace Ui {
 class Signup;
 }

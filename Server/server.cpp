@@ -265,6 +265,7 @@ QJsonObject Server::login(const QJsonObject &doc){
     int r=this->db->login(username,password);
     if (r == SUCCESS){
         message["success"] = true;
+        message["username"]=username;
         return message;
     }
     else if (r == NON_EXISTING_USER){
@@ -287,25 +288,88 @@ QJsonObject Server::login(const QJsonObject &doc){
 
 
 
-//void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
-//{
-//    Q_ASSERT(sender);
-//    const QJsonValue typeVal = docObj.value(QLatin1String("type"));
-//    if (typeVal.isNull() || !typeVal.isString())
-//        return;
-//    if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) != 0)
-//        return;
-//    const QJsonValue textVal = docObj.value(QLatin1String("text"));
-//    if (textVal.isNull() || !textVal.isString())
-//        return;
-//    const QString text = textVal.toString().trimmed();
-//    if (text.isEmpty())
-//        return;
-//    QJsonObject message;
-//    message["type"] = QStringLiteral("message");
-//    message["text"] = text;
-//    message["sender"] = sender->userName();
-//    broadcast(message, sender);
-//}
+void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
+{
+    Q_ASSERT(sender);
+    const QJsonValue typeVal = docObj.value(QLatin1String("type"));
+    if (typeVal.isNull() || !typeVal.isString())
+        return;
+    if (typeVal.toString().compare(QLatin1String("update"), Qt::CaseInsensitive) != 0){
+        QJsonObject message=this->signup(docObj);
+        this->sendJson(sender,message);
+    }
+}
+
+
+QJsonObject Server::update(const QJsonObject &doc){
+    const QJsonValue user = doc.value(QLatin1String("username"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("update");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+    const QJsonValue nick = doc.value(QLatin1String("nickname"));
+    if (nick.isNull() || !nick.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong nickname format");
+        return message;
+    }
+    const QString nickname = nick.toString().simplified();
+    if (nickname.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty nickname");
+        return message;
+    }
+    const QJsonValue oldpass = doc.value(QLatin1String("oldpass"));
+    if (oldpass.isNull() || !oldpass.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong oldpassword format");
+        return message;
+    }
+    const QString oldpassword = oldpass.toString().simplified();
+    if (oldpassword.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty old password");
+        return message;
+    }
+
+    const QJsonValue newpass = doc.value(QLatin1String("newpass"));
+    if (newpass.isNull() || !newpass.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong new password format");
+        return message;
+    }
+    const QString newpassword = newpass.toString().simplified();
+    if (newpassword.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty new password");
+        return message;
+    }
+
+    DatabaseError result = this->db->update(username,nickname,oldpassword,newpassword);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error");
+        return message;
+    }
+    if (result == NON_EXISTING_USER){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("The username doens't exists");
+        return message;
+    }
+
+    message["success"] = true;
+    return message;
+
+}
 
 

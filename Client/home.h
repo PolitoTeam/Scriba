@@ -26,6 +26,7 @@ private slots:
 signals:
      void action(int);
      void logOut();
+     void modify();
 private:
     Ui::Home *ui;
     Client* client;

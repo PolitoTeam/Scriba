@@ -11,9 +11,7 @@ Signup::Signup(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
     QPixmap pix(":/images/anonymous"); //cercare .png
-    int w=170;
-    int h=170;
-    ui->profile_image->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
     ui->lineEditConfirmPassword->setDisabled(true);
     valid=false;
 
@@ -34,6 +32,8 @@ void Signup::on_pushButtonClear_clicked()
 {
     this->clearLineEdit();
     this->clearLabel();
+    QPixmap pix(":/images/anonymous"); //cercare .png
+    ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
     ui->lineEditConfirmPassword->setDisabled(true);
     valid=false;
 }
@@ -47,7 +47,8 @@ void Signup::signedUp()
     ui->lineEditUsername->clear();
     ui->lineEditPassword->clear();
     ui->labelInfoPass->setText("Correclty signed up");
-
+    QPixmap pix(":/images/anonymous"); //cercare .png
+    ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
     client->disconnectFromHost();
 }
 
@@ -59,7 +60,6 @@ void Signup::signupFailed(const QString &reason){
     ui->pushButtonClear->setEnabled(true);
     ui->pushButtonBackLogin->setEnabled(true);
 
-    client->disconnectFromHost();
 }
 
 void Signup::on_pushButtonSignup_clicked()
@@ -81,7 +81,6 @@ void Signup::on_lineEditUsername_editingFinished()
 {
     QString username = ui->lineEditUsername->text();
     checkUsername(username);
-
 }
 
 
@@ -208,6 +207,8 @@ void Signup::on_pushButtonBackLogin_clicked()
 {
     this->clearLabel();
     this->clearLineEdit();
+    QPixmap image(":/images/anonymous");
+    ui->profile_image->setPixmap(image.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
     emit action(0);
 }
 
@@ -234,4 +235,8 @@ void Signup::on_pushButtonUpload_clicked()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open Image"), "/Users/giuseppe.pastore/Desktop", tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
     qDebug()<<"Selected image: "<<fileName;
+    if (!fileName.isEmpty() && !fileName.isNull()){
+        QPixmap pix(fileName);
+        ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
+    }
 }

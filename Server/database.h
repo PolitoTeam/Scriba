@@ -11,6 +11,7 @@ public:
     bool checkConnection();
     DatabaseError signup(const QString &username,const QString &password);
     DatabaseError login(const QString &username,const QString &password);
+    DatabaseError update(const QString &username,const QString &nickname, const QString &oldpass,const QString &newpass); //da implementare
 
 private:
     QSqlDatabase db;
