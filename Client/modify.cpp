@@ -9,9 +9,7 @@ Modify::Modify(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
     QPixmap pix(":/images/anonymous"); //cercare .png
-    int w=170;
-    int h=170;
-    ui->profile_image->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatio));
 }
 
 Modify::~Modify()
@@ -22,6 +20,8 @@ Modify::~Modify()
 void Modify::on_pushButtonUpload_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open Image"), "/Users/giuseppe.pastore/Desktop", tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
+        tr("Open Image"), QDir::homePath()); //specificare path
     qDebug()<<"Selected image: "<<fileName;
+    QPixmap image(fileName);
+    ui->profile_image->setPixmap(image.scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatio));
 }
