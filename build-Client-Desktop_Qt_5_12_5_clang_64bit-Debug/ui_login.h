@@ -59,7 +59,7 @@ public:
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         pushButtonNewAccount = new QPushButton(Login);
         pushButtonNewAccount->setObjectName(QString::fromUtf8("pushButtonNewAccount"));
-        pushButtonNewAccount->setAutoDefault(false);
+        pushButtonNewAccount->setAutoDefault(true);
 
         gridLayout->addWidget(pushButtonNewAccount, 3, 1, 2, 1);
 
@@ -125,7 +125,7 @@ public:
 
         pushButtonLogin = new QPushButton(Login);
         pushButtonLogin->setObjectName(QString::fromUtf8("pushButtonLogin"));
-        pushButtonLogin->setAutoDefault(false);
+        pushButtonLogin->setAutoDefault(true);
 
         gridLayout->addWidget(pushButtonLogin, 3, 2, 2, 2);
 
@@ -154,8 +154,8 @@ public:
 
         retranslateUi(Login);
 
-        pushButtonNewAccount->setDefault(true);
-        pushButtonLogin->setDefault(true);
+        pushButtonNewAccount->setDefault(false);
+        pushButtonLogin->setDefault(false);
 
 
         QMetaObject::connectSlotsByName(Login);

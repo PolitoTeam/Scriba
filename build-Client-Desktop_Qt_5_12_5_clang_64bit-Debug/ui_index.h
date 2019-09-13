@@ -64,7 +64,7 @@ public:
 
     void retranslateUi(QMainWindow *Index)
     {
-        Index->setWindowTitle(QApplication::translate("Index", "MainWindow", nullptr));
+        Index->setWindowTitle(QApplication::translate("Index", "Shared Editor", nullptr));
     } // retranslateUi
 
 };

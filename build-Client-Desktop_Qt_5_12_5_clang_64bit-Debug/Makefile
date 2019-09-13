@@ -58,12 +58,14 @@ SOURCES       = ../Client/AppMainWindows.cpp \
 		../Client/editor.cpp \
 		../Client/main.cpp \
 		../Client/home.cpp \
+		../Client/modify.cpp \
 		../Client/signup.cpp qrc_client.cpp \
 		moc_AppMainWindow.cpp \
 		moc_client.cpp \
 		moc_login.cpp \
 		moc_editor.cpp \
 		moc_home.cpp \
+		moc_modify.cpp \
 		moc_signup.cpp
 OBJECTS       = AppMainWindows.o \
 		client.o \
@@ -71,6 +73,7 @@ OBJECTS       = AppMainWindows.o \
 		editor.o \
 		main.o \
 		home.o \
+		modify.o \
 		signup.o \
 		qrc_client.o \
 		moc_AppMainWindow.o \
@@ -78,6 +81,7 @@ OBJECTS       = AppMainWindows.o \
 		moc_login.o \
 		moc_editor.o \
 		moc_home.o \
+		moc_modify.o \
 		moc_signup.o
 DIST          = /Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/qdevice.pri \
@@ -260,12 +264,14 @@ DIST          = /Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/features/spec
 		../Client/login.h \
 		../Client/editor.h \
 		../Client/home.h \
+		../Client/modify.h \
 		../Client/signup.h ../Client/AppMainWindows.cpp \
 		../Client/client.cpp \
 		../Client/login.cpp \
 		../Client/editor.cpp \
 		../Client/main.cpp \
 		../Client/home.cpp \
+		../Client/modify.cpp \
 		../Client/signup.cpp
 QMAKE_TARGET  = Client
 DESTDIR       = 
@@ -285,7 +291,7 @@ include /Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/features/mac/sdk.mk
 first: all
 ####### Build rules
 
-Client.app/Contents/MacOS/Client: ui_index.h ui_login.h ui_editor.h ui_home.h ui_signup.h $(OBJECTS)  
+Client.app/Contents/MacOS/Client: ui_index.h ui_login.h ui_editor.h ui_home.h ui_modify.h ui_signup.h $(OBJECTS)  
 	@test -d Client.app/Contents/MacOS/ || mkdir -p Client.app/Contents/MacOS/
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
@@ -687,9 +693,9 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../Client/client.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../Client/AppMainWindow.h ../Client/client.h ../Client/login.h ../Client/editor.h ../Client/home.h ../Client/signup.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../Client/AppMainWindows.cpp ../Client/client.cpp ../Client/login.cpp ../Client/editor.cpp ../Client/main.cpp ../Client/home.cpp ../Client/signup.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../Client/index.ui ../Client/login.ui ../Client/editor.ui ../Client/home.ui ../Client/signup.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ../Client/AppMainWindow.h ../Client/client.h ../Client/login.h ../Client/editor.h ../Client/home.h ../Client/modify.h ../Client/signup.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../Client/AppMainWindows.cpp ../Client/client.cpp ../Client/login.cpp ../Client/editor.cpp ../Client/main.cpp ../Client/home.cpp ../Client/modify.cpp ../Client/signup.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../Client/index.ui ../Client/login.ui ../Client/editor.ui ../Client/home.ui ../Client/modify.ui ../Client/signup.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -738,6 +744,7 @@ qrc_client.cpp: ../Client/client.qrc \
 		../Client/images/cut.png \
 		../Client/images/save_as.png \
 		../Client/images/new.png \
+		../Client/images/anonymous.jpg \
 		../Client/images/italic.png
 	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/rcc -name client ../Client/client.qrc -o qrc_client.cpp
 
@@ -747,12 +754,16 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/features/data/dummy.cpp
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ -pipe -stdlib=libc++ -g -std=gnu++11 $(EXPORT_ARCH_ARGS) -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk -mmacosx-version-min=10.12 -Wall -W -dM -E -o moc_predefs.h /Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_AppMainWindow.cpp moc_client.cpp moc_login.cpp moc_editor.cpp moc_home.cpp moc_signup.cpp
+compiler_moc_header_make_all: moc_AppMainWindow.cpp moc_client.cpp moc_login.cpp moc_editor.cpp moc_home.cpp moc_modify.cpp moc_signup.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AppMainWindow.cpp moc_client.cpp moc_login.cpp moc_editor.cpp moc_home.cpp moc_signup.cpp
+	-$(DEL_FILE) moc_AppMainWindow.cpp moc_client.cpp moc_login.cpp moc_editor.cpp moc_home.cpp moc_modify.cpp moc_signup.cpp
 moc_AppMainWindow.cpp: ../Client/AppMainWindow.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/QTcpSocket \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QStackedWidget \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstackedwidget.h \
 		moc_predefs.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/moc
 	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/moc $(DEFINES) --include '/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/build-Client-Desktop_Qt_5_12_5_clang_64bit-Debug/moc_predefs.h' -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/macx-clang -I'/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/Client' -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtGui.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtSql.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/10.0.1/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/include -F/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib ../Client/AppMainWindow.h -o moc_AppMainWindow.cpp
@@ -769,8 +780,6 @@ moc_client.cpp: ../Client/client.h \
 moc_login.cpp: ../Client/login.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		../Client/home.h \
-		../Client/editor.h \
 		../Client/client.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/QObject \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qobject.h \
@@ -805,6 +814,18 @@ moc_home.cpp: ../Client/home.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/moc
 	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/moc $(DEFINES) --include '/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/build-Client-Desktop_Qt_5_12_5_clang_64bit-Debug/moc_predefs.h' -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/macx-clang -I'/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/Client' -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtGui.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtSql.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/10.0.1/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/include -F/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib ../Client/home.h -o moc_home.cpp
 
+moc_modify.cpp: ../Client/modify.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		../Client/client.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/QObject \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qobject.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/QTcpSocket \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
+		moc_predefs.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/moc
+	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/moc $(DEFINES) --include '/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/build-Client-Desktop_Qt_5_12_5_clang_64bit-Debug/moc_predefs.h' -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/mkspecs/macx-clang -I'/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/Client' -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtGui.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtSql.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers -I/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/10.0.1/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk/usr/include -F/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib ../Client/modify.h -o moc_modify.cpp
+
 moc_signup.cpp: ../Client/signup.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
@@ -821,9 +842,9 @@ compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_index.h ui_login.h ui_editor.h ui_home.h ui_signup.h
+compiler_uic_make_all: ui_index.h ui_login.h ui_editor.h ui_home.h ui_modify.h ui_signup.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_index.h ui_login.h ui_editor.h ui_home.h ui_signup.h
+	-$(DEL_FILE) ui_index.h ui_login.h ui_editor.h ui_home.h ui_modify.h ui_signup.h
 ui_index.h: ../Client/index.ui \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic
 	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic ../Client/index.ui -o ui_index.h
@@ -839,6 +860,10 @@ ui_editor.h: ../Client/editor.ui \
 ui_home.h: ../Client/home.ui \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic
 	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic ../Client/home.ui -o ui_home.h
+
+ui_modify.h: ../Client/modify.ui \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic
+	/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic ../Client/modify.ui -o ui_modify.h
 
 ui_signup.h: ../Client/signup.ui \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/bin/uic
@@ -859,22 +884,148 @@ compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_heade
 AppMainWindows.o: ../Client/AppMainWindows.cpp ../Client/AppMainWindow.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		ui_index.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/QTcpSocket \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QStackedWidget \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstackedwidget.h \
-		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QLayout \
+		ui_index.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QtWidgets \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtwidgetsglobal.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qabstractbutton.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qabstractitemdelegate.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qabstractitemview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qabstractscrollarea.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qabstractslider.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qabstractspinbox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qaccessiblewidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qaction.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qactiongroup.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qapplication.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qboxlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qbuttongroup.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcalendarwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcheckbox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcolordialog.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcolormap.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcolumnview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcombobox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcommandlinkbutton.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcommonstyle.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qcompleter.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdatawidgetmapper.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdatetimeedit.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdesktopwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdial.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdialog.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdialogbuttonbox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdirmodel.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdockwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qdrawutil.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qerrormessage.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qfiledialog.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qfileiconprovider.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qfilesystemmodel.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qfocusframe.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qfontcombobox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qfontdialog.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qformlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qframe.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgesture.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgesturerecognizer.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsanchorlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicseffect.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsgridlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsitem.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsitemanimation.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicslayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicslayoutitem.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicslinearlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsproxywidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsscene.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicssceneevent.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicstransform.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicsview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgraphicswidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgridlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qgroupbox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qheaderview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qinputdialog.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qitemdelegate.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qitemeditorfactory.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qkeyeventtransition.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qkeysequenceedit.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlabel.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlayoutitem.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlcdnumber.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlineedit.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlistview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qlistwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmdiarea.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmdisubwindow.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmenu.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmenubar.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmouseeventtransition.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qopenglwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qplaintextedit.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qprogressbar.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qprogressdialog.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qproxystyle.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qpushbutton.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qradiobutton.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qrubberband.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qscrollarea.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qscrollbar.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qscroller.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qscrollerproperties.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qshortcut.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qsizegrip.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qsizepolicy.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qslider.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qspinbox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qsplashscreen.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qsplitter.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstackedlayout.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstatusbar.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstyle.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstyleditemdelegate.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstylefactory.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstyleoption.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstylepainter.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstyleplugin.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qsystemtrayicon.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtabbar.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtableview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtablewidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtabwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtextbrowser.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtextedit.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtoolbar.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtoolbox.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtoolbutton.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtooltip.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtreeview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtreewidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtreewidgetitemiterator.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qundogroup.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qundostack.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qundoview.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwhatsthis.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwidgetaction.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwizard.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qtwidgetsversion.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QLayout \
 		../Client/login.h \
-		../Client/home.h \
-		../Client/editor.h \
 		../Client/client.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/QObject \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qobject.h \
-		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/QTcpSocket \
-		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
+		../Client/editor.h \
+		../Client/home.h \
 		../Client/signup.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwidget.h
+		../Client/modify.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AppMainWindows.o ../Client/AppMainWindows.cpp
 
 client.o: ../Client/client.cpp ../Client/client.h \
@@ -900,8 +1051,6 @@ client.o: ../Client/client.cpp ../Client/client.h \
 login.o: ../Client/login.cpp ../Client/login.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
-		../Client/home.h \
-		../Client/editor.h \
 		../Client/client.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/QObject \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qobject.h \
@@ -1063,7 +1212,14 @@ main.o: ../Client/main.cpp /Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidg
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qdebug.h \
 		../Client/AppMainWindow.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
-		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/QTcpSocket \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QStackedWidget \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qstackedwidget.h \
+		../Client/client.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/QObject \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qobject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../Client/main.cpp
 
 home.o: ../Client/home.cpp ../Client/home.h \
@@ -1077,6 +1233,17 @@ home.o: ../Client/home.cpp ../Client/home.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
 		ui_home.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o home.o ../Client/home.cpp
+
+modify.o: ../Client/modify.cpp ../Client/modify.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		../Client/client.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/QObject \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtCore.framework/Headers/qobject.h \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/QTcpSocket \
+		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtNetwork.framework/Headers/qtcpsocket.h \
+		ui_modify.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o modify.o ../Client/modify.cpp
 
 signup.o: ../Client/signup.cpp ../Client/signup.h \
 		/Users/giuseppe.pastore/Qt/5.12.5/clang_64/lib/QtWidgets.framework/Headers/QWidget \
@@ -1110,6 +1277,9 @@ moc_editor.o: moc_editor.cpp
 
 moc_home.o: moc_home.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_home.o moc_home.cpp
+
+moc_modify.o: moc_modify.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_modify.o moc_modify.cpp
 
 moc_signup.o: moc_signup.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_signup.o moc_signup.cpp

@@ -9,6 +9,10 @@ Signup::Signup(QWidget *parent,Client* client) :
     client(client)
 {
     ui->setupUi(this);
+    QPixmap pix(":/images/anonymous"); //cercare .png
+    int w=170;
+    int h=170;
+    ui->profile_image->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
     ui->lineEditConfirmPassword->setDisabled(true);
     valid=false;
 

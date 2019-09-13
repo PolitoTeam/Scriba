@@ -31,6 +31,10 @@ public:
     QSpacerItem *horizontalSpacer_2;
     QSpacerItem *verticalSpacer_4;
     QGroupBox *groupBox;
+    QHBoxLayout *horizontalLayout_3;
+    QVBoxLayout *verticalLayout_5;
+    QLabel *profile_image;
+    QPushButton *pushButton;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
     QLabel *labelUsername;
@@ -75,7 +79,26 @@ public:
         sizePolicy.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
         groupBox->setSizePolicy(sizePolicy);
         groupBox->setAlignment(Qt::AlignCenter);
-        verticalLayout = new QVBoxLayout(groupBox);
+        horizontalLayout_3 = new QHBoxLayout(groupBox);
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        verticalLayout_5 = new QVBoxLayout();
+        verticalLayout_5->setObjectName(QString::fromUtf8("verticalLayout_5"));
+        verticalLayout_5->setSizeConstraint(QLayout::SetDefaultConstraint);
+        profile_image = new QLabel(groupBox);
+        profile_image->setObjectName(QString::fromUtf8("profile_image"));
+        profile_image->setMaximumSize(QSize(170, 170));
+
+        verticalLayout_5->addWidget(profile_image);
+
+        pushButton = new QPushButton(groupBox);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+
+        verticalLayout_5->addWidget(pushButton);
+
+
+        horizontalLayout_3->addLayout(verticalLayout_5);
+
+        verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
@@ -142,6 +165,9 @@ public:
         verticalLayout->addWidget(labelInfoPass);
 
 
+        horizontalLayout_3->addLayout(verticalLayout);
+
+
         gridLayout->addWidget(groupBox, 2, 2, 1, 3);
 
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -161,13 +187,13 @@ public:
 
         pushButtonSignup = new QPushButton(Signup);
         pushButtonSignup->setObjectName(QString::fromUtf8("pushButtonSignup"));
-        pushButtonSignup->setAutoDefault(false);
+        pushButtonSignup->setAutoDefault(true);
 
         gridLayout->addWidget(pushButtonSignup, 3, 4, 2, 1);
 
         pushButtonClear = new QPushButton(Signup);
         pushButtonClear->setObjectName(QString::fromUtf8("pushButtonClear"));
-        pushButtonClear->setAutoDefault(false);
+        pushButtonClear->setAutoDefault(true);
 
         gridLayout->addWidget(pushButtonClear, 3, 3, 2, 1);
 
@@ -182,8 +208,8 @@ public:
 
         retranslateUi(Signup);
 
-        pushButtonSignup->setDefault(true);
-        pushButtonClear->setDefault(true);
+        pushButtonSignup->setDefault(false);
+        pushButtonClear->setDefault(false);
 
 
         QMetaObject::connectSlotsByName(Signup);
@@ -193,6 +219,8 @@ public:
     {
         Signup->setWindowTitle(QApplication::translate("Signup", "Form", nullptr));
         groupBox->setTitle(QApplication::translate("Signup", "SIgnup", nullptr));
+        profile_image->setText(QString());
+        pushButton->setText(QApplication::translate("Signup", "Upload...", nullptr));
         labelUsername->setText(QApplication::translate("Signup", "Username", nullptr));
         lineEditUsername->setText(QString());
         labelInfoUser->setText(QString());

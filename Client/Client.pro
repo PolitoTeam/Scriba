@@ -30,6 +30,7 @@ SOURCES += \
     editor.cpp \
     main.cpp \
     home.cpp \
+    modify.cpp \
     signup.cpp
 
 HEADERS += \
@@ -38,6 +39,7 @@ HEADERS += \
         login.h \
     editor.h \
     home.h \
+    modify.h \
     signup.h
 
 FORMS += \
@@ -45,6 +47,7 @@ FORMS += \
         login.ui \
     editor.ui \
     home.ui \
+    modify.ui \
     signup.ui
 
 RESOURCES += \

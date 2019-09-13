@@ -3,9 +3,10 @@
 #include "ui_editor.h"
 #include "client.h"
 
-Editor::Editor(QWidget *parent) :
+Editor::Editor(QWidget *parent,Client* client) :
     QWidget(parent),
-    ui(new Ui::Editor)
+    ui(new Ui::Editor),
+    client(client)
 {
     ui->setupUi(this);
    // this->setCentralWidget(ui->textEdit);

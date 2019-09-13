@@ -14,6 +14,7 @@ class Signup;
 class Home;
 class Editor;
 class Client;
+class Modify;
 
 class AppMainWindow : public QMainWindow
 {
@@ -35,6 +36,7 @@ private:
     Home* home;
     Editor* editor;
     Client* client;
+    Modify* modify;
 };
 
 #endif // INDEX_H

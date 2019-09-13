@@ -18,5 +18,6 @@
         <file>images/bold.png</file>
         <file>images/italic.png</file>
         <file>images/underline.png</file>
+        <file>images/anonymous.jpg</file>
     </qresource>
 </RCC>

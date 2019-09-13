@@ -31,7 +31,7 @@ public:
     QPushButton *pushButtonNewFile;
     QPushButton *pushButton_2;
     QPushButton *pushButton_4;
-    QPushButton *pushButton_3;
+    QPushButton *pushButtonModify;
     QPushButton *pushButtonLogOut;
     QSpacerItem *horizontalSpacer_2;
 
@@ -61,26 +61,32 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         pushButtonNewFile = new QPushButton(groupBox);
         pushButtonNewFile->setObjectName(QString::fromUtf8("pushButtonNewFile"));
+        pushButtonNewFile->setAutoDefault(true);
 
         verticalLayout->addWidget(pushButtonNewFile);
 
         pushButton_2 = new QPushButton(groupBox);
         pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
+        pushButton_2->setAutoDefault(true);
 
         verticalLayout->addWidget(pushButton_2);
 
         pushButton_4 = new QPushButton(groupBox);
         pushButton_4->setObjectName(QString::fromUtf8("pushButton_4"));
+        pushButton_4->setAutoDefault(true);
 
         verticalLayout->addWidget(pushButton_4);
 
-        pushButton_3 = new QPushButton(groupBox);
-        pushButton_3->setObjectName(QString::fromUtf8("pushButton_3"));
+        pushButtonModify = new QPushButton(groupBox);
+        pushButtonModify->setObjectName(QString::fromUtf8("pushButtonModify"));
+        pushButtonModify->setAutoDefault(true);
+        pushButtonModify->setFlat(false);
 
-        verticalLayout->addWidget(pushButton_3);
+        verticalLayout->addWidget(pushButtonModify);
 
         pushButtonLogOut = new QPushButton(groupBox);
         pushButtonLogOut->setObjectName(QString::fromUtf8("pushButtonLogOut"));
+        pushButtonLogOut->setAutoDefault(true);
 
         verticalLayout->addWidget(pushButtonLogOut);
 
@@ -97,6 +103,12 @@ public:
 
         retranslateUi(Home);
 
+        pushButtonNewFile->setDefault(false);
+        pushButton_2->setDefault(false);
+        pushButton_4->setDefault(false);
+        pushButtonModify->setDefault(false);
+
+
         QMetaObject::connectSlotsByName(Home);
     } // setupUi
 
@@ -107,7 +119,7 @@ public:
         pushButtonNewFile->setText(QApplication::translate("Home", "New file", nullptr));
         pushButton_2->setText(QApplication::translate("Home", "Open file", nullptr));
         pushButton_4->setText(QApplication::translate("Home", "Shared link", nullptr));
-        pushButton_3->setText(QApplication::translate("Home", "Update Profile", nullptr));
+        pushButtonModify->setText(QApplication::translate("Home", "Update Profile", nullptr));
         pushButtonLogOut->setText(QApplication::translate("Home", "Log Out", nullptr));
     } // retranslateUi
 

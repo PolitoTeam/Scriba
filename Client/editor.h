@@ -13,7 +13,7 @@ class Editor : public QWidget
     Q_OBJECT
 
 public:
-    explicit Editor(QWidget *parent = nullptr);
+    Editor(QWidget *parent = nullptr,Client* client=0);
     void setClient(Client* client);
     ~Editor();
 

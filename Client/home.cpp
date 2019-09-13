@@ -2,9 +2,10 @@
 #include "ui_home.h"
 #include "client.h"
 
-Home::Home(QWidget *parent) :
+Home::Home(QWidget *parent,Client* client) :
     QWidget(parent),
-    ui(new Ui::Home)
+    ui(new Ui::Home),
+    client(client)
 {
     ui->setupUi(this);
 }
@@ -29,4 +30,9 @@ void Home::on_pushButtonNewFile_clicked()
     //this->hide();
     //editor->show();
     emit action(3);
+}
+
+void Home::on_pushButtonModify_clicked()
+{
+    emit action(4);
 }

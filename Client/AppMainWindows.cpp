@@ -7,6 +7,7 @@
 #include "editor.h"
 #include "home.h"
 #include "signup.h"
+#include "modify.h"
 
 AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     QMainWindow(parent),
@@ -30,15 +31,17 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     stackedWidget->addWidget(signup);
     QObject::connect(signup, &Signup::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    home = new Home(stackedWidget);
-    home->setClient(client);
+    home = new Home(stackedWidget,client);
     stackedWidget->addWidget(home);
     QObject::connect(home, &Home::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
-    editor = new Editor(stackedWidget);
-    editor->setClient(client);
+    editor = new Editor(stackedWidget,client);
     stackedWidget->addWidget(editor);
     QObject::connect(editor, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+
+    modify = new Modify(stackedWidget,client);
+    stackedWidget->addWidget(modify);
+    QObject::connect(modify, &Modify::action,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
     connect(client, &Client::error, this, &AppMainWindow::error);

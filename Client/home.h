@@ -13,13 +13,15 @@ class Home : public QWidget
     Q_OBJECT
 
 public:
-    explicit Home(QWidget *parent = nullptr);
+    Home(QWidget *parent = nullptr,Client* client=nullptr);
     void setClient(Client* client);
     ~Home();
 
 private slots:
      void on_pushButtonLogOut_clicked();
      void on_pushButtonNewFile_clicked();
+
+     void on_pushButtonModify_clicked();
 
 signals:
      void action(int);
