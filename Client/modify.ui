@@ -135,7 +135,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="pushButtonUpload">
            <property name="text">
             <string>Upload...</string>
            </property>

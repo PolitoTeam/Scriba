@@ -1,5 +1,6 @@
 #include "modify.h"
 #include "ui_modify.h"
+#include "QFileDialog"
 
 Modify::Modify(QWidget *parent,Client* client) :
     QWidget(parent),
@@ -16,4 +17,11 @@ Modify::Modify(QWidget *parent,Client* client) :
 Modify::~Modify()
 {
     delete ui;
+}
+
+void Modify::on_pushButtonUpload_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open Image"), "/Users/giuseppe.pastore/Desktop", tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
+    qDebug()<<"Selected image: "<<fileName;
 }

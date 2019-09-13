@@ -2,6 +2,7 @@
 #include "ui_signup.h"
 #include <QRegularExpression>
 #include <QDebug>
+#include <QFileDialog>
 
 Signup::Signup(QWidget *parent,Client* client) :
     QWidget(parent),
@@ -226,4 +227,11 @@ void Signup::enableAllButtons()
     ui->pushButtonSignup->setEnabled(true);
     ui->pushButtonClear->setEnabled(true);
     ui->pushButtonBackLogin->setEnabled(true);
+}
+
+void Signup::on_pushButtonUpload_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Open Image"), "/Users/giuseppe.pastore/Desktop", tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
+    qDebug()<<"Selected image: "<<fileName;
 }

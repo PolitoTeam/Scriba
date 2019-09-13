@@ -39,6 +39,8 @@ private slots:
     void signedUp();
     void signupFailed(const QString &reason);
 
+    void on_pushButtonUpload_clicked();
+
 signals:
     void action(int i);
 

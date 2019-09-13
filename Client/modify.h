@@ -19,6 +19,9 @@ public:
 signals:
     void action(int);
 
+private slots:
+    void on_pushButtonUpload_clicked();
+
 private:
     Ui::modify *ui;
     Client* client;
