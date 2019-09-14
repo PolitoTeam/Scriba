@@ -1,7 +1,7 @@
 #include <QtWidgets>
 #include <QStackedWidget>
 #include <QLayout>
-#include "AppMainWindow.h"
+#include "appMainWindow.h"
 #include "ui_index.h"
 #include "login.h"
 #include "editor.h"

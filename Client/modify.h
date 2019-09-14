@@ -2,7 +2,7 @@
 #define MODIFY_PROFILE_H
 
 #include <QWidget>
-#include "AppMainWindow.h"
+#include "appMainWindow.h"
 #include "client.h"
 
 #define IMAGE_WIDTH 170
@@ -25,7 +25,6 @@ signals:
 
 private slots:
     void on_pushButtonUpload_clicked();
-    void on_pushButtonCancel_clicked();
     void on_lineEditNickname_editingFinished();
     void on_lineEditNickname_textChanged(const QString &arg1);
     void on_lineEditNewPass_textChanged(const QString &arg1);
@@ -35,18 +34,10 @@ private slots:
     void on_lineEditConfirmPass_editingFinished();
     void on_pushSaveNickname_clicked();
     void on_pushButtonSavePassword_clicked();
-
     void on_pushButtonResetNickname_clicked();
-
     void on_pushButton_clicked();
-
     void on_pushButtonResetPhoto_clicked();
-
-    void on_pushButton_3_clicked();
-
     void on_pushButtonSavephoto_clicked();
-
-    void on_pushButton_2_clicked();
 
 public slots:
     void upload();

@@ -2,7 +2,7 @@
 #include <QtSql>
 #include <QDebug>
 #include <QMessageBox>
-#include <sodium/crypto_pwhash.h>
+#include <sodium.h>
 
 Database::Database()
 {

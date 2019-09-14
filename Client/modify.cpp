@@ -119,7 +119,7 @@ bool Modify::checkConfirmation(const QString &pass,const QString &conf){
     return true;
 }
 
-void Modify::on_lineEditNickname_textChanged(const QString &arg1)
+void Modify::on_lineEditNickname_textChanged(const QString&)
 {
     ui->labelInfoNick->clear();
 }
@@ -135,7 +135,7 @@ void Modify::on_lineEditNewPass_textChanged(const QString &arg1)
     }
 }
 
-void Modify::on_lineEditConfirmPass_textChanged(const QString &arg1)
+void Modify::on_lineEditConfirmPass_textChanged(const QString&)
 {
     if(valid==true)
          ui->labelInfoPass->clear();
@@ -226,24 +226,7 @@ void Modify::on_pushButtonSavephoto_clicked()
     //da implementare
 }
 
-
-
 void Modify::on_pushButtonLogin_clicked()
 {
     //
-}
-
-void Modify::on_pushButton_3_clicked()
-{
-    //l'ho messo perchè c'è qualche problema con il MOC
-}
-
-void Modify::on_pushButton_2_clicked()
-{
-    //l'ho messo perchè c'è qualche problema con il MOC
-}
-
-void Modify::on_pushButtonCancel_clicked()
-{
-    //l'ho messo perchè c'è qualche problema con il MOC
 }

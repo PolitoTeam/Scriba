@@ -2,7 +2,7 @@
 #define HOME_H
 
 #include <QMainWindow>
-#include "AppMainWindow.h"
+#include "appMainWindow.h"
 #include "editor.h"
 
 namespace Ui {

@@ -2,7 +2,7 @@
 #define EDITOR_H
 
 #include <QMainWindow>
-#include "AppMainWindow.h"
+#include "appMainWindow.h"
 #include "client.h"
 
 namespace Ui {

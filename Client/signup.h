@@ -2,7 +2,7 @@
 #define SIGNUP_H
 
 #include <QWidget>
-#include "AppMainWindow.h"
+#include "appMainWindow.h"
 #include "client.h"
 
 #define IMAGE_WIDTH 170
