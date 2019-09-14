@@ -2,6 +2,7 @@
 #include "ui_modify.h"
 #include <QFileDialog>
 #include <QRegularExpression>
+#include <QMessageBox>
 
 Modify::Modify(QWidget *parent,Client* client) :
     QWidget(parent),
@@ -32,16 +33,11 @@ void Modify::upload(){
     QString nickname=client->getNickname();
     ui->profile_image->setPixmap(client->getProfile()->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
     ui->lineEditNickname->setText(nickname);
+    this->clearLabels();
 }
 
-void Modify::on_pushButtonCancel_clicked()
-{
-    emit changeWidget(HOME);
-}
 
 void Modify::clearLabels(){
-    QString nickname=client->getNickname();
-    ui->lineEditNickname->setText(nickname);
     ui->lineEditNewPass->clear();
     ui->lineEditOldPass->clear();
     ui->lineEditConfirmPass->clear();
@@ -142,13 +138,9 @@ void Modify::on_lineEditNewPass_textChanged(const QString &arg1)
 void Modify::on_lineEditConfirmPass_textChanged(const QString &arg1)
 {
     if(valid==true)
-         ui->labelInfoPass->setText("");
+         ui->labelInfoPass->clear();
 }
 
-void Modify::on_pushButtonLogin_clicked()
-{
-
-}
 
 void Modify::on_lineEditNewPass_editingFinished()
 {
@@ -177,8 +169,21 @@ bool Modify::checkNickname(const QString &nickname){
 void Modify::on_pushSaveNickname_clicked()
 {
     QString nickname=ui->lineEditNickname->text();
-    if (checkNickname(nickname))
-        client->updateNickname(nickname);
+    QString original=client->getNickname();
+
+    if (nickname.compare(original)==0){
+        ui->labelInfoNick->setText("Nickname not modified");
+        return;
+    }
+
+    if (checkNickname(nickname)){
+        QMessageBox msgbox;
+        msgbox.setText("Are you sure?");
+        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        msgbox.setDefaultButton(QMessageBox::Save);
+        if(msgbox.exec()==QMessageBox::Save)
+           client->updateNickname(nickname);
+    }
 }
 
 void Modify::on_pushButtonSavePassword_clicked()
@@ -189,7 +194,56 @@ void Modify::on_pushButtonSavePassword_clicked()
 
 
     if ( valid && checkConfirmation(newpass,confirm)){
-      client->updatePassword(oldpass,newpass);
+        QMessageBox msgbox;
+        msgbox.setText("Are you sure?");
+        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        msgbox.setDefaultButton(QMessageBox::Save);
+        if(msgbox.exec()==QMessageBox::Save)
+           client->updatePassword(oldpass,newpass);
         //disabilita pulsanti;
     }
+}
+
+void Modify::on_pushButtonResetNickname_clicked()
+{
+    QString nickname=client->getNickname();
+    ui->lineEditNickname->setText(nickname);
+}
+
+void Modify::on_pushButton_clicked()
+{
+    this->clearLabels();
+}
+
+void Modify::on_pushButtonResetPhoto_clicked()
+{
+    ui->profile_image->setPixmap(client->getProfile()->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
+}
+
+
+void Modify::on_pushButtonSavephoto_clicked()
+{
+    //da implementare
+}
+
+
+
+void Modify::on_pushButtonLogin_clicked()
+{
+    //
+}
+
+void Modify::on_pushButton_3_clicked()
+{
+    //l'ho messo perchè c'è qualche problema con il MOC
+}
+
+void Modify::on_pushButton_2_clicked()
+{
+    //l'ho messo perchè c'è qualche problema con il MOC
+}
+
+void Modify::on_pushButtonCancel_clicked()
+{
+    //l'ho messo perchè c'è qualche problema con il MOC
 }

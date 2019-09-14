@@ -38,5 +38,6 @@ void Home::on_pushButtonModify_clicked()
 
 void Home::on_pushButtonSharedLink_clicked()
 {
-    client->sendProfileImage();
+    //client->sendProfileImage();
 }
+

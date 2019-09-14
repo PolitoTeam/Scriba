@@ -277,3 +277,4 @@ void Client::sendProfileImage()
         clientStream << bArray;
     }
 }
+

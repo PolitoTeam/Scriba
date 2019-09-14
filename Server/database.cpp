@@ -73,7 +73,7 @@ DatabaseError Database::login(const QString &username,const QString &password){
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
+    qry.prepare("SELECT Username,Password,Nickname FROM USER WHERE Username=:username");
     qry.bindValue(":username",username);
     if (!qry.exec())
         err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
