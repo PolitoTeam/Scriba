@@ -2,6 +2,7 @@
 #define EDITOR_H
 
 #include <QMainWindow>
+#include "AppMainWindow.h"
 #include "client.h"
 
 namespace Ui {
@@ -18,7 +19,7 @@ public:
     ~Editor();
 
 signals:
-    void action(int);
+    void changeWidget(int);
 
 private slots:
     void print();

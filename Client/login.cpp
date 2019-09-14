@@ -60,7 +60,7 @@ void Login::loggedIn()
    // client->getProfile()->load();  caricare l'immagine scaricata dal server
 
 
-    emit access(2);
+    emit changeWidget(HOME);
 }
 
 void Login::loginFailed(const QString &reason)
@@ -87,7 +87,7 @@ void Login::on_pushButtonNewAccount_clicked()
 {
     this->clearLabel();
     this->clearLineEdit();
-    emit access(1);
+    emit changeWidget(SIGNUP);
 }
 
 void Login::disconnect() {

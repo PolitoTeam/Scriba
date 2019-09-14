@@ -2,6 +2,7 @@
 #define SIGNUP_H
 
 #include <QWidget>
+#include "AppMainWindow.h"
 #include "client.h"
 
 #define IMAGE_WIDTH 170
@@ -22,30 +23,20 @@ public:
 
 private slots:
     void on_pushButtonClear_clicked();
-
     void on_pushButtonSignup_clicked();
-
     void on_lineEditUsername_editingFinished();
-
     void on_lineEditPassword_editingFinished();
-
     void on_lineEditConfirmPassword_editingFinished();
-
     void on_lineEditUsername_textChanged(const QString &arg1);
-
     void on_lineEditPassword_textChanged(const QString &arg1);
-
     void on_lineEditConfirmPassword_textChanged(const QString &arg1);
-
     void on_pushButtonBackLogin_clicked();
-
     void signedUp();
     void signupFailed(const QString &reason);
-
     void on_pushButtonUpload_clicked();
 
 signals:
-    void action(int i);
+    void changeWidget(int i);
 
 private:
     Ui::Signup *ui;

@@ -2,6 +2,7 @@
 #define LOGIN_H
 
 #include <QMainWindow>
+#include "AppMainWindow.h"
 #include "client.h"
 
 namespace Ui {
@@ -19,9 +20,7 @@ public:
 
 private slots:
     void try_to_log();
-
     void on_pushButtonNewAccount_clicked();
-
     void loggedIn();
     void loginFailed(const QString &reason);
 //    void messageReceived(const QString &sender, const QString &text);
@@ -29,14 +28,13 @@ private slots:
 //    void disconnectedFromServer();
 //    void userJoined(const QString &username);
 //    void userLeft(const QString &username);
-
     void on_lineEditUsername_textChanged(const QString &arg);
 
 public slots:
     void disconnect();
 
 signals:
-    void access(int i);
+    void changeWidget(int i);
 
 private:
     Ui::Login *ui;

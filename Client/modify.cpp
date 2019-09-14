@@ -36,8 +36,7 @@ void Modify::upload(){
 
 void Modify::on_pushButtonCancel_clicked()
 {
-
-
+    emit changeWidget(HOME);
 }
 
 void Modify::clearLabels(){
@@ -47,8 +46,6 @@ void Modify::clearLabels(){
     ui->lineEditOldPass->clear();
     ui->lineEditConfirmPass->clear();
 }
-
-
 
 void Modify::on_lineEditNickname_editingFinished()
 {
@@ -184,7 +181,7 @@ void Modify::on_pushSaveNickname_clicked()
         client->updateNickname(nickname);
 }
 
-void Modify::on_pushButton_2_clicked()
+void Modify::on_pushButtonSavePassword_clicked()
 {
     QString oldpass=ui->lineEditOldPass->text();
     QString newpass=ui->lineEditNewPass->text();

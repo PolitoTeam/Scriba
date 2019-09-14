@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>523</width>
-    <height>342</height>
+    <height>343</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -182,7 +182,7 @@ font-style:italic;</string>
            </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pushButtonSavePassword">
             <property name="text">
              <string>Save password</string>
             </property>

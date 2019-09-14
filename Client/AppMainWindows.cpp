@@ -1,8 +1,8 @@
-#include "AppMainWindow.h"
-#include "ui_index.h"
 #include <QtWidgets>
 #include <QStackedWidget>
 #include <QLayout>
+#include "AppMainWindow.h"
+#include "ui_index.h"
 #include "login.h"
 #include "editor.h"
 #include "home.h"
@@ -25,29 +25,27 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 
     login = new Login(stackedWidget,client);
     stackedWidget->addWidget(login);
-    QObject::connect(login, &Login::access,stackedWidget,&QStackedWidget::setCurrentIndex);
+    QObject::connect(login, &Login::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     signup = new Signup(stackedWidget,client);
     stackedWidget->addWidget(signup);
-    QObject::connect(signup, &Signup::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+    QObject::connect(signup, &Signup::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     home = new Home(stackedWidget,client);
     stackedWidget->addWidget(home);
-    QObject::connect(home, &Home::action,stackedWidget,&QStackedWidget::setCurrentIndex);
-
+    QObject::connect(home, &Home::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     editor = new Editor(stackedWidget,client);
     stackedWidget->addWidget(editor);
-    QObject::connect(editor, &Editor::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+    QObject::connect(editor, &Editor::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     modify = new Modify(stackedWidget,client);
     stackedWidget->addWidget(modify);
-    QObject::connect(modify, &Modify::action,stackedWidget,&QStackedWidget::setCurrentIndex);
+    QObject::connect(modify, &Modify::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
 
     QObject::connect(home,&Home::modify,modify,&Modify::upload);
     connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
     connect(client, &Client::error, this, &AppMainWindow::error);
-
 }
 
 AppMainWindow::~AppMainWindow()

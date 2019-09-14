@@ -2,6 +2,7 @@
 #define HOME_H
 
 #include <QMainWindow>
+#include "AppMainWindow.h"
 #include "editor.h"
 
 namespace Ui {
@@ -20,17 +21,17 @@ public:
 private slots:
      void on_pushButtonLogOut_clicked();
      void on_pushButtonNewFile_clicked();
-
      void on_pushButtonModify_clicked();
+     void on_pushButtonSharedLink_clicked();
 
 signals:
-     void action(int);
+     void changeWidget(int);
      void logOut();
      void modify();
+
 private:
     Ui::Home *ui;
     Client* client;
-
 };
 
 #endif // HOME_H
