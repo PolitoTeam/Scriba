@@ -129,7 +129,7 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
         this->sendJson(sender,message);
     }
     else if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
-        QJsonObject message=this->login(docObj);
+        QJsonObject message=this->login(sender,docObj);
         this->sendJson(sender,message);
     }
 
@@ -234,7 +234,7 @@ QJsonObject Server::signup(const QJsonObject &doc){
 }
 
 
-QJsonObject Server::login(const QJsonObject &doc){
+QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
     const QJsonValue user = doc.value(QLatin1String("username"));
     QJsonObject message;
     message["type"] = QStringLiteral("login");
@@ -266,6 +266,7 @@ QJsonObject Server::login(const QJsonObject &doc){
     if (r == SUCCESS){
         message["success"] = true;
         message["username"]=username;
+        sender->setNickname(username);
         return message;
     }
     else if (r == NON_EXISTING_USER){
