@@ -99,7 +99,7 @@ DatabaseError Database::updateNickname(const QString &username,const QString &ni
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
+    qry.prepare("SELECT Username FROM USER WHERE Username=:username");
     qry.bindValue(":username",username);
     if (!qry.exec())
         err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
@@ -109,7 +109,7 @@ DatabaseError Database::updateNickname(const QString &username,const QString &ni
     else {
 
         QSqlQuery qry;
-        qry.prepare("UPDATE USER SET Nickname=:nicknae WHERE Username=:username");
+        qry.prepare("UPDATE USER SET Nickname=:nickname WHERE Username=:username");
         qry.bindValue(":username",username);
         qry.bindValue(":nickname",nickname);
         if (!qry.exec()){

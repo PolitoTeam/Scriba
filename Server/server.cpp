@@ -292,14 +292,16 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
 void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 {
     Q_ASSERT(sender);
+     qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;
-    if (typeVal.toString().compare(QLatin1String("nickname"), Qt::CaseInsensitive) != 0){
+    if (typeVal.toString().compare(QLatin1String("nickname"), Qt::CaseInsensitive) == 0){
+        qDebug()<<"qui";
         QJsonObject message=this->updateNick(docObj);
         this->sendJson(sender,message);
     }
-    if (typeVal.toString().compare(QLatin1String("password"), Qt::CaseInsensitive) != 0){
+    if (typeVal.toString().compare(QLatin1String("password"), Qt::CaseInsensitive) == 0){
         QJsonObject message=this->updatePass(docObj);
         this->sendJson(sender,message);
     }
@@ -334,32 +336,7 @@ QJsonObject Server::updateNick(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty nickname");
         return message;
     }
-    const QJsonValue oldpass = doc.value(QLatin1String("oldpass"));
-    if (oldpass.isNull() || !oldpass.isString()){
-        message["success"] = false;
-        message["reason"] = QStringLiteral("Wrong oldpassword format");
-        return message;
-    }
-    const QString oldpassword = oldpass.toString().simplified();
-    if (oldpassword.isEmpty()){
-        message["success"] = false;
-        message["reason"] = QStringLiteral("Empty old password");
-        return message;
-    }
-
-    const QJsonValue newpass = doc.value(QLatin1String("newpass"));
-    if (newpass.isNull() || !newpass.isString()){
-        message["success"] = false;
-        message["reason"] = QStringLiteral("Wrong new password format");
-        return message;
-    }
-    const QString newpassword = newpass.toString().simplified();
-    if (newpassword.isEmpty()){
-        message["success"] = false;
-        message["reason"] = QStringLiteral("Empty new password");
-        return message;
-    }
-
+    qDebug()<<"nickname: "<<nickname;
     DatabaseError result = this->db->updateNickname(username,nickname);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
