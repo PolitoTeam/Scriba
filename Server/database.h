@@ -10,7 +10,7 @@ public:
     Database();
     bool checkConnection();
     DatabaseError signup(const QString &username,const QString &password);
-    DatabaseError login(const QString &username,const QString &password);
+    DatabaseError login(const QString &username,const QString &password,QString &nickname);
     DatabaseError updateNickname(const QString &username,const QString &nickname); //da implementare
     DatabaseError updatePassword(const QString &username,const QString &oldpass,const QString &newpass);
 private:

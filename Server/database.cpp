@@ -67,7 +67,7 @@ DatabaseError Database::signup(const QString &username,const QString &password){
     return err;
 }
 
-DatabaseError Database::login(const QString &username,const QString &password){
+DatabaseError Database::login(const QString &username,const QString &password,QString &nickname){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
@@ -87,8 +87,10 @@ DatabaseError Database::login(const QString &username,const QString &password){
         if (crypto_pwhash_str_verify(hashed_password_char, password_char, strlen(password_char)) != 0) {
             err = WRONG_PASSWORD;
         }
+        else{
+            nickname.append(qry.value(2).toString());
+        }
     }
-
     db.close();
     return err;
 }

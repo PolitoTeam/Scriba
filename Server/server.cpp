@@ -262,10 +262,13 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty password");
         return message;
     }
-    int r=this->db->login(username,password);
+    QString nickname;
+    int r=this->db->login(username,password,nickname);
     if (r == SUCCESS){
         message["success"] = true;
         message["username"]=username;
+        qDebug()<<"nickname: "<<nickname;
+        message["nickname"]=nickname;
         sender->setNickname(username);
         return message;
     }

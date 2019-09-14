@@ -154,8 +154,18 @@ void Client::jsonReceived(const QJsonObject &docObj)
             if (username.isEmpty()){
                 return;
             }
+            const QJsonValue nick = docObj.value(QLatin1String("nickname"));
+
+            if (nick.isNull() || !nick.isString())
+                return;
+
+            const QString nickname = nick.toString().simplified();
+            if (nickname.isEmpty()){
+                return;
+            }
             this->username=username;
-            this->nickname=username;
+            this->nickname=nickname;
+
             m_loggedIn=true;// we logged in succesfully and we notify it via the loggedIn signal
             emit loggedIn();
             return;
