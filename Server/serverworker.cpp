@@ -32,6 +32,11 @@ QString ServerWorker::getNickname()
     return nickname;
 }
 
+void ServerWorker::setNickname(const QString &nickname)
+{
+    this->nickname=nickname;
+}
+
 void ServerWorker::disconnectFromClient()
 {
     m_serverSocket->disconnectFromHost();

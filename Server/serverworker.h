@@ -14,6 +14,7 @@ public:
     virtual bool setSocketDescriptor(qintptr socketDescriptor);
     void sendJson(const QJsonObject &json);
     QString getNickname();
+    void setNickname(const QString &nickname);
 public slots:
     void disconnectFromClient();
 private slots:
