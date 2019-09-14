@@ -1,4 +1,3 @@
-#include "client.h"
 #include <QTcpSocket>
 #include <QDataStream>
 #include <QJsonParseError>
@@ -9,6 +8,7 @@
 #include <QDebug>
 #include <QPixmap>
 #include <QBuffer>
+#include "client.h"
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -71,7 +71,6 @@ void Client::signup(const QString &username, const QString &password)
 
 void Client::updateNickname(const QString &nickname)
 {
-
     if (m_clientSocket->waitForConnected()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
@@ -89,7 +88,6 @@ void Client::updateNickname(const QString &nickname)
 }
 
 void  Client::updatePassword(const QString &oldpassword,const QString &newpassword){
-
     if (m_clientSocket->waitForConnected()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);

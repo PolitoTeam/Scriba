@@ -2,6 +2,7 @@
 #define MODIFY_PROFILE_H
 
 #include <QWidget>
+#include "AppMainWindow.h"
 #include "client.h"
 
 #define IMAGE_WIDTH 170
@@ -20,30 +21,20 @@ public:
     ~Modify();
 
 signals:
-    void action(int);
+    void changeWidget(int);
 
 private slots:
     void on_pushButtonUpload_clicked();
-
     void on_pushButtonCancel_clicked();
-
     void on_lineEditNickname_editingFinished();
-
     void on_lineEditNickname_textChanged(const QString &arg1);
-
     void on_lineEditNewPass_textChanged(const QString &arg1);
-
     void on_lineEditConfirmPass_textChanged(const QString &arg1);
-
     void on_pushButtonLogin_clicked();
-
     void on_lineEditNewPass_editingFinished();
-
     void on_lineEditConfirmPass_editingFinished();
-
     void on_pushSaveNickname_clicked();
-
-    void on_pushButton_2_clicked();
+    void on_pushButtonSavePassword_clicked();
 
 public slots:
     void upload();
@@ -51,8 +42,9 @@ public slots:
 private:
     Ui::modify *ui;
     Client* client;
-    void clearLabels();
     bool valid;
+
+    void clearLabels();
     void checkPassword(const QString &password);
     bool checkConfirmation(const QString &pass,const QString &conf);
     bool checkNickname(const QString &nickname);

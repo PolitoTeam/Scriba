@@ -64,7 +64,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="pushButtonOpenFile">
           <property name="text">
            <string>Open file</string>
           </property>
@@ -77,7 +77,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_4">
+         <widget class="QPushButton" name="pushButtonSharedLink">
           <property name="text">
            <string>Shared link</string>
           </property>

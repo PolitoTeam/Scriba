@@ -22,25 +22,21 @@ void Home::setClient(Client *client){
 void Home::on_pushButtonLogOut_clicked()
 {
     emit logOut();
-    emit action(0);
+    emit changeWidget(LOGIN);
 }
 
 void Home::on_pushButtonNewFile_clicked()
 {
-    //this->hide();
-    //editor->show();
-    emit action(3);
+    emit changeWidget(EDITOR);
 }
 
 void Home::on_pushButtonModify_clicked()
 {
     emit modify();
-    emit action(4);
+    emit changeWidget(MODIFY);
 }
 
-
-
-void Home::on_pushButton_4_clicked()
+void Home::on_pushButtonSharedLink_clicked()
 {
     client->send();
 }

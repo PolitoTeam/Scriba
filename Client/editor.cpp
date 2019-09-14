@@ -48,7 +48,7 @@ void Editor::print()
 
 void Editor::exit()
 {
-    emit action(2);
+    emit changeWidget(HOME);
 }
 
 void Editor::copy()

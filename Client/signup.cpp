@@ -209,7 +209,7 @@ void Signup::on_pushButtonBackLogin_clicked()
     this->clearLineEdit();
     QPixmap image(":/images/anonymous");
     ui->profile_image->setPixmap(image.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
-    emit action(0);
+    emit changeWidget(LOGIN);
 }
 
 void Signup::clearLabel(){

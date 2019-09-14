@@ -10,6 +10,7 @@ class Client : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(Client)
+
 public:
     explicit Client(QObject *parent = nullptr);
     QString getNickname();
@@ -24,10 +25,11 @@ public slots:
     void signup(const QString &username, const QString &password);
     void updateNickname(const QString &nickname);
     void updatePassword(const QString &oldpassword,const QString &newpassword);
-//    void sendMessage(const QString &text);
     void disconnectFromHost();
+
 private slots:
     void onReadyRead();
+
 signals:
     void connected();
     void loggedIn();
@@ -39,15 +41,15 @@ signals:
     void error(QAbstractSocket::SocketError socketError);
     void userJoined(const QString &username);
     void userLeft(const QString &username);
+
 private:
     QTcpSocket *m_clientSocket;
     bool m_loggedIn;
-    void jsonReceived(const QJsonObject &doc);
-
     QString username;   //valutare se puntatore o no!
     QString nickname;
     QPixmap* profile;
 
+    void jsonReceived(const QJsonObject &doc);
 };
 
 #endif // CLIENT_H
