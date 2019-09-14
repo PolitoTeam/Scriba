@@ -6,6 +6,8 @@
 #include <QWidget>
 #include <QBuffer>
 #include <QFile>
+#include <QDir>
+
 ServerWorker::ServerWorker(QObject *parent)
     : QObject(parent)
     , m_serverSocket(new QTcpSocket(this))
@@ -63,10 +65,16 @@ void ServerWorker::receiveJson()
                     qDebug() << "Invalid message: " + QString::fromUtf8(jsonData);
             } else {
                 qDebug() << "Image received";
+
                 QPixmap p;
                 p.loadFromData(jsonData);
+                qDebug() << QDir::currentPath();
+//                QFile file("users/test.png");
                 QFile file("/home/enrico/Desktop/test.png");
-                file.open(QIODevice::WriteOnly);
+                if (file.exists()) // WriteOnly doesn't seem to override as it should be
+                    file.remove(); // according to the documentation, need to remove manually
+                if (!file.open(QIODevice::WriteOnly))
+                    qDebug() << "Unable to open the file specified";
                 p.save(&file, "PNG");
             }
         } else {

@@ -264,17 +264,16 @@ QPixmap* Client::getProfile(){
     return profile;
 }
 
-void Client::send()
+void Client::sendProfileImage()
 {
     if (m_clientSocket->waitForConnected()) {
         QDataStream clientStream(m_clientSocket);
         clientStream.setVersion(QDataStream::Qt_5_7);
 
-        QPixmap pix(":/images/bold.png");
         QByteArray bArray;
         QBuffer buffer(&bArray);
         buffer.open(QIODevice::WriteOnly);
-        pix.save(&buffer, "PNG");
+        profile->save(&buffer, "PNG");
         clientStream << bArray;
     }
 }
