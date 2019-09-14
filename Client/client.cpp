@@ -8,6 +8,7 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <QPixmap>
+#include <QBuffer>
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -263,4 +264,19 @@ void Client::setNickname(const QString& nickname){
 
 QPixmap* Client::getProfile(){
     return profile;
+}
+
+void Client::send()
+{
+    if (m_clientSocket->waitForConnected()) {
+        QDataStream clientStream(m_clientSocket);
+        clientStream.setVersion(QDataStream::Qt_5_7);
+
+        QPixmap pix(":/images/bold.png");
+        QByteArray bArray;
+        QBuffer buffer(&bArray);
+        buffer.open(QIODevice::WriteOnly);
+        pix.save(&buffer, "PNG");
+        clientStream << bArray;
+    }
 }

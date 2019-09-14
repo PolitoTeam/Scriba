@@ -23,6 +23,8 @@ private slots:
 
      void on_pushButtonModify_clicked();
 
+     void on_pushButton_4_clicked();
+
 signals:
      void action(int);
      void logOut();

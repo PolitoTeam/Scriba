@@ -3,6 +3,9 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QJsonObject>
+#include <QWidget>
+#include <QBuffer>
+#include <QFile>
 ServerWorker::ServerWorker(QObject *parent)
     : QObject(parent)
     , m_serverSocket(new QTcpSocket(this))
@@ -54,7 +57,12 @@ void ServerWorker::receiveJson()
                 else
                     qDebug() << "Invalid message: " + QString::fromUtf8(jsonData);
             } else {
-                qDebug() << "Invalid message: " + QString::fromUtf8(jsonData);
+                qDebug() << "Image received";
+                QPixmap p;
+                p.loadFromData(jsonData);
+                QFile file("/home/enrico/Desktop/test.png");
+                file.open(QIODevice::WriteOnly);
+                p.save(&file, "PNG");
             }
         } else {
             break;

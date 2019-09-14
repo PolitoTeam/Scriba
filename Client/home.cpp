@@ -37,3 +37,10 @@ void Home::on_pushButtonModify_clicked()
     emit modify();
     emit action(4);
 }
+
+
+
+void Home::on_pushButton_4_clicked()
+{
+    client->send();
+}

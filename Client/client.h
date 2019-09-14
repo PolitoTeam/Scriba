@@ -16,7 +16,8 @@ public:
     QString getUsername();
     void setNickname(const QString& nickname);
     QPixmap* getProfile();
-    int i;
+    void send();
+
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
     void login(const QString &username, const QString &password);
