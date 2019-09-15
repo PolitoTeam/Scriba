@@ -14,6 +14,13 @@ Server::Server(QObject *parent,Database* db)
 {
     m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
+
+    QString profile_images_path = QDir::currentPath() + "/profile_images";
+    QDir dir(profile_images_path);
+    if (!dir.exists()){
+        qDebug().nospace() << "Folder " << profile_images_path << " created";
+        dir.mkpath(".");
+    }
 }
 
 Server::~Server()
@@ -267,9 +274,9 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
     if (r == SUCCESS){
         message["success"] = true;
         message["username"]=username;
-        qDebug()<<"nickname: "<<nickname;
         message["nickname"]=nickname;
-        sender->setNickname(username);
+        sender->setUsername(username);
+        sender->setNickname(nickname);
         return message;
     }
     else if (r == NON_EXISTING_USER){

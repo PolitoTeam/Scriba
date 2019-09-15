@@ -53,6 +53,9 @@ compile_commands.json
 Client/Client
 Server/Server
 
+# profile images folder
+profile_images
+
 ### OSX ###
 # General
 .DS_Store

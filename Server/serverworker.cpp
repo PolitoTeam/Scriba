@@ -37,6 +37,10 @@ QString ServerWorker::getNickname()
     return nickname;
 }
 
+void ServerWorker::setUsername(const QString &username) {
+    this->username = username;
+}
+
 void ServerWorker::setNickname(const QString &nickname)
 {
     this->nickname=nickname;
@@ -64,18 +68,18 @@ void ServerWorker::receiveJson()
                 else
                     qDebug() << "Invalid message: " + QString::fromUtf8(jsonData);
             } else {
-                qDebug() << "Image received";
-
                 QPixmap p;
                 p.loadFromData(jsonData);
-                qDebug() << QDir::currentPath();
-//                QFile file("users/test.png");
-                QFile file("/home/enrico/Desktop/test.png");
+                QString image_path = QDir::currentPath() + "/profile_images/" + username + ".png";
+
+                QFile file(image_path);
                 if (file.exists()) // WriteOnly doesn't seem to override as it should be
                     file.remove(); // according to the documentation, need to remove manually
                 if (!file.open(QIODevice::WriteOnly))
                     qDebug() << "Unable to open the file specified";
+
                 p.save(&file, "PNG");
+                qDebug().nospace() << "Overriding image " << image_path;
             }
         } else {
             break;
