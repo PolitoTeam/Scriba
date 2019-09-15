@@ -226,7 +226,7 @@ void Modify::on_pushButtonSavephoto_clicked()
     //da implementare
 }
 
-void Modify::on_pushButtonLogin_clicked()
+void Modify::on_pushButtonFinish_clicked()
 {
-    //
+    changeWidget(HOME);
 }

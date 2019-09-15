@@ -84,6 +84,8 @@ void Client::updateNickname(const QString &nickname)
         //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+
+        this->nickname = nickname;
     }
 }
 
