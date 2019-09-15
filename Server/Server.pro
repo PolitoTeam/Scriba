@@ -49,6 +49,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/release/ -lsodium
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/debug/ -lsodium
+else:macx: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/macOS -lsodium
 else:unix: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/linux -lsodium
 
 INCLUDEPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
