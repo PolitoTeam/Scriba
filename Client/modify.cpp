@@ -11,6 +11,7 @@ Modify::Modify(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
     ui->lineEditConfirmPass->setDisabled(true);
+    profile_photo_temp = new QPixmap();
 }
 
 Modify::~Modify()
@@ -24,8 +25,8 @@ void Modify::on_pushButtonUpload_clicked()
         tr("Open Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
     qDebug()<<"Selected image: "<<fileName;
     if (!fileName.isEmpty() && !fileName.isNull()){
-        client->getProfile()->load(fileName);
-        ui->profile_image->setPixmap(client->getProfile()->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
+        profile_photo_temp->load(fileName);
+        ui->profile_image->setPixmap(profile_photo_temp->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
     }
 }
 
@@ -217,13 +218,19 @@ void Modify::on_pushButton_clicked()
 
 void Modify::on_pushButtonResetPhoto_clicked()
 {
-    ui->profile_image->setPixmap(client->getProfile()->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
+    profile_photo_temp->load(":/images/anonymous");
+    ui->profile_image->setPixmap(profile_photo_temp->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
 }
 
 
 void Modify::on_pushButtonSavephoto_clicked()
 {
-    //da implementare
+    QMessageBox msgbox;
+    msgbox.setText("Are you sure?");
+    msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+    msgbox.setDefaultButton(QMessageBox::Save);
+    if(msgbox.exec()==QMessageBox::Save)
+        client->overrideProfileImage(*this->profile_photo_temp);
 }
 
 void Modify::on_pushButtonFinish_clicked()

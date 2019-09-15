@@ -17,7 +17,9 @@ public:
     QString getUsername();
     void setNickname(const QString& nickname);
     QPixmap* getProfile();
+    void setProfileImage(const QString& filename);
     void sendProfileImage();
+    void overrideProfileImage(const QPixmap& pixmap);
 
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);

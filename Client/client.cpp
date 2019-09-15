@@ -276,6 +276,11 @@ QPixmap* Client::getProfile(){
     return profile;
 }
 
+void Client::setProfileImage(const QString& filename)
+{
+    profile->load(filename);
+}
+
 void Client::sendProfileImage()
 {
     if (m_clientSocket->waitForConnected()) {
@@ -288,5 +293,10 @@ void Client::sendProfileImage()
         profile->save(&buffer, "PNG");
         clientStream << bArray;
     }
+}
+
+void Client::overrideProfileImage(const QPixmap& pixmap)
+{
+    *this->profile = pixmap;
 }
 

@@ -45,6 +45,7 @@ public slots:
 private:
     Ui::modify *ui;
     Client* client;
+    QPixmap *profile_photo_temp;
     bool valid;
 
     void clearLabels();
