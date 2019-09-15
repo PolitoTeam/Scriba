@@ -39,6 +39,8 @@ private slots:
     void on_pushButtonSavephoto_clicked();
     void on_pushButtonFinish_clicked();
 
+    void on_pushButtonCancel_clicked();
+
 public slots:
     void upload();
 

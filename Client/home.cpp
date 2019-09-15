@@ -1,6 +1,8 @@
 #include "home.h"
 #include "ui_home.h"
 #include "client.h"
+#include <QInputDialog>
+#include <QDir>
 
 Home::Home(QWidget *parent,Client* client) :
     QWidget(parent),
@@ -39,5 +41,14 @@ void Home::on_pushButtonModify_clicked()
 void Home::on_pushButtonSharedLink_clicked()
 {
     //client->sendProfileImage();
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("Shared Link"),
+                                                 tr("Paste link here:"), QLineEdit::Normal,
+                                                 tr(""), &ok);
+    if (ok && !text.isEmpty()) {
+        qDebug().nospace() << "Line read: " << text;
+        changeWidget(EDITOR);
+        //        emit openFromLink(text);
+    }
 }
 

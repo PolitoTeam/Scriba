@@ -237,3 +237,10 @@ void Modify::on_pushButtonFinish_clicked()
 {
     changeWidget(HOME);
 }
+
+void Modify::on_pushButtonCancel_clicked()
+{
+    ui->lineEditOldPass->clear();
+    ui->lineEditNewPass->clear();
+    ui->lineEditConfirmPass->clear();
+}

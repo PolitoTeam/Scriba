@@ -245,7 +245,7 @@ font-style:italic;</string>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QPushButton" name="pushButton">
+             <widget class="QPushButton" name="pushButtonCancel">
               <property name="text">
                <string>Cancel</string>
               </property>
