@@ -38,6 +38,13 @@ void ServerWorker::sendProfileImage()
     socketStream.setVersion(QDataStream::Qt_5_7);
 
     QString image_path = QDir::currentPath() + "/profile_images/" + username + ".png";
+
+    QFileInfo file(image_path);
+    if (!file.exists()) {
+        qDebug() << "Image not found.";
+        return;
+    }
+
     QPixmap p(image_path);
     QByteArray bArray;
     QBuffer buffer(&bArray);
