@@ -141,7 +141,7 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
         return;
 
     if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
-        QJsonObject message=this->signup(docObj);
+        QJsonObject message=this->signup(sender,docObj);
         this->sendJson(sender,message);
     }
     else if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
@@ -206,7 +206,7 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 */
 }
 
-QJsonObject Server::signup(const QJsonObject &doc){
+QJsonObject Server::signup(ServerWorker *sender,const QJsonObject &doc){
     const QJsonValue user = doc.value(QLatin1String("username"));
     QJsonObject message;
     message["type"] = QStringLiteral("signup");
@@ -245,7 +245,6 @@ QJsonObject Server::signup(const QJsonObject &doc){
         message["reason"] = QStringLiteral("The username already exists");
         return message;
     }
-
     message["success"] = true;
     return message;
 
@@ -438,14 +437,12 @@ QJsonObject Server::updatePass(const QJsonObject &doc){
     }
     else{
 
-            message["success"] = false;
-            message["reason"] = QStringLiteral("Database error");
-            return message;
+        message["success"] = true;
+        return message;
 
     }
 
-    message["success"] = true;
-    return message;
+
 
 }
 

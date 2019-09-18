@@ -35,6 +35,7 @@ private:
     QTcpSocket *m_serverSocket;
     QString username;
     QString nickname;
+    QString image_name;
 };
 
 #endif // SERVERWORKER_H

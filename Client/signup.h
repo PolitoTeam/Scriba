@@ -2,6 +2,8 @@
 #define SIGNUP_H
 
 #include <QWidget>
+#include <QPixmap>
+
 #include "appMainWindow.h"
 #include "client.h"
 
@@ -20,6 +22,7 @@ public:
     Signup(QWidget *parent = nullptr,Client* client = nullptr);
     ~Signup();
     void enableAllButtons();
+    QPixmap* getProfile();
 
 private slots:
     void on_pushButtonClear_clicked();
@@ -42,6 +45,7 @@ private:
     Ui::Signup *ui;
     bool valid;
     Client* client;
+    QPixmap* profile;
 
     bool checkUsername(const QString &username);
     void checkPassword(const QString &password);

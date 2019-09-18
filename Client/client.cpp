@@ -68,6 +68,7 @@ void Client::signup(const QString &username, const QString &password)
         message["password"] = password;
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+
     }
 }
 
@@ -317,6 +318,24 @@ void Client::sendProfileImage()
         QBuffer buffer(&bArray);
         buffer.open(QIODevice::WriteOnly);
         profile->save(&buffer, "PNG");
+        clientStream << bArray;
+    }
+}
+
+void Client::sendProfileImage(const QString& name,QPixmap* image )
+{
+    if (m_clientSocket->waitForConnected()) {
+        QDataStream clientStream(m_clientSocket);
+        clientStream.setVersion(QDataStream::Qt_5_7);
+        QJsonObject message;
+        message["type"] = QStringLiteral("image_signup");
+        message["image_name"] = name;
+        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+        QByteArray bArray;
+        QBuffer buffer(&bArray);
+        buffer.open(QIODevice::WriteOnly);
+        image->save(&buffer, "PNG");
         clientStream << bArray;
     }
 }

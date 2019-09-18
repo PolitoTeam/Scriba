@@ -10,8 +10,9 @@ Signup::Signup(QWidget *parent,Client* client) :
     client(client)
 {
     ui->setupUi(this);
-    QPixmap pix(":/images/anonymous"); //cercare .png
-    ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
+    profile=new QPixmap(":/images/anonymous");
+
+    ui->profile_image->setPixmap(profile->scaled(IMAGE_WIDTH, IMAGE_HEIGHT,Qt::KeepAspectRatioByExpanding));
     ui->lineEditConfirmPassword->setDisabled(true);
     valid=false;
 
@@ -74,6 +75,7 @@ void Signup::on_pushButtonSignup_clicked()
         ui->pushButtonClear->setEnabled(false);
         ui->pushButtonBackLogin->setEnabled(false);
         client->signup(username,password);
+        client->sendProfileImage(username,profile);
     }
 }
 
@@ -236,7 +238,11 @@ void Signup::on_pushButtonUpload_clicked()
         tr("Open Image"), "/Users/giuseppe.pastore/Desktop", tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
     qDebug()<<"Selected image: "<<fileName;
     if (!fileName.isEmpty() && !fileName.isNull()){
-        QPixmap pix(fileName);
-        ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
+        profile->load(fileName);
+        ui->profile_image->setPixmap(profile->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
     }
+}
+
+QPixmap* Signup::getProfile(){
+    return profile;
 }
