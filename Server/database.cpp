@@ -169,3 +169,29 @@ DatabaseError  Database::updatePassword(const QString &username,const QString &o
     db.close();
     return err;
 }
+
+DatabaseError Database::checkOldPassword(const QString &username, const QString &oldpass)
+{
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Password FROM USER WHERE Username=:username");
+    qry.bindValue(":username", username);
+    if (!qry.exec())
+        err = QUERY_ERROR;
+    else if (!qry.next())
+        err = NON_EXISTING_USER;
+    else {
+        const char *old_password_char = oldpass.toLocal8Bit().data();
+        QString hashed_old_password = qry.value(0).toString();
+        const char *hashed_password_char = hashed_old_password.toLocal8Bit().data();
+        if (crypto_pwhash_str_verify(hashed_password_char, old_password_char, strlen(old_password_char)) != 0) {
+            err = WRONG_PASSWORD;
+        }
+    }
+
+    db.close();
+    return err;
+}

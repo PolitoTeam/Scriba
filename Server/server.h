@@ -42,6 +42,8 @@ private:
     QJsonObject login(ServerWorker *sender,const QJsonObject &doc);
     QJsonObject updateNick(const QJsonObject &doc);
     QJsonObject updatePass(const QJsonObject &doc);
+    QJsonObject checkOldPass(const QJsonObject &doc);
+
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);

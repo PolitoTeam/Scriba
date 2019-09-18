@@ -13,6 +13,8 @@ public:
     DatabaseError login(const QString &username,const QString &password,QString &nickname);
     DatabaseError updateNickname(const QString &username,const QString &nickname); //da implementare
     DatabaseError updatePassword(const QString &username,const QString &oldpass,const QString &newpass);
+    DatabaseError checkOldPassword(const QString &username, const QString &oldpass);
+
 private:
     QSqlDatabase db;
 

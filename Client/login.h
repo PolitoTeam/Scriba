@@ -23,11 +23,6 @@ private slots:
     void on_pushButtonNewAccount_clicked();
     void loggedIn();
     void loginFailed(const QString &reason);
-//    void messageReceived(const QString &sender, const QString &text);
-//    void sendMessage();
-//    void disconnectedFromServer();
-//    void userJoined(const QString &username);
-//    void userLeft(const QString &username);
     void on_lineEditUsername_textChanged(const QString &arg);
 
 public slots:

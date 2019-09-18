@@ -12,6 +12,9 @@ Modify::Modify(QWidget *parent,Client* client) :
     ui->setupUi(this);
     ui->lineEditConfirmPass->setDisabled(true);
     profile_photo_temp = new QPixmap();
+
+    connect(client, &Client::wrongOldPassword, this, &Modify::on_wrongOldPasswordEntered);
+    connect(client, &Client::correctOldPassword, this, &Modify::on_correctOldPasswordEntered);
 }
 
 Modify::~Modify()
@@ -36,7 +39,6 @@ void Modify::upload(){
     ui->lineEditNickname->setText(nickname);
     this->clearLabels();
 }
-
 
 void Modify::clearLabels(){
     ui->lineEditNewPass->clear();
@@ -104,12 +106,12 @@ void Modify::checkPassword(const QString &password){
             }
             ui->labelInfoPass->setText(info);
          }
-        valid=t;
+        valid_new_password=t;
     }
 }
 
 bool Modify::checkConfirmation(const QString &pass,const QString &conf){
-    if (conf.size()>0 && valid==true){
+    if (conf.size()>0 && valid_new_password==true){
         int x = QString::compare(pass, conf, Qt::CaseSensitive);
         if (x!=0){
             ui->labelInfoPass->setText("Le password non corrispondono");
@@ -137,7 +139,7 @@ void Modify::on_lineEditNewPass_textChanged(const QString &arg1)
 
 void Modify::on_lineEditConfirmPass_textChanged(const QString&)
 {
-    if(valid==true)
+    if(valid_new_password==true)
          ui->labelInfoPass->clear();
 }
 
@@ -193,7 +195,7 @@ void Modify::on_pushButtonSavePassword_clicked()
     QString confirm=ui->lineEditConfirmPass->text();
 
 
-    if ( valid && checkConfirmation(newpass,confirm)){
+    if (valid_new_password && correct_old_password && checkConfirmation(newpass,confirm)){
         QMessageBox msgbox;
         msgbox.setText("Are you sure?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
@@ -231,6 +233,7 @@ void Modify::on_pushButtonSavephoto_clicked()
 
 void Modify::on_pushButtonFinish_clicked()
 {
+    on_pushButtonCancel_clicked();
     changeWidget(HOME);
 }
 
@@ -239,4 +242,24 @@ void Modify::on_pushButtonCancel_clicked()
     ui->lineEditOldPass->clear();
     ui->lineEditNewPass->clear();
     ui->lineEditConfirmPass->clear();
+    ui->labelInfoPass->clear();
+}
+
+void Modify::on_lineEditOldPass_editingFinished()
+{
+    QString old_password = ui->lineEditOldPass->text();
+    client->checkOldPassword(old_password);
+}
+
+void Modify::on_wrongOldPasswordEntered()
+{
+    correct_old_password = false;
+    if (ui->groupBox->isVisible()) // print message only if modify window is visible
+        ui->labelInfoPass->setText("Wrong old password");
+}
+
+void Modify::on_correctOldPasswordEntered()
+{
+    correct_old_password = true;
+    ui->labelInfoPass->clear();
 }

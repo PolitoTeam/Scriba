@@ -38,6 +38,9 @@ private slots:
     void on_pushButtonSavephoto_clicked();
     void on_pushButtonFinish_clicked();
     void on_pushButtonCancel_clicked();
+    void on_lineEditOldPass_editingFinished();
+    void on_wrongOldPasswordEntered();
+    void on_correctOldPasswordEntered();
 
 public slots:
     void upload();
@@ -46,7 +49,8 @@ private:
     Ui::modify *ui;
     Client* client;
     QPixmap *profile_photo_temp;
-    bool valid;
+    bool valid_new_password = false;
+    bool correct_old_password;
 
     void clearLabels();
     void checkPassword(const QString &password);

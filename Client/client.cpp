@@ -109,6 +109,18 @@ void  Client::updatePassword(const QString &oldpassword,const QString &newpasswo
     }
 }
 
+void Client::checkOldPassword(const QString &old_password)
+{
+    QDataStream clientStream(m_clientSocket);
+    clientStream.setVersion(QDataStream::Qt_5_7);
+
+    QJsonObject message;
+    message["type"] = QStringLiteral("check_old_password");
+    message["username"] = this->username;
+    message["old_password"] = old_password;
+
+    clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+}
 //void Client::sendMessage(const QString &text)
 //{
 //    if (text.isEmpty())
@@ -196,6 +208,15 @@ void Client::jsonReceived(const QJsonObject &docObj)
         // and notify it via the signupError signal
         const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
         emit signupError(reasonVal.toString());
+    } else if (typeVal.toString().compare(QLatin1String("old_password_checked"), Qt::CaseInsensitive) == 0) {
+        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+        if (resultVal.isNull() || !resultVal.isBool())
+            return;
+        const bool oldPasswordCheckSuccess = resultVal.toBool();
+        if (!oldPasswordCheckSuccess)
+            emit wrongOldPassword();
+        else
+            emit correctOldPassword();
     }
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text

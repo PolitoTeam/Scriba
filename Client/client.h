@@ -27,6 +27,7 @@ public slots:
     void signup(const QString &username, const QString &password);
     void updateNickname(const QString &nickname);
     void updatePassword(const QString &oldpassword,const QString &newpassword);
+    void checkOldPassword(const QString &old_password);
     void disconnectFromHost();
 
 private slots:
@@ -43,6 +44,8 @@ signals:
     void error(QAbstractSocket::SocketError socketError);
     void userJoined(const QString &username);
     void userLeft(const QString &username);
+    void wrongOldPassword();
+    void correctOldPassword();
 
 private:
     QTcpSocket *m_clientSocket;
