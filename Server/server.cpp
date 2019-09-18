@@ -15,6 +15,7 @@ Server::Server(QObject *parent,Database* db)
     m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
 
+    // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
     QDir dir(profile_images_path);
     if (!dir.exists()){
@@ -66,10 +67,17 @@ void Server::incomingConnection(qintptr socketDescriptor)
     m_clients.append(worker);
     qDebug() << "New client Connected";
 }
+
 void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
 {
     Q_ASSERT(destination);
     QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendJson, destination, message));
+}
+
+void Server::sendProfileImage(ServerWorker *destination)
+{
+    Q_ASSERT(destination);
+    QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendProfileImage, destination));
 }
 
 bool Server::tryConnectionToDatabase()
@@ -106,6 +114,7 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
         disconnectedMessage["username"] = userName;
 //        broadcast(disconnectedMessage, nullptr);
         qDebug() << userName << " disconnected";
+        sender->clearNickname();
     }
     sender->deleteLater();
 }
@@ -137,6 +146,8 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
     }
     else if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
         QJsonObject message=this->login(sender,docObj);
+        if (message.value(QLatin1String("success")).toBool() == true)
+            this->sendProfileImage(sender);
         this->sendJson(sender,message);
     }
 

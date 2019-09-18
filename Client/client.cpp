@@ -7,6 +7,8 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <QPixmap>
+#include <QFile>
+#include <QDir>
 #include <QBuffer>
 #include "client.h"
 
@@ -252,6 +254,9 @@ void Client::onReadyRead()
                 // if the data was indeed valid JSON
                 if (jsonDoc.isObject()) // and is a JSON object
                     jsonReceived(jsonDoc.object()); // parse the JSON
+            } else { // profile image received
+                qDebug() << "Profile image received";
+                profile->loadFromData(jsonData);
             }
             // loop and try to read more JSONs if they are available
         } else {

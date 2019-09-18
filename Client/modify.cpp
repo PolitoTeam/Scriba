@@ -48,7 +48,6 @@ void Modify::on_lineEditNickname_editingFinished()
 {
     QString nickname = ui->lineEditNickname->text();
     checkNickname(nickname);
-
 }
 
 
@@ -211,11 +210,6 @@ void Modify::on_pushButtonResetNickname_clicked()
     ui->lineEditNickname->setText(nickname);
 }
 
-void Modify::on_pushButton_clicked()
-{
-    this->clearLabels();
-}
-
 void Modify::on_pushButtonResetPhoto_clicked()
 {
     profile_photo_temp->load(":/images/anonymous");
@@ -229,8 +223,10 @@ void Modify::on_pushButtonSavephoto_clicked()
     msgbox.setText("Are you sure?");
     msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgbox.setDefaultButton(QMessageBox::Save);
-    if(msgbox.exec()==QMessageBox::Save)
+    if(msgbox.exec()==QMessageBox::Save) {
         client->overrideProfileImage(*this->profile_photo_temp);
+        client->sendProfileImage();
+    }
 }
 
 void Modify::on_pushButtonFinish_clicked()

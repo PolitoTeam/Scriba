@@ -13,9 +13,11 @@ public:
     explicit ServerWorker(QObject *parent = nullptr);
     virtual bool setSocketDescriptor(qintptr socketDescriptor);
     void sendJson(const QJsonObject &json);
+    void sendProfileImage();
     QString getNickname();
-    void setUsername(const QString &username);
     void setNickname(const QString &nickname);
+    void clearNickname();
+    void setUsername(const QString &username);
 
 public slots:
     void disconnectFromClient();

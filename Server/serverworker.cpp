@@ -32,6 +32,21 @@ void ServerWorker::sendJson(const QJsonObject &json)
     socketStream << jsonData;
 }
 
+void ServerWorker::sendProfileImage()
+{
+    QDataStream socketStream(m_serverSocket);
+    socketStream.setVersion(QDataStream::Qt_5_7);
+
+    QString image_path = QDir::currentPath() + "/profile_images/" + username + ".png";
+    QPixmap p(image_path);
+    QByteArray bArray;
+    QBuffer buffer(&bArray);
+    buffer.open(QIODevice::WriteOnly);
+    p.save(&buffer, "PNG");
+
+    socketStream << bArray;
+}
+
 QString ServerWorker::getNickname()
 {
     return nickname;
@@ -44,6 +59,11 @@ void ServerWorker::setUsername(const QString &username) {
 void ServerWorker::setNickname(const QString &nickname)
 {
     this->nickname=nickname;
+}
+
+void ServerWorker::clearNickname()
+{
+    nickname.clear();
 }
 
 void ServerWorker::disconnectFromClient()

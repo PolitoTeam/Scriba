@@ -34,11 +34,9 @@ private slots:
     void on_pushSaveNickname_clicked();
     void on_pushButtonSavePassword_clicked();
     void on_pushButtonResetNickname_clicked();
-    void on_pushButton_clicked();
     void on_pushButtonResetPhoto_clicked();
     void on_pushButtonSavephoto_clicked();
     void on_pushButtonFinish_clicked();
-
     void on_pushButtonCancel_clicked();
 
 public slots:
