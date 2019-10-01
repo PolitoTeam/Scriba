@@ -24,6 +24,8 @@ private slots:
      void on_pushButtonModify_clicked();
      void on_pushButtonSharedLink_clicked();
 
+     void on_pushButtonOpenFile_clicked();
+
 signals:
      void changeWidget(int);
      void logOut();

@@ -1,6 +1,7 @@
 #include "home.h"
 #include "ui_home.h"
 #include "client.h"
+#include "CRDT.h"
 #include <QInputDialog>
 #include <QDir>
 
@@ -52,3 +53,10 @@ void Home::on_pushButtonSharedLink_clicked()
     }
 }
 
+
+void Home::on_pushButtonOpenFile_clicked()
+{
+    // MOMENTARILY used for tests
+    CRDT *crdt = new CRDT(0, client);
+    crdt->localInsert(0, 'T');
+}

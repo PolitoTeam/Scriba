@@ -11,6 +11,8 @@
 #include <QDir>
 #include <QBuffer>
 #include "client.h"
+#include "CRDT.h"
+#include "symbol.h"
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -218,6 +220,37 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongOldPassword();
         else
             emit correctOldPassword();
+    } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {
+        const QJsonValue resultVal = docObj.value(QLatin1String("operation_type"));
+        if (resultVal.isNull() || !resultVal.isDouble())
+            return;
+        double operation_type = resultVal.toDouble();
+
+        std::vector<Identifier> position;
+        char value;
+        int counter;
+
+        if (docObj.contains("value") && docObj["value"].isString())
+            value = docObj["value"].toString().at(0).toLatin1();
+        if (docObj.contains("counter") && docObj["counter"].isDouble())
+            counter = docObj["counter"].toDouble();
+        if (docObj.contains("symbol") && docObj["symbol"].isArray()) {
+            QJsonArray jsonArray = docObj["symbol"].toArray();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                int digit, site;
+                QJsonObject obj = jsonArray[i].toObject();
+                if (obj.contains("digit") && obj["digit"].isDouble())
+                    digit = obj["digit"].toDouble();
+                if (obj.contains("site") && obj["site"].isDouble())
+                    site = obj["site"].toDouble();
+                position.push_back(Identifier(digit, site));
+            }
+        }
+
+        if (operation_type == INSERT)
+            emit remoteInsert(Symbol(value, position, counter));
+        else
+            emit remoteErase(Symbol(value, position, counter));
     }
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
@@ -345,3 +378,10 @@ void Client::overrideProfileImage(const QPixmap& pixmap)
     *this->profile = pixmap;
 }
 
+void Client::sendJson(const QJsonObject& message)
+{
+    QDataStream clientStream(m_clientSocket);
+    clientStream.setVersion(QDataStream::Qt_5_7);
+
+    clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+}

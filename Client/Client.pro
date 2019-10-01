@@ -34,13 +34,16 @@ SOURCES += \
     signup.cpp
 
 HEADERS += \
+    CRDT.h \
     appMainWindow.h \
     client.h \
         login.h \
     editor.h \
     home.h \
+    message.h \
     modify.h \
-    signup.h
+    signup.h \
+    symbol.h
 
 FORMS += \
     index.ui \

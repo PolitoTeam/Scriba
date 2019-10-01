@@ -3,9 +3,11 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include "symbol.h"
 
 class QHostAddress;
 class QJsonDocument;
+
 class Client : public QObject
 {
     Q_OBJECT
@@ -21,6 +23,7 @@ public:
     void sendProfileImage();
     void sendProfileImage(const QString& name,QPixmap* pixmap);
     void overrideProfileImage(const QPixmap& pixmap);
+    void sendJson(const QJsonObject& message);
 
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
@@ -47,6 +50,8 @@ signals:
     void userLeft(const QString &username);
     void wrongOldPassword();
     void correctOldPassword();
+    void remoteInsert(Symbol s);
+    void remoteErase(Symbol s);
 
 private:
     QTcpSocket *m_clientSocket;
