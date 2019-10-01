@@ -10,6 +10,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
    // this->setCentralWidget(ui->textEdit);
+    QTextCursor cursor(ui->textEdit->textCursor()); //cursore
 
     connect(ui->actionPrint, &QAction::triggered, this, &Editor::print);
     connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);

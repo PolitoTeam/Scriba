@@ -47,11 +47,11 @@ DatabaseError Database::signup(const QString &username,const QString &password){
             }
 
             QString hashed_password_qstring = QString::fromUtf8(hashed_password);
-            qry.prepare("INSERT INTO USER (Username, Nickname, Password,Icon) VALUES (:username, :nickname, :password, :icon)");
+            qry.prepare("INSERT INTO USER (Username, Nickname, Password) VALUES (:username, :nickname, :password)");
             qry.bindValue(":username",username);
             qry.bindValue(":nickname",username);
             qry.bindValue(":password", hashed_password_qstring);
-            qry.bindValue(":icon","cane.png"); //scelta a caso tra quelle disponibili?
+
             if (!qry.exec()){
                 err = QUERY_ERROR;
             }
