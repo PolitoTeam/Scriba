@@ -10,7 +10,10 @@ Editor::Editor(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
    // this->setCentralWidget(ui->textEdit);
-    QTextCursor cursor(ui->textEdit->textCursor()); //cursore
+    QTextDocument *document = ui->textEdit->document(); //cursore
+    QTextCursor cursor(document);
+    cursor.insertText(tr("Hello world!"));
+    cursor.movePosition(QTextCursor::End);
 
     connect(ui->actionPrint, &QAction::triggered, this, &Editor::print);
     connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
