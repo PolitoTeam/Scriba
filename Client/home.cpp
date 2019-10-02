@@ -57,6 +57,6 @@ void Home::on_pushButtonSharedLink_clicked()
 void Home::on_pushButtonOpenFile_clicked()
 {
     // MOMENTARILY used for tests
-    CRDT *crdt = new CRDT(0, client);
-    crdt->localInsert(0, 'T');
+//    CRDT *crdt = new CRDT(0, client);
+//    crdt->localInsert(0, 'T');
 }

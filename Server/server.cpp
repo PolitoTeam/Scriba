@@ -329,8 +329,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         this->sendJson(sender,message);
     }
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
-//        broadcast(docObj, sender);
-        broadcast(docObj, nullptr);
+        broadcast(docObj, sender);
     }
 }
 

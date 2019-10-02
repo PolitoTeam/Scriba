@@ -18,7 +18,7 @@ public:
     Editor(QWidget *parent = nullptr,Client* client=0);
     void setClient(Client* client);
     ~Editor();
-    void setCRDT(CRDT *crdt);
+//    void setCRDT(CRDT *crdt);
 
 signals:
     void changeWidget(int);
@@ -36,6 +36,7 @@ private slots:
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
     void on_contentsChange(int position, int charsRemoved, int charsAdded);
+    void on_insert(int index, char value);
 
 private:
     Ui::Editor *ui;

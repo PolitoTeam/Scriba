@@ -106,6 +106,11 @@ void CRDT::localErase(int index) {
     client->sendJson(message);
 }
 
+int CRDT::getSize()
+{
+    return _symbols.size();
+}
+
 
 
 // linear search
@@ -167,8 +172,8 @@ int CRDT::findInsertIndex(Symbol s) {
     return l;
 }
 
-std::string CRDT::to_string(){ // TODO: don't use concatenation, stringsteam???
-    std::string str = "";
+QString CRDT::to_string(){
+    QString str = "";
     bool first = true;
     for(Symbol s: _symbols){
         if (first) {
@@ -182,11 +187,14 @@ std::string CRDT::to_string(){ // TODO: don't use concatenation, stringsteam???
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
+    qDebug() << "REMOTE INSERT" << s.getValue() << QString(1, s.getValue());
     // find leftmost index (position) for insertion
     int index = findInsertIndex(s);
     if (index < 0)
         throw std::runtime_error("Invalid index for insertion");
     _symbols.insert(_symbols.begin() + index, s);
+
+    emit insert(index, s.getValue());
 }
 
 void CRDT::handleRemoteErase(const Symbol& s) {

@@ -30,8 +30,8 @@ public:
         }
     }
 
-    std::string to_string() {
-        return std::to_string(digit) + "_" + std::to_string(site);
+    QString to_string() {
+        return QString::number(digit) + "_" + QString::number(site);
     }
 
     QJsonObject toJson() {
@@ -52,7 +52,7 @@ private:
 
 public:
     Symbol(char value, std::vector<Identifier> position, int counter) : value(value), position(position), counter(counter) {};
-    char getValue() { return value; }
+    char getValue() const { return value; }
     std::vector<Identifier> getPosition() const { return position; }
     int getCounter() const { return counter; }
 
@@ -72,8 +72,8 @@ public:
         }
     }
 
-    std::string to_string() {
-        std::string result = std::string(1, value) + "[";
+    QString to_string() {
+        QString result = QString(1, value) + "[";
         bool first = true;
 
         for (Identifier i : position) {
@@ -91,7 +91,7 @@ public:
     QJsonObject toJson() {
         QJsonObject json;
 
-        json["value"] = value;
+        json["value"] = QString(1, value);
         QJsonArray jsonArray;
         for (Identifier i : position) {
             jsonArray.append(i.toJson());

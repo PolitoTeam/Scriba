@@ -220,33 +220,25 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongOldPassword();
         else
             emit correctOldPassword();
-    } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {
-        const QJsonValue resultVal = docObj.value(QLatin1String("operation_type"));
-        if (resultVal.isNull() || !resultVal.isDouble())
-            return;
-        double operation_type = resultVal.toDouble();
+    } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {   
+        QJsonObject symbol = docObj["symbol"].toObject();
+        char value = symbol["value"].toString().at(0).toLatin1();
+        int counter = symbol["counter"].toInt();
 
         std::vector<Identifier> position;
-        char value;
-        int counter;
-
-        if (docObj.contains("value") && docObj["value"].isString())
-            value = docObj["value"].toString().at(0).toLatin1();
-        if (docObj.contains("counter") && docObj["counter"].isDouble())
-            counter = docObj["counter"].toDouble();
-        if (docObj.contains("symbol") && docObj["symbol"].isArray()) {
-            QJsonArray jsonArray = docObj["symbol"].toArray();
-            for (int i = 0; i < jsonArray.size(); i++) {
-                int digit, site;
-                QJsonObject obj = jsonArray[i].toObject();
-                if (obj.contains("digit") && obj["digit"].isDouble())
-                    digit = obj["digit"].toDouble();
-                if (obj.contains("site") && obj["site"].isDouble())
-                    site = obj["site"].toDouble();
-                position.push_back(Identifier(digit, site));
-            }
+        QJsonArray positionJson = symbol["position"].toArray();
+        for (int i = 0; i < positionJson.size(); i++) {
+            QJsonObject identifier = positionJson[i].toObject();
+            int digit = identifier["digit"].toInt();
+            int site = identifier["site"].toInt();
+            position.push_back(Identifier(digit, site));
         }
 
+        Symbol s(value, position, counter);
+        qDebug() << s.to_string();
+
+        int operation_type = docObj["operation_type"].toInt();
+        qDebug() << "operation" << operation_type;
         if (operation_type == INSERT)
             emit remoteInsert(Symbol(value, position, counter));
         else

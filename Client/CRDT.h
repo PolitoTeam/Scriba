@@ -21,10 +21,14 @@ public:
     int getId();
     void localInsert(int index, char value);
     void localErase(int index);
+    int getSize();
 
 private slots:
     void handleRemoteInsert(const Symbol& s);
     void handleRemoteErase(const Symbol& s);
+
+signals:
+    void insert(int index, char value);
 
 private:
     int _siteId;
@@ -39,7 +43,7 @@ private:
     int generateRandomNumBetween(int n1,int n2);
     int findIndexByPosition(Symbol s);
     int findInsertIndex(Symbol s);
-    std::string to_string();
+    QString to_string();
 };
 
 #endif // CRDT_H
