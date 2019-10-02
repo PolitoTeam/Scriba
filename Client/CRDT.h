@@ -22,6 +22,7 @@ public:
     void localInsert(int index, char value);
     void localErase(int index);
     int getSize();
+    QString to_string();
 
 private slots:
     void handleRemoteInsert(const Symbol& s);
@@ -29,6 +30,7 @@ private slots:
 
 signals:
     void insert(int index, char value);
+    void erase(int index);
 
 private:
     int _siteId;
@@ -43,7 +45,6 @@ private:
     int generateRandomNumBetween(int n1,int n2);
     int findIndexByPosition(Symbol s);
     int findInsertIndex(Symbol s);
-    QString to_string();
 };
 
 #endif // CRDT_H

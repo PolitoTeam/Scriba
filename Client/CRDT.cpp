@@ -30,12 +30,13 @@ void CRDT::localInsert(int index, char value) {
     message["operation_type"] = INSERT;
     message["symbol"] = s.toJson();
 
+    qDebug() << to_string();
     client->sendJson(message);
 }
 
 std::vector<Identifier> CRDT::generatePositionBetween(std::vector<Identifier>& pos1, std::vector<Identifier> pos2, std::vector<Identifier>& newPos, int level) { // TODO: pass vectors by reference?
-    Identifier id1 = level < pos1.size() ? pos1[0] : Identifier(0, this->_siteId);
-    Identifier id2 = level < pos2.size() ? pos2[0] : Identifier(BASE, this->_siteId); // == BASE * std::pow(2, 0)
+    Identifier id1 = level < pos1.size() ? pos1[level] : Identifier(0, this->_siteId);
+    Identifier id2 = level < pos2.size() ? pos2[level] : Identifier(BASE, this->_siteId); // == BASE * std::pow(2, 0)
 
     if (id2.digit - id1.digit > 1) {
         // case 1: enough space to add in between
@@ -62,22 +63,22 @@ std::vector<Identifier> CRDT::generatePositionBetween(std::vector<Identifier>& p
 
 int CRDT::generateIdBetween(int id1, int id2, int level) {
     int interval = id2 - id1;
-    qDebug() << "ids: " << id1 << " " << id2;
+//    qDebug() << "ids: " << id1 << " " << id2;
 
     if (strategyCache.find(level) == strategyCache.end()) {
         strategyCache[level] = generateRandomBool();
     }
 
     int step = std::min(BOUNDARY, interval);
-    qDebug() << "step: " << step;
+//    qDebug() << "step: " << step;
     if (strategyCache[level]) { //boundary+
         int delta = generateRandomNumBetween(1, step - 1);
-        qDebug() << "Random+ ="<< delta;
+//        qDebug() << "Random+ ="<< delta;
         return id1 + delta;
     }
     else{ //boundary-
         int delta = generateRandomNumBetween(1, step - 1);
-        qDebug() << "Random- =" << delta;
+//        qDebug() << "Random- =" << delta;
         return id2 - delta;
     }
 }
@@ -103,6 +104,7 @@ void CRDT::localErase(int index) {
     message["operation_type"] = DELETE;
     message["symbol"] = s.toJson();
 
+    qDebug() << to_string();
     client->sendJson(message);
 }
 
@@ -187,7 +189,7 @@ QString CRDT::to_string(){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
-    qDebug() << "REMOTE INSERT" << s.getValue() << QString(1, s.getValue());
+//    qDebug() << "REMOTE INSERT" << s.getValue() << QString(1, s.getValue());
     // find leftmost index (position) for insertion
     int index = findInsertIndex(s);
     if (index < 0)
@@ -202,4 +204,6 @@ void CRDT::handleRemoteErase(const Symbol& s) {
     int index = findIndexByPosition(s);
     if (index >= 0) // otherwise already deleted by another editor (i.e. another site)
         _symbols.erase(_symbols.begin() + index);
+
+    emit erase(index);
 }

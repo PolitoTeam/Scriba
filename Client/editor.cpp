@@ -2,7 +2,7 @@
 #include "editor.h"
 #include "ui_editor.h"
 #include "client.h"
-
+#include <QDateTime>
 Editor::Editor(QWidget *parent,Client* client) :
     QWidget(parent),
     ui(new Ui::Editor),
@@ -28,10 +28,10 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
 
     // TODO: create/load new crdt for every file created/opened; here just to test
-    crdt = new CRDT(rand(), client);
+    crdt = new CRDT(QDateTime::currentMSecsSinceEpoch(), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
-
+    connect(crdt, &CRDT::erase, this, &Editor::on_erase);
 }
 
 Editor::~Editor()
@@ -121,28 +121,43 @@ void Editor::setFontBold(bool bold)
 //}
 
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
-    // if symbol received from remote (not entered by client)
-    if (ui->textEdit->toPlainText().size() <= crdt->getSize())
+    // if symbol received from remote (not entered by client), returns without doing anything
+    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
+            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize()))
         return;
 
     if (charsAdded > 0) {
         QString added = ui->textEdit->toPlainText().mid(position,charsAdded);
-        qDebug() << "Added: " << added;
+        qDebug() << "Added " << added << " in position " << position;
 
-        if (added != "")
+//        if (added != "")
             crdt->localInsert(position, added.at(0).toLatin1());
+
     } else if (charsRemoved > 0) {
         ui->textEdit->undo();
         QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
-        qDebug() << "Removed: " << removed;
+        qDebug() << "Removed " << removed << " in position " << position;
         ui->textEdit->redo();
+
+        crdt->localErase(position);
     }
 }
 
 void Editor::on_insert(int index, char value)
 {
-    qDebug() << "ON INSERT " << index << " " << QString(1, value);
+//    qDebug() << "ON INSERT " << index << " " << QString(1, value);
     QTextCursor cursor = ui->textEdit->textCursor();
     cursor.setPosition(index);
     cursor.insertText(QString(1, value));
+
+    qDebug() << crdt->to_string();
+}
+
+void Editor::on_erase(int index)
+{
+    QTextCursor cursor = ui->textEdit->textCursor();
+    cursor.setPosition(index);
+    cursor.deleteChar();
+
+    qDebug() << crdt->to_string();
 }

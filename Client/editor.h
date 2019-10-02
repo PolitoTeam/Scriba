@@ -37,6 +37,7 @@ private slots:
     void setFontItalic(bool italic);
     void on_contentsChange(int position, int charsRemoved, int charsAdded);
     void on_insert(int index, char value);
+    void on_erase(int index);
 
 private:
     Ui::Editor *ui;
