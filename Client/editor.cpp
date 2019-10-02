@@ -26,6 +26,8 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
     connect(ui->actionUnderline, &QAction::triggered, this, &Editor::setFontUnderline);
     connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
+
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
 }
 
 Editor::~Editor()
@@ -108,4 +110,21 @@ void Editor::setFontBold(bool bold)
 {
     bold ? ui->textEdit->setFontWeight(QFont::Bold) :
            ui->textEdit->setFontWeight(QFont::Normal);
+}
+
+void Editor::setCRDT(CRDT *crdt) {
+    this->crdt = crdt;
+}
+
+void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
+    // TODO: handle when editor opened for the first time  -> it is detected as charsRemoved=1 and charsAdded=1
+    if (charsAdded > 0) {
+        QString added = ui->textEdit->toPlainText().mid(position,charsAdded);
+        qDebug() << "Added: " << added;
+    } else if (charsRemoved > 0) {
+        ui->textEdit->undo();
+        QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
+        qDebug() << "Removed: " << removed;
+        ui->textEdit->redo();
+    }
 }

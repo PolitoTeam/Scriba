@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "appMainWindow.h"
 #include "client.h"
+#include "CRDT.h"
 
 namespace Ui {
 class Editor;
@@ -17,6 +18,7 @@ public:
     Editor(QWidget *parent = nullptr,Client* client=0);
     void setClient(Client* client);
     ~Editor();
+    void setCRDT(CRDT *crdt);
 
 signals:
     void changeWidget(int);
@@ -33,10 +35,12 @@ private slots:
     void setFontBold(bool bold);
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
+    void on_contentsChange(int position, int charsRemoved, int charsAdded);
 
 private:
     Ui::Editor *ui;
     Client* client;
+    CRDT *crdt;
 };
 
 #endif // EDITOR_H
