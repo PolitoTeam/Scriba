@@ -84,15 +84,17 @@ bool Server::tryConnectionToDatabase()
 {
     return db->checkConnection();
 }
-//void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
-//{
-//    for (ServerWorker *worker : m_clients) {
-//        Q_ASSERT(worker);
-//        if (worker == exclude)
-//            continue;
-//        sendJson(worker, message);
-//    }
-//}
+
+void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
+{
+    qDebug() << "BROADCAST";
+    for (ServerWorker *worker : m_clients) {
+        Q_ASSERT(worker);
+        if (worker == exclude)
+            continue;
+        sendJson(worker, message);
+    }
+}
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
@@ -326,9 +328,14 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject message = this->checkOldPass(docObj);
         this->sendJson(sender,message);
     }
+<<<<<<< HEAD
     if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0){
         QJsonObject message = this->getFiles(docObj);
         this->sendJson(sender,message);
+=======
+    if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
+        broadcast(docObj, sender);
+>>>>>>> 7384c5abf31ef81d923f525692df82955af25405
     }
 }
 

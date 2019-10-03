@@ -12,6 +12,8 @@
 #include <QDir>
 #include <QBuffer>
 #include "client.h"
+#include "CRDT.h"
+#include "symbol.h"
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -236,6 +238,29 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongOldPassword();
         else
             emit correctOldPassword();
+    } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {   
+        QJsonObject symbol = docObj["symbol"].toObject();
+        char value = symbol["value"].toString().at(0).toLatin1();
+        int counter = symbol["counter"].toInt();
+
+        std::vector<Identifier> position;
+        QJsonArray positionJson = symbol["position"].toArray();
+        for (int i = 0; i < positionJson.size(); i++) {
+            QJsonObject identifier = positionJson[i].toObject();
+            int digit = identifier["digit"].toInt();
+            int site = identifier["site"].toInt();
+            position.push_back(Identifier(digit, site));
+        }
+
+        Symbol s(value, position, counter);
+        qDebug() << s.to_string();
+
+        int operation_type = docObj["operation_type"].toInt();
+        qDebug() << "operation" << operation_type;
+        if (operation_type == INSERT)
+            emit remoteInsert(Symbol(value, position, counter));
+        else
+            emit remoteErase(Symbol(value, position, counter));
     }
     else if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0) {
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
@@ -386,7 +411,17 @@ void Client::overrideProfileImage(const QPixmap& pixmap)
     *this->profile = pixmap;
 }
 
+
 QMap<QString,QString> Client::getActiveFiles(){
     return files;
+}
+
+
+void Client::sendJson(const QJsonObject& message)
+{
+    QDataStream clientStream(m_clientSocket);
+    clientStream.setVersion(QDataStream::Qt_5_7);
+
+    clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 }
 

@@ -2,7 +2,7 @@
 #include "editor.h"
 #include "ui_editor.h"
 #include "client.h"
-
+#include <QDateTime>
 Editor::Editor(QWidget *parent,Client* client) :
     QWidget(parent),
     ui(new Ui::Editor),
@@ -10,10 +10,10 @@ Editor::Editor(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
    // this->setCentralWidget(ui->textEdit);
-    QTextDocument *document = ui->textEdit->document(); //cursore
-    QTextCursor cursor(document);
-    cursor.insertText(tr("Hello world!"));
-    cursor.movePosition(QTextCursor::End);
+//    QTextDocument *document = ui->textEdit->document(); //cursore
+//    QTextCursor cursor(document);
+//    cursor.insertText(tr("Hello world!"));
+//    cursor.movePosition(QTextCursor::End);
 
     connect(ui->actionPrint, &QAction::triggered, this, &Editor::print);
     connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
@@ -26,7 +26,16 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
     connect(ui->actionUnderline, &QAction::triggered, this, &Editor::setFontUnderline);
     connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
+<<<<<<< HEAD
     connect (ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
+=======
+
+    // TODO: create/load new crdt for every file created/opened; here just to test
+    crdt = new CRDT(QDateTime::currentMSecsSinceEpoch(), client);
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    connect(crdt, &CRDT::insert, this, &Editor::on_insert);
+    connect(crdt, &CRDT::erase, this, &Editor::on_erase);
+>>>>>>> 7384c5abf31ef81d923f525692df82955af25405
 }
 
 Editor::~Editor()
@@ -115,4 +124,50 @@ void Editor::setFontBold(bool bold)
 {
     bold ? ui->textEdit->setFontWeight(QFont::Bold) :
            ui->textEdit->setFontWeight(QFont::Normal);
+}
+
+//void Editor::setCRDT(CRDT *crdt) {
+//    this->crdt = crdt;
+//}
+
+void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
+    // if symbol received from remote (not entered by client), returns without doing anything
+    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
+            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize()))
+        return;
+
+    if (charsAdded > 0) {
+        QString added = ui->textEdit->toPlainText().mid(position,charsAdded);
+        qDebug() << "Added " << added << " in position " << position;
+
+//        if (added != "")
+            crdt->localInsert(position, added.at(0).toLatin1());
+
+    } else if (charsRemoved > 0) {
+        ui->textEdit->undo();
+        QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
+        qDebug() << "Removed " << removed << " in position " << position;
+        ui->textEdit->redo();
+
+        crdt->localErase(position);
+    }
+}
+
+void Editor::on_insert(int index, char value)
+{
+//    qDebug() << "ON INSERT " << index << " " << QString(1, value);
+    QTextCursor cursor = ui->textEdit->textCursor();
+    cursor.setPosition(index);
+    cursor.insertText(QString(1, value));
+
+    qDebug() << crdt->to_string();
+}
+
+void Editor::on_erase(int index)
+{
+    QTextCursor cursor = ui->textEdit->textCursor();
+    cursor.setPosition(index);
+    cursor.deleteChar();
+
+    qDebug() << crdt->to_string();
 }

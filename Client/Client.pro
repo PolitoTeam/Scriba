@@ -24,9 +24,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    CRDT.cpp \
     appMainWindow.cpp \
     client.cpp \
-        login.cpp \
+    login.cpp \
     editor.cpp \
     main.cpp \
     home.cpp \
@@ -34,17 +35,20 @@ SOURCES += \
     signup.cpp
 
 HEADERS += \
+    CRDT.h \
     appMainWindow.h \
     client.h \
-        login.h \
+    login.h \
     editor.h \
     home.h \
+    message.h \
     modify.h \
-    signup.h
+    signup.h \
+    symbol.h
 
 FORMS += \
     index.ui \
-        login.ui \
+    login.ui \
     editor.ui \
     home.ui \
     modify.ui \

@@ -26,6 +26,8 @@ private slots:
      void showActiveFiles();
      void on_pushButtonOpenFile_clicked();
 
+     void on_pushButtonOpenFile_clicked();
+
 signals:
      void changeWidget(int);
      void logOut();

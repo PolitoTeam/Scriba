@@ -3,9 +3,11 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include "symbol.h"
 
 class QHostAddress;
 class QJsonDocument;
+
 class Client : public QObject
 {
     Q_OBJECT
@@ -21,8 +23,12 @@ public:
     void sendProfileImage();
     void sendProfileImage(const QString& name,QPixmap* pixmap);
     void overrideProfileImage(const QPixmap& pixmap);
+<<<<<<< HEAD
     void getFiles();
     QMap<QString,QString> getActiveFiles();
+=======
+    void sendJson(const QJsonObject& message);
+>>>>>>> 7384c5abf31ef81d923f525692df82955af25405
 
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
@@ -49,8 +55,13 @@ signals:
     void userLeft(const QString &username);
     void wrongOldPassword();
     void correctOldPassword();
+<<<<<<< HEAD
     void filesReceived();
 
+=======
+    void remoteInsert(Symbol s);
+    void remoteErase(Symbol s);
+>>>>>>> 7384c5abf31ef81d923f525692df82955af25405
 
 private:
     QTcpSocket *m_clientSocket;

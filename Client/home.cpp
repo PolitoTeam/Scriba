@@ -1,6 +1,7 @@
 #include "home.h"
 #include "ui_home.h"
 #include "client.h"
+#include "CRDT.h"
 #include <QInputDialog>
 #include <QDir>
 
@@ -57,6 +58,7 @@ void Home::on_pushButtonSharedLink_clicked()
 
 void Home::on_pushButtonOpenFile_clicked()
 {
+<<<<<<< HEAD
     //manda richiesta al server di ricevere la lista di file
     client->getFiles();
     //disabilitare tutto?
@@ -94,3 +96,9 @@ void Home::showActiveFiles(){
 
 }
 
+=======
+    // MOMENTARILY used for tests
+//    CRDT *crdt = new CRDT(0, client);
+//    crdt->localInsert(0, 'T');
+}
+>>>>>>> 7384c5abf31ef81d923f525692df82955af25405

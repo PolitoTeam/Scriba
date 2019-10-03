@@ -55,8 +55,8 @@ public:
     }
 
     std::vector<Identifier> generatePositionBetween(std::vector<Identifier>& pos1, std::vector<Identifier> pos2, std::vector<Identifier>& newPos, int level=0) { // TODO: pass vectors by reference?
-        Identifier id1 = level < pos1.size() ? pos1[0] : Identifier(0, this->_siteId);
-        Identifier id2 = level < pos2.size() ? pos2[0] : Identifier(BASE, this->_siteId); // == BASE * std::pow(2, 0)
+        Identifier id1 = level < pos1.size() ? pos1[level] : Identifier(0, this->_siteId);
+        Identifier id2 = level < pos2.size() ? pos2[level] : Identifier(BASE, this->_siteId); // == BASE * std::pow(2, 0)
 
         if (id2.digit - id1.digit > 1) {
             // case 1: enough space to add in between
