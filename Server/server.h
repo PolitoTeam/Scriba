@@ -43,6 +43,7 @@ private:
     QJsonObject updateNick(const QJsonObject &doc);
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
+    QJsonObject getFiles(const QJsonObject &doc);
 
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);

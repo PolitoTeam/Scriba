@@ -195,3 +195,33 @@ DatabaseError Database::checkOldPassword(const QString &username, const QString 
     db.close();
     return err;
 }
+
+DatabaseError Database::getFiles(const QString &username, QMap<QString,QString> &files){
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    //PER PROVARE
+    QString ciao("ciao");
+    QString hello("hello");
+    files.insert(ciao,"Giuseppe");
+    files.insert(hello,"Giuseppe");
+
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Name,Owner FROM FILE, FILE_USER WHERE FILE.Link=FILE_USER.Link and User=:Username and First_access=false");
+    qry.bindValue(":username", username);
+    if (!qry.exec())
+        err = QUERY_ERROR;
+
+    else if (!qry.next())
+        err = NON_EXISTING_USER;
+    else {
+        while (qry.next()) {
+            files.insert(qry.value(0).toString(),qry.value(1).toString());
+        }
+    }
+
+    db.close();
+    return err;
+}

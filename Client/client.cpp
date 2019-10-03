@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QJsonArray>
 #include <QHostAddress>
 #include <QDebug>
 #include <QPixmap>
@@ -69,6 +70,22 @@ void Client::signup(const QString &username, const QString &password)
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 
+    }
+}
+
+void Client::getFiles(){
+    if (m_clientSocket->waitForConnected()) {
+        // create a QDataStream operating on the socket
+        QDataStream clientStream(m_clientSocket);
+        // set the version so that programs compiled with different versions of Qt can agree on how to serialise
+        clientStream.setVersion(QDataStream::Qt_5_7);
+        // Create the JSON we want to send
+        QJsonObject message;
+        message["type"] = QStringLiteral("open_file");
+        message["username"] = this->username;
+        //aggiungere cifratura oppure passare a QSSLsocket
+        // send the JSON using QDataStream
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
     }
 }
 
@@ -144,6 +161,7 @@ void Client::disconnectFromHost()
 {
     this->username.clear();
     this->nickname.clear();
+    this->files.clear();
     m_clientSocket->disconnectFromHost();
 }
 
@@ -219,6 +237,29 @@ void Client::jsonReceived(const QJsonObject &docObj)
         else
             emit correctOldPassword();
     }
+    else if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0) {
+        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+        if (resultVal.isNull() || !resultVal.isBool())
+            return;
+        const bool getFile=resultVal.toBool();
+        if (getFile){
+            const QJsonValue array= docObj.value(QLatin1String("files"));
+            if (array.isNull() || !array.isArray())
+                return;
+            const QJsonArray array_files=array.toArray();
+
+            foreach (const QJsonValue& v, array_files){
+                qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
+                this->files.insert(v.toObject().value("name").toString(),v.toObject().value("owner").toString());
+            }
+
+            emit filesReceived();
+            //gestire errore!!!!!
+        }
+
+        }
+
+
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
         const QJsonValue textVal = docObj.value(QLatin1String("text"));
@@ -343,5 +384,9 @@ void Client::sendProfileImage(const QString& name,QPixmap* image )
 void Client::overrideProfileImage(const QPixmap& pixmap)
 {
     *this->profile = pixmap;
+}
+
+QMap<QString,QString> Client::getActiveFiles(){
+    return files;
 }
 

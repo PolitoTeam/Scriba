@@ -326,6 +326,10 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject message = this->checkOldPass(docObj);
         this->sendJson(sender,message);
     }
+    if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->getFiles(docObj);
+        this->sendJson(sender,message);
+    }
 }
 
 QJsonObject Server::updateNick(const QJsonObject &doc){
@@ -493,4 +497,58 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 
     message["success"] = true;
     return message;
+}
+
+
+QJsonObject Server::getFiles(const QJsonObject &doc){
+    const QJsonValue user = doc.value(QLatin1String("username"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("open_file");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+    QMap<QString,QString> files;
+    DatabaseError result = this->db->getFiles(username,files);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error");
+        return message;
+    }
+   /* if (result == NON_EXISTING_USER){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("The username doens't exists");
+        return message;
+    }*/
+
+    QJsonArray array_files;
+
+    QMap<QString, QString>::iterator i;
+    for (i = files.begin(); i != files.end(); ++i){
+
+    // use initializer list to construct QJsonObject
+    auto data1 = QJsonObject(
+    {
+    qMakePair(QString("name"), QJsonValue(i.key())),
+    qMakePair(QString("owner"), QJsonValue(i.value()))
+    });
+
+    array_files.push_back(QJsonValue(data1));
+    }
+
+
+    message["success"] = true;
+    message["files"]=array_files;
+    auto d = QJsonDocument(message);
+    qDebug()<< d.toJson().constData()<<endl;
+    return message;
+
 }

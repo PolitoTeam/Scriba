@@ -33,6 +33,7 @@ private slots:
     void setFontBold(bool bold);
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
+    void textChange();
 
 private:
     Ui::Editor *ui;

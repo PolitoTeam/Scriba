@@ -10,6 +10,8 @@ Home::Home(QWidget *parent,Client* client) :
     client(client)
 {
     ui->setupUi(this);
+    connect(client,&Client::filesReceived,this,&Home::showActiveFiles);
+
 }
 
 Home::~Home()
@@ -50,5 +52,45 @@ void Home::on_pushButtonSharedLink_clicked()
         changeWidget(EDITOR);
         //        emit openFromLink(text);
     }
+}
+
+
+void Home::on_pushButtonOpenFile_clicked()
+{
+    //manda richiesta al server di ricevere la lista di file
+    client->getFiles();
+    //disabilitare tutto?
+
+    //2- apri una dialogbox per permettere all'utente di selezionare quale file
+   /* QStringList items;
+       items << tr("Spring") << tr("Summer") << tr("Fall") << tr("Winter");
+
+       bool ok;
+       QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
+                                            tr("Season:"), items, 0, false, &ok);
+       if (ok && !item.isEmpty())
+           itemLabel->setText(item); */
+
+    //3- manda la richiesta al server per quel file
+    //4- una volta che hai ricevuto il file:
+            //aggiorna in "background" il texteditor"
+            //cambia pagina sul texteditor
+}
+
+void Home::showActiveFiles(){
+    QStringList items;
+    QMap<QString,QString> map_files = client->getActiveFiles();
+    QMap<QString, QString>::iterator i;
+    for (i = map_files.begin(); i != map_files.end(); ++i){
+        //gestire poi meglio le due informazioni per la visualizzazione: nome del file e owner
+        items<<QString(i.key()+","+i.value());
+    }
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
+                                                tr("Files:"), items, 0, false, &ok);
+     if (ok && !item.isEmpty())
+         qDebug()<<"File scelto: "<<item<<endl;
+
 }
 

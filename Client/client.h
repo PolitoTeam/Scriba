@@ -21,6 +21,8 @@ public:
     void sendProfileImage();
     void sendProfileImage(const QString& name,QPixmap* pixmap);
     void overrideProfileImage(const QPixmap& pixmap);
+    void getFiles();
+    QMap<QString,QString> getActiveFiles();
 
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
@@ -47,6 +49,8 @@ signals:
     void userLeft(const QString &username);
     void wrongOldPassword();
     void correctOldPassword();
+    void filesReceived();
+
 
 private:
     QTcpSocket *m_clientSocket;
@@ -54,6 +58,7 @@ private:
     QString username;   //valutare se puntatore o no!
     QString nickname;
     QPixmap* profile;
+    QMap<QString,QString> files;
 
     void jsonReceived(const QJsonObject &doc);
 };

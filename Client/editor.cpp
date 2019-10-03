@@ -26,11 +26,16 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
     connect(ui->actionUnderline, &QAction::triggered, this, &Editor::setFontUnderline);
     connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
+    connect (ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
 }
 
 Editor::~Editor()
 {
     delete ui;
+}
+
+void Editor::textChange(){
+    qDebug()<<"Position: "<<ui->textEdit->textCursor().position()<<endl;
 }
 
 void Editor::setClient(Client *client){
@@ -102,6 +107,8 @@ void Editor::setFontUnderline(bool underline)
 void Editor::setFontItalic(bool italic)
 {
     ui->textEdit->setFontItalic(italic);
+
+
 }
 
 void Editor::setFontBold(bool bold)

@@ -14,6 +14,7 @@ public:
     DatabaseError updateNickname(const QString &username,const QString &nickname); //da implementare
     DatabaseError updatePassword(const QString &username,const QString &oldpass,const QString &newpass);
     DatabaseError checkOldPassword(const QString &username, const QString &oldpass);
+    DatabaseError getFiles(const QString &username, QMap<QString,QString> &files);
 
 private:
     QSqlDatabase db;
