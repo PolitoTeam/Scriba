@@ -26,16 +26,16 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
     connect(ui->actionUnderline, &QAction::triggered, this, &Editor::setFontUnderline);
     connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
-<<<<<<< HEAD
+
     connect (ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
-=======
+
 
     // TODO: create/load new crdt for every file created/opened; here just to test
     crdt = new CRDT(QDateTime::currentMSecsSinceEpoch(), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
->>>>>>> 7384c5abf31ef81d923f525692df82955af25405
+
 }
 
 Editor::~Editor()

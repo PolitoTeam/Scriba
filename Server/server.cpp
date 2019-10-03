@@ -328,14 +328,15 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject message = this->checkOldPass(docObj);
         this->sendJson(sender,message);
     }
-<<<<<<< HEAD
+
     if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0){
         QJsonObject message = this->getFiles(docObj);
         this->sendJson(sender,message);
-=======
+    }
+
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
         broadcast(docObj, sender);
->>>>>>> 7384c5abf31ef81d923f525692df82955af25405
+
     }
 }
 
