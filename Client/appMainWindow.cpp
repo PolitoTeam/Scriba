@@ -25,23 +25,23 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 
     login = new Login(stackedWidget,client);
     stackedWidget->addWidget(login);
-    QObject::connect(login, &Login::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
+    connect(login, &Login::changeWidget, this, &AppMainWindow::on_changeWidget);
 
     signup = new Signup(stackedWidget,client);
     stackedWidget->addWidget(signup);
-    QObject::connect(signup, &Signup::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
+    connect(signup, &Signup::changeWidget, this, &AppMainWindow::on_changeWidget);
 
     home = new Home(stackedWidget,client);
     stackedWidget->addWidget(home);
-    QObject::connect(home, &Home::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
+    connect(home, &Home::changeWidget, this, &AppMainWindow::on_changeWidget);
 
-    editor = new Editor(stackedWidget,client);
-    stackedWidget->addWidget(editor);
-    QObject::connect(editor, &Editor::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
+    // editor is not included in stackedwidget, because stackedwidget doesn't support qmainwindow
+    editor = new Editor(this, client);
+    connect(editor, &Editor::changeWidget, this, &AppMainWindow::on_changeWidget);
 
     modify = new Modify(stackedWidget,client);
     stackedWidget->addWidget(modify);
-    QObject::connect(modify, &Modify::changeWidget,stackedWidget,&QStackedWidget::setCurrentIndex);
+    connect(modify, &Modify::changeWidget, this, &AppMainWindow::on_changeWidget);
 
     QObject::connect(home,&Home::modify,modify,&Modify::upload);
     connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
@@ -56,6 +56,18 @@ AppMainWindow::~AppMainWindow()
 void AppMainWindow::on_logOut()
 {
     login->disconnect();
+}
+
+void AppMainWindow::on_changeWidget(int widget) {
+    // editor is not included in stackedwidget, because stackedwidget doesn't support qmainwindow
+    if (widget == EDITOR) {
+        this->hide();
+        editor->show();
+    } else {
+        editor->hide();
+        stackedWidget->setCurrentIndex(widget);
+        this->show();
+    }
 }
 
 void AppMainWindow::error(QAbstractSocket::SocketError socketError)

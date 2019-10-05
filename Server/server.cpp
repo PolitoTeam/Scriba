@@ -59,7 +59,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
     connect(worker, &ServerWorker::disconnectedFromClient, this, std::bind(&Server::userDisconnected, this, worker, threadIdx));
 
     //ONLY FOR NOTIFICATION
-    connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
+//    connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
 
     connect(worker, &ServerWorker::jsonReceived, this, std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
 
@@ -98,10 +98,10 @@ void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-    Q_ASSERT(sender);
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
-    jsonFromLoggedIn(sender, json);
+    else
+        jsonFromLoggedIn(sender, json);
 }
 
 //rimuove client disconnesso e notifica
@@ -114,18 +114,17 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
         QJsonObject disconnectedMessage;
         disconnectedMessage["type"] = QStringLiteral("userdisconnected");
         disconnectedMessage["username"] = userName;
-//        broadcast(disconnectedMessage, nullptr);
         qDebug() << userName << " disconnected";
         sender->clearNickname();
     }
     sender->deleteLater();
 }
 
-void Server::userError(ServerWorker *sender)
-{
-    Q_UNUSED(sender) // Indicates to the compiler that the parameter with the specified name is not used in the body of a function.
-    qDebug().nospace() << "Error from " << sender->getNickname();
-}
+//void Server::userError(ServerWorker *sender)
+//{
+//    Q_UNUSED(sender) // Indicates to the compiler that the parameter with the specified name is not used in the body of a function.
+//    qDebug().nospace() << "Error from " << sender->getNickname();
+//}
 
 void Server::stopServer()
 {
@@ -135,9 +134,6 @@ void Server::stopServer()
 
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
-    Q_ASSERT(sender);
-    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
-
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;
@@ -310,13 +306,11 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
 
 void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 {
-    Q_ASSERT(sender);
-     qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;
+
     if (typeVal.toString().compare(QLatin1String("nickname"), Qt::CaseInsensitive) == 0){
-        qDebug()<<"qui";
         QJsonObject message=this->updateNick(docObj);
         this->sendJson(sender,message);
     }
@@ -336,7 +330,6 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
         broadcast(docObj, sender);
-
     }
 }
 

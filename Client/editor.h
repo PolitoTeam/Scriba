@@ -10,7 +10,7 @@ namespace Ui {
 class Editor;
 }
 
-class Editor : public QWidget
+class Editor : public QMainWindow
 {
     Q_OBJECT
 

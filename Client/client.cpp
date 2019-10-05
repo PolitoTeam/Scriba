@@ -173,6 +173,8 @@ void Client::jsonReceived(const QJsonObject &docObj)
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return; // a message with no type was received so we just ignore it
+    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
+
     if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0) { //It's a login message
         if (m_loggedIn)
             return; // if we are already logged in we ignore

@@ -4,7 +4,7 @@
 #include "client.h"
 #include <QDateTime>
 Editor::Editor(QWidget *parent,Client* client) :
-    QWidget(parent),
+    QMainWindow(parent),
     ui(new Ui::Editor),
     client(client)
 {
