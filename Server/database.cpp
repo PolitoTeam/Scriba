@@ -260,7 +260,7 @@ DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,
     return err;
 }
 
-DatabaseError Database::newFile(const QString &username, const QString &filename)
+DatabaseError Database::newFile(const QString &username, const QString &filename, QString &sharedLink)
 {
     DatabaseError err = SUCCESS;
     if (!db.open())
@@ -276,14 +276,13 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
     else if (qry.next())
         err = ALREADY_EXISTING_FILE;
     else {
-        QString link;
         bool alreadyExisitingLink = true;
         while (alreadyExisitingLink) {
-            link = generateRandomString();
+            sharedLink = generateRandomString();
 
             QSqlQuery qry;
             qry.prepare("SELECT * FROM FILE WHERE Link=:link");
-            qry.bindValue(":link", link);
+            qry.bindValue(":link", sharedLink);
 
             if (!qry.next())
                 alreadyExisitingLink = false;
@@ -292,7 +291,7 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
         QSqlQuery qry;
         qry.prepare("INSERT INTO FILE (Link, Name, Owner, Public) "
                     "VALUES (:link, :filename, :username, TRUE)");
-        qry.bindValue(":link", link);
+        qry.bindValue(":link", sharedLink);
         qry.bindValue(":filename", filename);
         qry.bindValue(":username", username);
         if (!qry.exec()){

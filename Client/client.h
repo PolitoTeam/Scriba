@@ -83,6 +83,7 @@ private:
     QPixmap* profile;
     QMap<QString,QString> files;
     QString openfile;
+    QString sharedLink;
 
     void jsonReceived(const QJsonObject &doc);
 };

@@ -37,6 +37,7 @@ private slots:
     void setFontBold(bool bold);
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
+    void sharedLink();
 
     void textChange();
 

@@ -17,7 +17,7 @@ public:
     DatabaseError updatePassword(const QString &username,const QString &oldpass,const QString &newpass);
     DatabaseError checkOldPassword(const QString &username, const QString &oldpass);
     DatabaseError getFiles(const QString &username, QVector<QPair<QString,QString>> &files);
-    DatabaseError newFile(const QString &username, const QString &filename);
+    DatabaseError newFile(const QString &username, const QString &filename, QString &sharedLink);
 
 private:
     QSqlDatabase db;

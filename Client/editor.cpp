@@ -4,6 +4,10 @@
 #include "client.h"
 #include <QDateTime>
 #include <QIcon>
+#include <QMessageBox>
+#include <QClipboard>
+#include <QMessageBox>
+
 Editor::Editor(QWidget *parent,Client* client) :
     QMainWindow(parent),
     ui(new Ui::Editor),
@@ -32,6 +36,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
     connect(client,&Client::userDisconnected,this,&Editor::removeUser);
 
+    connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
 
     // TODO: create/load new crdt for every file created/opened; here just to test
     crdt = new CRDT(QDateTime::currentMSecsSinceEpoch(), client);
@@ -120,8 +125,15 @@ void Editor::setFontUnderline(bool underline)
 void Editor::setFontItalic(bool italic)
 {
     ui->textEdit->setFontItalic(italic);
+}
 
+void Editor::sharedLink()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+//    clipboard->setText(client->getSharedLink());
+    clipboard->setText("sharedLink");
 
+    QMessageBox::information(this, tr("Shared Link"), tr("Link copied to clipboard."), QMessageBox::Ok);
 }
 
 void Editor::setFontBold(bool bold)

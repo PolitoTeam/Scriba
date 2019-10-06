@@ -80,6 +80,7 @@
    <addaction name="actionBold"/>
    <addaction name="actionItalic"/>
    <addaction name="actionUnderline"/>
+   <addaction name="actionSharedLink"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
    <addaction name="actionExit"/>
@@ -307,6 +308,18 @@
    </property>
    <property name="toolTip">
     <string>About Notepad</string>
+   </property>
+  </action>
+  <action name="actionSharedLink">
+   <property name="icon">
+    <iconset>
+     <normaloff>images/share.png</normaloff>images/share.png</iconset>
+   </property>
+   <property name="text">
+    <string>SharedLink</string>
+   </property>
+   <property name="toolTip">
+    <string>Get share link</string>
    </property>
   </action>
  </widget>

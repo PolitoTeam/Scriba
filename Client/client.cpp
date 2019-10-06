@@ -292,6 +292,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             return;
         const bool success = resultVal.toBool();
         if (success) {
+            sharedLink = docObj.value(QLatin1String("shared_link")).toString();
             emit correctNewFIle();
         } else {
             const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
@@ -527,6 +528,11 @@ void Client::closeFile(){
         qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
     }
+}
+
+QString Client::getSharedLink()
+{
+    return this->sharedLink;
 }
 
 
