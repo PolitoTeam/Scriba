@@ -56,14 +56,17 @@ AppMainWindow::~AppMainWindow()
 void AppMainWindow::on_logOut()
 {
     login->disconnect();
+     editor->clear();
 }
 
 void AppMainWindow::on_changeWidget(int widget) {
     // editor is not included in stackedwidget, because stackedwidget doesn't support qmainwindow
-    if (widget == EDITOR) {
+    if (widget == EDITOR ) {
         this->hide();
         editor->show();
-    } else {
+    }
+    else
+    {
         editor->hide();
         stackedWidget->setCurrentIndex(widget);
         this->show();

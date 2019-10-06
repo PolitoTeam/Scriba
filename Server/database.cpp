@@ -219,10 +219,10 @@ DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,
             files.push_back(QPair<QString, QString>(qry.value(0).toString(), username));
         }
 
-        // add shared files (public ones)
+        // add files--> public ones: the files that are public and that the user has already accessed: it means that PUBLIC=true and the fileis in the FILE_USER table
         qry.prepare("SELECT Name, Owner "
                     "FROM FILE, FILE_USER "
-                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE AND First_access = TRUE");
+                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE");
         qry.bindValue(":username", username);
         if (!qry.exec())
             err = QUERY_ERROR;
@@ -231,9 +231,24 @@ DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,
                 files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
             }
 
-            if (files.isEmpty())
-                err = NO_FILES_AVAILABLE;
         }
+
+        // add files--> private ones: the files that are privat and that the user has already accessed: it means that PUBLIC=false and the file is in the FILE_USER table with FIRST_ACESS=FALSE
+        qry.prepare("SELECT Name, Owner "
+                    "FROM FILE, FILE_USER "
+                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = FALSE and First_access = FALSE");
+        qry.bindValue(":username", username);
+        if (!qry.exec())
+            err = QUERY_ERROR;
+        else {
+            while (qry.next()) {
+                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
+            }
+
+        }
+
+        if (files.isEmpty())
+            err = NO_FILES_AVAILABLE;
     }
 
 //    DEBUG

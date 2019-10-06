@@ -17,7 +17,7 @@ Server::Server(QObject *parent,Database* db)
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
     qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
 
-    openFile=new QMap<QString,QList<ServerWorker*>>();
+    openFile=new QMap<QString,QList<ServerWorker*>*>();
 
     // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
@@ -355,6 +355,14 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject message = this->createNewFile(docObj,sender);
         this->sendJson(sender,message);
     }
+    if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->sendFile(docObj,sender);
+        this->sendJson(sender,message);
+    }
+    if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->closeFile(docObj,sender);
+        this->sendJson(sender,message);
+    }
 }
 
 QJsonObject Server::updateNick(const QJsonObject &doc){
@@ -625,12 +633,141 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     if (file.exists()) {
         throw new std::runtime_error("File shouldn't already exist.");
     } else {
-        QList<ServerWorker*> list;
-        list.append(sender);
+        QList<ServerWorker*>* list=new QList<ServerWorker*>();
+        list->append(sender);
         openFile->insert(documents_path,list);
         file.open(QIODevice::WriteOnly);
     }
 
     message["success"] = true;
+    return message;
+}
+
+QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
+    //questo dovrebbe mandare il file...per ora è limitato a rispondere alla richiesta in modo che il client apra l'editor
+
+    QJsonObject message;
+    message["type"] = QStringLiteral("file_to_open");
+
+    const QJsonValue name = doc.value(QLatin1String("filename"));
+    if (name.isNull() || !name.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong filename format");
+        return message;
+    }
+    const QString filename = name.toString().simplified();
+    if (filename.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty old password");
+        return message;
+    }
+
+   /* DatabaseError result = this->db->newFile(username, filename);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error.");
+        return message;
+    }
+    if (result == ALREADY_EXISTING_FILE){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("This file already exists. Please enter a new filename.");
+        return message;
+    }
+
+    */
+
+    int pos = filename.lastIndexOf(QChar(','));
+    QString file=filename.left(pos);
+
+    if (openFile->contains(file)){
+        openFile->value(file)->append(sender);
+    }
+    else{
+        QList<ServerWorker*>* list=new QList<ServerWorker*>();
+        list->append(sender);
+        openFile->insert(file,list);
+    }
+
+    QList<ServerWorker*>* list=openFile->value(file);
+    QJsonArray array_users;
+
+    //per ora manda il contenuto del file insieme alla lista di chi è connesso;
+    //d agestire il caso in cui le connessioni cambiano mentre o dopo il messaggio è inviato
+
+
+    for (int i = 0; i <list->count(); i++){
+        // use initializer list to construct QJsonObject
+        if (sender->getUsername()==list->at(i)->getUsername())
+            continue;
+        auto data = QJsonObject({
+            qMakePair(QString("username"), QJsonValue(list->at(i)->getUsername())),
+            qMakePair(QString("nickname"), QJsonValue(list->at(i)->getNickname()))
+        });
+
+        array_users.push_back(QJsonValue(data));
+    }
+
+
+    message["success"] = true;
+    message["content"]="ciao";
+    message["filename"]=file;
+    message["users"]=array_users;
+    auto d = QJsonDocument(message);
+    qDebug()<< d.toJson().constData()<<endl;
+    return message;
+}
+
+
+QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
+
+
+    QJsonObject message;
+    message["type"] = QStringLiteral("close");
+
+    const QJsonValue name = doc.value(QLatin1String("filename"));
+    if (name.isNull() || !name.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong filename format");
+        return message;
+    }
+    const QString filename = name.toString().simplified();
+    if (filename.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty old password");
+        return message;
+    }
+
+    const QJsonValue user = doc.value(QLatin1String("username"));
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+
+    if (openFile->contains(filename)){
+        openFile->value(filename)->removeOne(sender);
+    }
+    else{
+        message["success"] = false;
+        message["reason"] = QStringLiteral("File not exist");
+        return message;
+    }
+
+    message["success"] = true;
+
+    QJsonObject message_broadcast;
+    message_broadcast["type"] = QStringLiteral("disconnection");
+    message_broadcast["filename"]=filename;
+    message_broadcast["user"]=username;
+
+    this->broadcast(message_broadcast,sender);
+
     return message;
 }

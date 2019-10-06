@@ -3,6 +3,7 @@
 #include "ui_editor.h"
 #include "client.h"
 #include <QDateTime>
+#include <QIcon>
 Editor::Editor(QWidget *parent,Client* client) :
     QMainWindow(parent),
     ui(new Ui::Editor),
@@ -26,8 +27,10 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
     connect(ui->actionUnderline, &QAction::triggered, this, &Editor::setFontUnderline);
     connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
-
-    connect (ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
+    connect(client,&Client::usersConnectedReceived,this,&Editor::addUsers);
+    connect(client,&Client::contentReceived,this,&Editor::updateText);
+    connect(ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
+    connect(client,&Client::userDisconnected,this,&Editor::removeUser);
 
 
     // TODO: create/load new crdt for every file created/opened; here just to test
@@ -66,6 +69,7 @@ void Editor::print()
 
 void Editor::exit()
 {
+    client->closeFile();
     emit changeWidget(HOME);
 }
 
@@ -171,3 +175,30 @@ void Editor::on_erase(int index)
 
     qDebug() << crdt->to_string();
 }
+
+//da cambiare
+void Editor::updateText(const QString& text){
+    ui->listWidget->clear();
+    this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),client->getUsername()));
+    this->ui->textEdit->setText(text);
+
+}
+
+void Editor::addUsers(const QList<QPair<QString,QString>> users){
+
+    for (int i=0;i<users.count();i++)
+        this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first)); //per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
+}
+
+void Editor::clear(){
+    ui->listWidget->clear();
+    ui->textEdit->clear();
+}
+
+void Editor::removeUser(const QString& name){
+    qDebug()<<"Here"<<endl;
+
+   this->ui->listWidget->removeItemWidget(this->ui->listWidget->findItems(name,Qt::MatchFixedString).first());
+}
+
+

@@ -33,6 +33,7 @@ Client::Client(QObject *parent)
 
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
     connect(m_clientSocket, &QTcpSocket::disconnected, this, [this]()->void{m_loggedIn = false;});
+
     profile=new QPixmap(":/images/anonymous");
 }
 
@@ -297,6 +298,51 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongNewFIle(reasonVal.toString());
         }
     }
+    else if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0) {
+            const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+            if (resultVal.isNull() || !resultVal.isBool())
+                return;
+            const bool success = resultVal.toBool();
+            if (success) {
+
+                const QJsonValue cont = docObj.value(QLatin1String("content"));
+                if (cont.isNull() || !cont.isString())
+                    return;
+                const QJsonValue name = docObj.value(QLatin1String("filename"));
+                if (name.isNull() || !name.isString())
+                    return;
+                this->openfile=name.toString();
+                emit contentReceived(cont.toString());
+
+                const QJsonValue array= docObj.value(QLatin1String("users"));
+                if (array.isNull() || !array.isArray())
+                    return;
+                const QJsonArray array_users=array.toArray();
+                QList<QPair<QString,QString>> connected;
+                foreach (const QJsonValue& v, array_users){
+                    qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
+                    connected.append(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()));
+                }
+                emit usersConnectedReceived(connected);
+                emit correctOpenedFile();
+            } else {
+                this->openfile.clear();
+                const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+                emit wrongOpenedFile(reasonVal.toString());
+            }
+        }
+    else if (typeVal.toString().compare(QLatin1String("disconnection"), Qt::CaseInsensitive) == 0) {
+            const QJsonValue file = docObj.value(QLatin1String("filename"));
+            if (file.isNull() || !file.isString())
+                return;
+            const QJsonValue name = docObj.value(QLatin1String("user"));
+            if (name.isNull() || !name.isString())
+                return;
+            if (!file.toString().compare(this->openfile)){
+                emit userDisconnected(name.toString());
+            }
+
+        }
 
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
@@ -453,4 +499,34 @@ void Client::sendJson(const QJsonObject& message)
 
     clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 }
+
+void Client::openFile(const QString& filename){
+    if (m_clientSocket->waitForConnected()) {
+        QDataStream clientStream(m_clientSocket);
+        clientStream.setVersion(QDataStream::Qt_5_7);
+
+        QJsonObject message;
+        message["type"] = QStringLiteral("file_to_open");
+        message["filename"] = filename;
+
+        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
+}
+
+void Client::closeFile(){
+    if (m_clientSocket->waitForConnected()) {
+        QDataStream clientStream(m_clientSocket);
+        clientStream.setVersion(QDataStream::Qt_5_7);
+
+        QJsonObject message;
+        message["type"] = QStringLiteral("close");
+        message["filename"] = this->openfile;
+        message["username"]=this->username;
+
+        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
+}
+
 

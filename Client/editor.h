@@ -18,6 +18,8 @@ public:
     Editor(QWidget *parent = nullptr,Client* client=0);
     void setClient(Client* client);
     ~Editor();
+    void clear();
+
 //    void setCRDT(CRDT *crdt);
 
 signals:
@@ -41,7 +43,9 @@ private slots:
     void on_contentsChange(int position, int charsRemoved, int charsAdded);
     void on_insert(int index, char value);
     void on_erase(int index);
-
+    void addUsers(const QList<QPair<QString,QString>> users);
+     void updateText(const QString& text);
+    void removeUser(const QString& name);
 
 private:
     Ui::Editor *ui;

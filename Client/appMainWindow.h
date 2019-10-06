@@ -5,7 +5,7 @@
 #include <QTcpSocket>
 #include <QStackedWidget>
 
-typedef enum {LOGIN, SIGNUP, HOME, EDITOR, MODIFY} Widget;
+typedef enum {LOGIN, SIGNUP, HOME, MODIFY, EDITOR } Widget;
 
 namespace Ui {
 class Index;

@@ -60,6 +60,12 @@ QString ServerWorker::getNickname()
     return nickname;
 }
 
+QString ServerWorker::getUsername()
+{
+    return username;
+}
+
+
 void ServerWorker::setUsername(const QString &username) {
     this->username = username;
 }

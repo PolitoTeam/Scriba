@@ -29,6 +29,8 @@ public:
 
     void sendJson(const QJsonObject& message);
     void createNewFile(QString filename);
+    void closeFile();
+
 
 
 public slots:
@@ -39,6 +41,8 @@ public slots:
     void updatePassword(const QString &oldpassword,const QString &newpassword);
     void checkOldPassword(const QString &old_password);
     void disconnectFromHost();
+    void openFile(const QString& filename);
+
 
 private slots:
     void onReadyRead();
@@ -63,7 +67,12 @@ signals:
     void remoteInsert(Symbol s);
     void remoteErase(Symbol s);
     void correctNewFIle();
+    void correctOpenedFile();
     void wrongNewFIle(const QString& reason);
+    void wrongOpenedFile(const QString& reason);
+    void usersConnectedReceived(QList<QPair<QString,QString>>);
+    void contentReceived(const QString text);
+     void userDisconnected(const QString& username);
 
 
 private:
@@ -73,6 +82,7 @@ private:
     QString nickname;
     QPixmap* profile;
     QMap<QString,QString> files;
+    QString openfile;
 
     void jsonReceived(const QJsonObject &doc);
 };

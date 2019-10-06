@@ -16,6 +16,9 @@ Home::Home(QWidget *parent,Client* client) :
     connect(client, &Client::openFilesError, this, &Home::on_openFilesError);
     connect(client, &Client::correctNewFIle, this, &Home::newFileCompleted);
     connect(client, &Client::wrongNewFIle, this, &Home::newFileError);
+    connect(client, &Client::correctOpenedFile, this, &Home::openFileCompleted);
+    connect(client, &Client::wrongOpenedFile, this, &Home::openFileError);
+    connect(this, &Home::fileChosen,client,&Client::openFile);
 }
 
 Home::~Home()
@@ -50,10 +53,20 @@ void Home::newFileCompleted() {
     emit changeWidget(EDITOR);
 }
 
+void Home::openFileCompleted() {
+    emit changeWidget(EDITOR);
+}
+
 void Home::newFileError(const QString& reason) {
     QMessageBox::critical(this, tr("Error"),
                           reason, QMessageBox::Close);
     on_pushButtonNewFile_clicked();
+}
+
+void Home::openFileError(const QString& reason) {
+    QMessageBox::critical(this, tr("Error"),
+                          reason, QMessageBox::Close);
+
 }
 
 void Home::on_openFilesError(const QString& reason) {
@@ -118,5 +131,6 @@ void Home::showActiveFiles(){
      if (ok && !item.isEmpty())
          qDebug()<<"File scelto: "<<item<<endl;
 
+     emit fileChosen(item);
 }
 

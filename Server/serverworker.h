@@ -15,6 +15,7 @@ public:
     void sendJson(const QJsonObject &json);
     void sendProfileImage();
     QString getNickname();
+    QString getUsername();
     void setNickname(const QString &nickname);
     void clearNickname();
     void setUsername(const QString &username);
