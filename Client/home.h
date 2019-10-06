@@ -25,7 +25,8 @@ private slots:
      void on_pushButtonSharedLink_clicked();
      void showActiveFiles();
      void on_pushButtonOpenFile_clicked();
-
+     void newFileCompleted();
+     void newFileError(const QString& reason);
 
 signals:
      void changeWidget(int);

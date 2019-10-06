@@ -6,6 +6,8 @@
 
 Database::Database()
 {
+    srand(time(NULL));
+
     db=QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("127.0.0.1");
     db.setDatabaseName("editor");
@@ -224,4 +226,61 @@ DatabaseError Database::getFiles(const QString &username, QMap<QString,QString> 
 
     db.close();
     return err;
+}
+
+DatabaseError Database::newFile(const QString &username, const QString &filename)
+{
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Name FROM FILE WHERE Name=:filename AND Owner=:username");
+    qry.bindValue(":filename", filename);
+    qry.bindValue(":username", username);
+
+    if (!qry.exec())
+        err = QUERY_ERROR;
+    else if (qry.next())
+        err = ALREADY_EXISTING_FILE;
+    else {
+        QString link;
+        bool alreadyExisitingLink = true;
+        while (alreadyExisitingLink) {
+            link = generateRandomString();
+
+            QSqlQuery qry;
+            qry.prepare("SELECT * FROM FILE WHERE Link=:link");
+            qry.bindValue(":link", link);
+
+            if (!qry.next())
+                alreadyExisitingLink = false;
+        }
+
+        QSqlQuery qry;
+        qry.prepare("INSERT INTO FILE (Link, Name, Owner, Public) "
+                    "VALUES (:link, :filename, :username, TRUE)");
+        qry.bindValue(":link", link);
+        qry.bindValue(":filename", filename);
+        qry.bindValue(":username", username);
+        if (!qry.exec()){
+            err = QUERY_ERROR;
+        }
+    }
+
+    db.close();
+    return err;
+}
+
+QString Database::generateRandomString() const
+{
+   const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+
+   QString randomString;
+   for(int i = 0; i < SHARE_LINK_LENGTH; i++) {
+       int index = qrand() % possibleCharacters.length();
+       QChar nextChar = possibleCharacters.at(index);
+       randomString.append(nextChar);
+   }
+   return randomString;
 }

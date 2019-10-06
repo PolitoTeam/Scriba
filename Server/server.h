@@ -44,7 +44,7 @@ private:
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
     QJsonObject getFiles(const QJsonObject &doc);
-
+    QJsonObject createNewFile(const QJsonObject &doc);
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);

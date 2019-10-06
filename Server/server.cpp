@@ -331,6 +331,11 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
         broadcast(docObj, sender);
     }
+
+    if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->createNewFile(docObj);
+        this->sendJson(sender,message);
+    }
 }
 
 QJsonObject Server::updateNick(const QJsonObject &doc){
@@ -552,4 +557,50 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     qDebug()<< d.toJson().constData()<<endl;
     return message;
 
+}
+
+QJsonObject Server::createNewFile(const QJsonObject &doc)
+{
+    const QJsonValue user = doc.value(QLatin1String("author"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("new_file");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+
+    const QJsonValue name = doc.value(QLatin1String("filename"));
+    if (name.isNull() || !name.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong filename format");
+        return message;
+    }
+    const QString filename = name.toString().simplified();
+    if (filename.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty old password");
+        return message;
+    }
+
+    DatabaseError result = this->db->newFile(username, filename);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error");
+        return message;
+    }
+    if (result == ALREADY_EXISTING_FILE){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("This file already exists. Please enter a new filename.");
+        return message;
+    }
+    message["success"] = true;
+    return message;
 }
