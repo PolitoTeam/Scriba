@@ -14,7 +14,7 @@ Server::Server(QObject *parent,Database* db)
 {
     m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
-
+    qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
     // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
     QDir dir(profile_images_path);
@@ -51,8 +51,10 @@ void Server::incomingConnection(qintptr socketDescriptor)
         threadIdx = std::distance(m_threadsLoad.cbegin(), std::min_element(m_threadsLoad.cbegin(), m_threadsLoad.cend()));
         ++m_threadsLoad[threadIdx];
     }
+    qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
     worker->moveToThread(m_availableThreads.at(threadIdx)); //asssegnazione client al thread scelto.
 
+    connect(m_availableThreads.at(threadIdx), &QThread::finished,[=]() { qDebug()<<"Thread: "<<threadIdx<<" terminato!"<<endl;});
     //appena il thread finisce, inserisce nella coda degli eventi la cancellazione del worker...domanda:viene tolto anche dal vettore?
     connect(m_availableThreads.at(threadIdx), &QThread::finished, worker, &QObject::deleteLater);
     //viene invocata userDIsconnected quando la connessione viene chiusa dal client.
@@ -134,6 +136,7 @@ void Server::stopServer()
 
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
+    qDebug()<<"Json from loggeoud thread: "<<QThread::currentThreadId()<<endl;
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;

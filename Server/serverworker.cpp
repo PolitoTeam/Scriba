@@ -7,6 +7,7 @@
 #include <QBuffer>
 #include <QFile>
 #include <QDir>
+#include <QThread>
 
 ServerWorker::ServerWorker(QObject *parent)
     : QObject(parent)
@@ -85,6 +86,7 @@ void ServerWorker::receiveJson()
     QByteArray jsonData;
     QDataStream socketStream(m_serverSocket);
 
+    qDebug()<<"Thread: "<<QThread::currentThreadId()<<endl;
     socketStream.setVersion(QDataStream::Qt_5_7);
     for (;;) {
         socketStream.startTransaction();
