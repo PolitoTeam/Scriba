@@ -13,6 +13,7 @@ Home::Home(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
     connect(client, &Client::filesReceived, this, &Home::showActiveFiles);
+    connect(client, &Client::openFilesError, this, &Home::on_openFilesError);
     connect(client, &Client::correctNewFIle, this, &Home::newFileCompleted);
     connect(client, &Client::wrongNewFIle, this, &Home::newFileError);
 }
@@ -53,6 +54,10 @@ void Home::newFileError(const QString& reason) {
     QMessageBox::critical(this, tr("Error"),
                           reason, QMessageBox::Close);
     on_pushButtonNewFile_clicked();
+}
+
+void Home::on_openFilesError(const QString& reason) {
+    QMessageBox::critical(this, tr("Error"), reason, QMessageBox::Close);
 }
 
 void Home::on_pushButtonModify_clicked()

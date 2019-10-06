@@ -281,7 +281,9 @@ void Client::jsonReceived(const QJsonObject &docObj)
             }
 
             emit filesReceived();
-            // TODO: gestire errore!!!!!
+        } else { // error handling
+            const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+            emit openFilesError(reasonVal.toString());
         }
     } else if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0) {
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
