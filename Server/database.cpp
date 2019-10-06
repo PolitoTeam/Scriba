@@ -198,31 +198,48 @@ DatabaseError Database::checkOldPassword(const QString &username, const QString 
     return err;
 }
 
-DatabaseError Database::getFiles(const QString &username, QMap<QString,QString> &files){
+DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,QString>> &files){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
-    //PER PROVARE
-    QString ciao("ciao");
-    QString hello("hello");
-    files.insert(ciao,"Giuseppe");
-    files.insert(hello,"Giuseppe");
-
-
     QSqlQuery qry;
-    qry.prepare("SELECT Name,Owner FROM FILE, FILE_USER WHERE FILE.Link=FILE_USER.Link and User=:Username and First_access=false");
-    qry.bindValue(":username", username);
-    if (!qry.exec())
-        err = QUERY_ERROR;
+    // TODO: handle shared links (private ones)
+    //    qry.prepare("SELECT Name, Owner FROM FILE, FILE_USER WHERE FILE.Link=FILE_USER.Link and User=:Username and First_access=false");
 
-    else if (!qry.next())
-        err = NON_EXISTING_USER;
-    else {
+
+
+    // add own files (DISTINCT because every file can have 2 entries, corresponding to the public and private shared link)
+    qry.prepare("SELECT DISTINCT Name FROM FILE WHERE Owner=:username");
+    qry.bindValue(":username", username);
+    if (!qry.exec()) {
+        err = QUERY_ERROR;
+    } else {
         while (qry.next()) {
-            files.insert(qry.value(0).toString(),qry.value(1).toString());
+            files.push_back(QPair<QString, QString>(qry.value(0).toString(), username));
+        }
+
+        // add shared files (public ones)
+        qry.prepare("SELECT Name, Owner "
+                    "FROM FILE, FILE_USER "
+                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE AND First_access = TRUE");
+        qry.bindValue(":username", username);
+        if (!qry.exec())
+            err = QUERY_ERROR;
+        else {
+            while (qry.next()) {
+                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
+            }
+
+            if (files.isEmpty())
+                err = NO_FILES_AVAILABLE;
         }
     }
+
+//    DEBUG
+//    qDebug() << "files:";
+//    for (auto i : files)
+//        qDebug() << i.first << " " << i.second;
 
     db.close();
     return err;

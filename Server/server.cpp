@@ -30,6 +30,10 @@ Server::Server(QObject *parent,Database* db)
         qDebug().nospace() << "Folder " << user_documents_path << " created";
         dir_documents.mkpath(".");
     }
+
+//    DEBUG
+//    QVector<QPair<QString, QString>> a;
+//    db->getFiles("b@b", a);
 }
 
 Server::~Server()
@@ -530,8 +534,9 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty username");
         return message;
     }
-    QMap<QString,QString> files;
-    DatabaseError result = this->db->getFiles(username,files);
+
+    QVector<QPair<QString, QString>> files;
+    DatabaseError result = this->db->getFiles(username, files);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
@@ -545,17 +550,28 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
 
     QJsonArray array_files;
 
-    QMap<QString, QString>::iterator i;
+//    QMap<QString, QString>::iterator i;
+//    for (i = files.begin(); i != files.end(); ++i){
+
+//        // use initializer list to construct QJsonObject
+//        auto data1 = QJsonObject(
+//        {
+//                        qMakePair(QString("name"), QJsonValue(i.key())),
+//                        qMakePair(QString("owner"), QJsonValue(i.value()))
+//                    });
+
+//        array_files.push_back(QJsonValue(data1));
+//    }
+
+    QVector<QPair<QString, QString>>::iterator i;
     for (i = files.begin(); i != files.end(); ++i){
+        // use initializer list to construct QJsonObject
+        auto data = QJsonObject({
+            qMakePair(QString("name"), QJsonValue(i->first)),
+            qMakePair(QString("owner"), QJsonValue(i->second))
+        });
 
-    // use initializer list to construct QJsonObject
-    auto data1 = QJsonObject(
-    {
-    qMakePair(QString("name"), QJsonValue(i.key())),
-    qMakePair(QString("owner"), QJsonValue(i.value()))
-    });
-
-    array_files.push_back(QJsonValue(data1));
+        array_files.push_back(QJsonValue(data));
     }
 
 
