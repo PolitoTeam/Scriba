@@ -119,7 +119,7 @@ void ServerWorker::receiveJson()
             } else {
                 QPixmap p;
                 p.loadFromData(jsonData);
-                qDebug()<<image_name;
+                qDebug() << image_name;
                 if (image_name.isEmpty() || image_name.isNull())
                     image_name=username;
                 QString image_path = QDir::currentPath() + "/profile_images/" + image_name + ".png";

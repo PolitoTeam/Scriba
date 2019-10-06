@@ -4,6 +4,7 @@
 #include "CRDT.h"
 #include <QInputDialog>
 #include <QDir>
+#include <QMessageBox>
 
 Home::Home(QWidget *parent,Client* client) :
     QWidget(parent),
@@ -11,8 +12,9 @@ Home::Home(QWidget *parent,Client* client) :
     client(client)
 {
     ui->setupUi(this);
-    connect(client,&Client::filesReceived,this,&Home::showActiveFiles);
-
+    connect(client, &Client::filesReceived, this, &Home::showActiveFiles);
+    connect(client, &Client::correctNewFIle, this, &Home::newFileCompleted);
+    connect(client, &Client::wrongNewFIle, this, &Home::newFileError);
 }
 
 Home::~Home()
@@ -32,7 +34,25 @@ void Home::on_pushButtonLogOut_clicked()
 
 void Home::on_pushButtonNewFile_clicked()
 {
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("Open File"),
+                                         tr("File name:"), QLineEdit::Normal,
+                                         tr(""), &ok);
+
+    if (ok && !text.isEmpty()) {
+        qDebug().nospace() << "Line read: " << text;
+        client->createNewFile(text);
+    }
+}
+
+void Home::newFileCompleted() {
     emit changeWidget(EDITOR);
+}
+
+void Home::newFileError(const QString& reason) {
+    QMessageBox::critical(this, tr("Error"),
+                          reason, QMessageBox::Close);
+    on_pushButtonNewFile_clicked();
 }
 
 void Home::on_pushButtonModify_clicked()
@@ -43,7 +63,6 @@ void Home::on_pushButtonModify_clicked()
 
 void Home::on_pushButtonSharedLink_clicked()
 {
-    //client->sendProfileImage();
     bool ok;
     QString text = QInputDialog::getText(this, tr("Shared Link"),
                                                  tr("Paste link here:"), QLineEdit::Normal,

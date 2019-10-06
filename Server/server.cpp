@@ -17,11 +17,23 @@ Server::Server(QObject *parent,Database* db)
     qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
     // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
-    QDir dir(profile_images_path);
-    if (!dir.exists()){
+    QDir dir_images(profile_images_path);
+    if (!dir_images.exists()){
         qDebug().nospace() << "Folder " << profile_images_path << " created";
-        dir.mkpath(".");
+        dir_images.mkpath(".");
     }
+
+    // create folder to store documents
+    QString user_documents_path = QDir::currentPath() + "/user_documents";
+    QDir dir_documents(user_documents_path);
+    if (!dir_documents.exists()){
+        qDebug().nospace() << "Folder " << user_documents_path << " created";
+        dir_documents.mkpath(".");
+    }
+
+//    DEBUG
+//    QVector<QPair<QString, QString>> a;
+//    db->getFiles("b@b", a);
 }
 
 Server::~Server()
@@ -334,6 +346,11 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
         broadcast(docObj, sender);
     }
+
+    if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->createNewFile(docObj);
+        this->sendJson(sender,message);
+    }
 }
 
 QJsonObject Server::updateNick(const QJsonObject &doc){
@@ -520,8 +537,9 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty username");
         return message;
     }
-    QMap<QString,QString> files;
-    DatabaseError result = this->db->getFiles(username,files);
+
+    QVector<QPair<QString, QString>> files;
+    DatabaseError result = this->db->getFiles(username, files);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error");
@@ -535,17 +553,28 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
 
     QJsonArray array_files;
 
-    QMap<QString, QString>::iterator i;
+//    QMap<QString, QString>::iterator i;
+//    for (i = files.begin(); i != files.end(); ++i){
+
+//        // use initializer list to construct QJsonObject
+//        auto data1 = QJsonObject(
+//        {
+//                        qMakePair(QString("name"), QJsonValue(i.key())),
+//                        qMakePair(QString("owner"), QJsonValue(i.value()))
+//                    });
+
+//        array_files.push_back(QJsonValue(data1));
+//    }
+
+    QVector<QPair<QString, QString>>::iterator i;
     for (i = files.begin(); i != files.end(); ++i){
+        // use initializer list to construct QJsonObject
+        auto data = QJsonObject({
+            qMakePair(QString("name"), QJsonValue(i->first)),
+            qMakePair(QString("owner"), QJsonValue(i->second))
+        });
 
-    // use initializer list to construct QJsonObject
-    auto data1 = QJsonObject(
-    {
-    qMakePair(QString("name"), QJsonValue(i.key())),
-    qMakePair(QString("owner"), QJsonValue(i.value()))
-    });
-
-    array_files.push_back(QJsonValue(data1));
+        array_files.push_back(QJsonValue(data));
     }
 
 
@@ -555,4 +584,60 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     qDebug()<< d.toJson().constData()<<endl;
     return message;
 
+}
+
+QJsonObject Server::createNewFile(const QJsonObject &doc)
+{
+    const QJsonValue user = doc.value(QLatin1String("author"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("new_file");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+
+    const QJsonValue name = doc.value(QLatin1String("filename"));
+    if (name.isNull() || !name.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong filename format");
+        return message;
+    }
+    const QString filename = name.toString().simplified();
+    if (filename.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty old password");
+        return message;
+    }
+
+    DatabaseError result = this->db->newFile(username, filename);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error.");
+        return message;
+    }
+    if (result == ALREADY_EXISTING_FILE){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("This file already exists. Please enter a new filename.");
+        return message;
+    }
+
+    // create empty file for the specified user
+    QString documents_path = QDir::currentPath() + "/user_documents/" + username + "_" + filename;
+    QFile file(documents_path);
+    if (file.exists()) {
+        throw new std::runtime_error("File shouldn't already exist.");
+    } else {
+        file.open(QIODevice::WriteOnly);
+    }
+
+    message["success"] = true;
+    return message;
 }

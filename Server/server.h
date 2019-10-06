@@ -16,6 +16,7 @@ class Server : public QTcpServer
 public:
     Server(QObject *parent = nullptr,Database* db=0);
     ~Server() override;
+    bool tryConnectionToDatabase();
 
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
@@ -44,14 +45,12 @@ private:
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
     QJsonObject getFiles(const QJsonObject &doc);
-
+    QJsonObject createNewFile(const QJsonObject &doc);
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);
     void sendProfileImage(ServerWorker *destination);
 
-public:
-    bool tryConnectionToDatabase();
 signals:
     void logMessage(const QString &msg);
     void stopAllClients();

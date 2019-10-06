@@ -6,6 +6,8 @@
 
 Database::Database()
 {
+    srand(time(NULL));
+
     db=QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("127.0.0.1");
     db.setDatabaseName("editor");
@@ -196,32 +198,106 @@ DatabaseError Database::checkOldPassword(const QString &username, const QString 
     return err;
 }
 
-DatabaseError Database::getFiles(const QString &username, QMap<QString,QString> &files){
+DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,QString>> &files){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
-    //PER PROVARE
-    QString ciao("ciao");
-    QString hello("hello");
-    files.insert(ciao,"Giuseppe");
-    files.insert(hello,"Giuseppe");
+    QSqlQuery qry;
+    // TODO: handle shared links (private ones)
+    //    qry.prepare("SELECT Name, Owner FROM FILE, FILE_USER WHERE FILE.Link=FILE_USER.Link and User=:Username and First_access=false");
 
+
+
+    // add own files (DISTINCT because every file can have 2 entries, corresponding to the public and private shared link)
+    qry.prepare("SELECT DISTINCT Name FROM FILE WHERE Owner=:username");
+    qry.bindValue(":username", username);
+    if (!qry.exec()) {
+        err = QUERY_ERROR;
+    } else {
+        while (qry.next()) {
+            files.push_back(QPair<QString, QString>(qry.value(0).toString(), username));
+        }
+
+        // add shared files (public ones)
+        qry.prepare("SELECT Name, Owner "
+                    "FROM FILE, FILE_USER "
+                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE AND First_access = TRUE");
+        qry.bindValue(":username", username);
+        if (!qry.exec())
+            err = QUERY_ERROR;
+        else {
+            while (qry.next()) {
+                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
+            }
+
+            if (files.isEmpty())
+                err = NO_FILES_AVAILABLE;
+        }
+    }
+
+//    DEBUG
+//    qDebug() << "files:";
+//    for (auto i : files)
+//        qDebug() << i.first << " " << i.second;
+
+    db.close();
+    return err;
+}
+
+DatabaseError Database::newFile(const QString &username, const QString &filename)
+{
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Name,Owner FROM FILE, FILE_USER WHERE FILE.Link=FILE_USER.Link and User=:Username and First_access=false");
+    qry.prepare("SELECT Name FROM FILE WHERE Name=:filename AND Owner=:username");
+    qry.bindValue(":filename", filename);
     qry.bindValue(":username", username);
+
     if (!qry.exec())
         err = QUERY_ERROR;
-
-    else if (!qry.next())
-        err = NON_EXISTING_USER;
+    else if (qry.next())
+        err = ALREADY_EXISTING_FILE;
     else {
-        while (qry.next()) {
-            files.insert(qry.value(0).toString(),qry.value(1).toString());
+        QString link;
+        bool alreadyExisitingLink = true;
+        while (alreadyExisitingLink) {
+            link = generateRandomString();
+
+            QSqlQuery qry;
+            qry.prepare("SELECT * FROM FILE WHERE Link=:link");
+            qry.bindValue(":link", link);
+
+            if (!qry.next())
+                alreadyExisitingLink = false;
+        }
+
+        QSqlQuery qry;
+        qry.prepare("INSERT INTO FILE (Link, Name, Owner, Public) "
+                    "VALUES (:link, :filename, :username, TRUE)");
+        qry.bindValue(":link", link);
+        qry.bindValue(":filename", filename);
+        qry.bindValue(":username", username);
+        if (!qry.exec()){
+            err = QUERY_ERROR;
         }
     }
 
     db.close();
     return err;
+}
+
+QString Database::generateRandomString() const
+{
+   const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+
+   QString randomString;
+   for(int i = 0; i < SHARE_LINK_LENGTH; i++) {
+       int index = qrand() % possibleCharacters.length();
+       QChar nextChar = possibleCharacters.at(index);
+       randomString.append(nextChar);
+   }
+   return randomString;
 }

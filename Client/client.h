@@ -28,6 +28,7 @@ public:
     QMap<QString,QString> getActiveFiles();
 
     void sendJson(const QJsonObject& message);
+    void createNewFile(QString filename);
 
 
 public slots:
@@ -61,6 +62,8 @@ signals:
 
     void remoteInsert(Symbol s);
     void remoteErase(Symbol s);
+    void correctNewFIle();
+    void wrongNewFIle(QString reason);
 
 
 private:

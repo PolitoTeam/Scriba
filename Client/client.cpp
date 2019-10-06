@@ -281,11 +281,20 @@ void Client::jsonReceived(const QJsonObject &docObj)
             }
 
             emit filesReceived();
-            //gestire errore!!!!!
+            // TODO: gestire errore!!!!!
         }
-
+    } else if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0) {
+        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+        if (resultVal.isNull() || !resultVal.isBool())
+            return;
+        const bool success = resultVal.toBool();
+        if (success) {
+            emit correctNewFIle();
+        } else {
+            const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+            emit wrongNewFIle(reasonVal.toString());
         }
-
+    }
 
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
@@ -313,6 +322,22 @@ void Client::jsonReceived(const QJsonObject &docObj)
         // we notify of the user disconnection the userLeft signal
         emit userLeft(usernameVal.toString());
     }*/
+}
+
+void Client::createNewFile(QString filename)
+{
+    if (m_clientSocket->waitForConnected()) {
+        QDataStream clientStream(m_clientSocket);
+        clientStream.setVersion(QDataStream::Qt_5_7);
+
+        QJsonObject message;
+        message["type"] = QStringLiteral("new_file");
+        message["filename"] = filename;
+        message["author"] = this->username;
+
+        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
 }
 
 void Client::connectToServer(const QHostAddress &address, quint16 port)
