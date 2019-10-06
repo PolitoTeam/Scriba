@@ -27,6 +27,7 @@ private:
     QVector<int> m_threadsLoad;
     QVector<ServerWorker *> m_clients;
     Database* db;
+    QMap<QString,QList<ServerWorker*>>* openFile;
 
 private slots:
     void broadcast(const QJsonObject &message, ServerWorker *exclude);
@@ -45,7 +46,7 @@ private:
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
     QJsonObject getFiles(const QJsonObject &doc);
-    QJsonObject createNewFile(const QJsonObject &doc);
+    QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);

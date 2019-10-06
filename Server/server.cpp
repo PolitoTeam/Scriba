@@ -11,10 +11,14 @@ Server::Server(QObject *parent,Database* db)
     : QTcpServer(parent)
     , m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
     , db(db)
+
 {
     m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
     qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
+
+    openFile=new QMap<QString,QList<ServerWorker*>>();
+
     // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
     QDir dir_images(profile_images_path);
@@ -348,7 +352,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
 
     if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
-        QJsonObject message = this->createNewFile(docObj);
+        QJsonObject message = this->createNewFile(docObj,sender);
         this->sendJson(sender,message);
     }
 }
@@ -586,7 +590,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
 
 }
 
-QJsonObject Server::createNewFile(const QJsonObject &doc)
+QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 {
     const QJsonValue user = doc.value(QLatin1String("author"));
     QJsonObject message;
@@ -635,6 +639,9 @@ QJsonObject Server::createNewFile(const QJsonObject &doc)
     if (file.exists()) {
         throw new std::runtime_error("File shouldn't already exist.");
     } else {
+        QList<ServerWorker*> list;
+        list.append(sender);
+        openFile->insert(documents_path,list);
         file.open(QIODevice::WriteOnly);
     }
 
