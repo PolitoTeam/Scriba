@@ -58,12 +58,12 @@ signals:
     void correctOldPassword();
 
     void filesReceived();
-
+    void openFilesError(const QString& reason);
 
     void remoteInsert(Symbol s);
     void remoteErase(Symbol s);
     void correctNewFIle();
-    void wrongNewFIle(QString reason);
+    void wrongNewFIle(const QString& reason);
 
 
 private:

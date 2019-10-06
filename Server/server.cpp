@@ -546,29 +546,16 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     DatabaseError result = this->db->getFiles(username, files);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
-        message["reason"] = QStringLiteral("Database error");
+        message["reason"] = QStringLiteral("Database error.");
         return message;
     }
-   /* if (result == NON_EXISTING_USER){
+    if (result == NO_FILES_AVAILABLE){
         message["success"] = false;
-        message["reason"] = QStringLiteral("The username doens't exists");
+        message["reason"] = QStringLiteral("You don't have files yet.");
         return message;
-    }*/
+    }
 
     QJsonArray array_files;
-
-//    QMap<QString, QString>::iterator i;
-//    for (i = files.begin(); i != files.end(); ++i){
-
-//        // use initializer list to construct QJsonObject
-//        auto data1 = QJsonObject(
-//        {
-//                        qMakePair(QString("name"), QJsonValue(i.key())),
-//                        qMakePair(QString("owner"), QJsonValue(i.value()))
-//                    });
-
-//        array_files.push_back(QJsonValue(data1));
-//    }
 
     QVector<QPair<QString, QString>>::iterator i;
     for (i = files.begin(); i != files.end(); ++i){
@@ -587,7 +574,6 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     auto d = QJsonDocument(message);
     qDebug()<< d.toJson().constData()<<endl;
     return message;
-
 }
 
 QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
