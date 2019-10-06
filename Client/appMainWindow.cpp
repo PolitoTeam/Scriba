@@ -38,6 +38,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     // editor is not included in stackedwidget, because stackedwidget doesn't support qmainwindow
     editor = new Editor(this, client);
     connect(editor, &Editor::changeWidget, this, &AppMainWindow::on_changeWidget);
+    connect(editor, &Editor::close, this, &AppMainWindow::close);
 
     modify = new Modify(stackedWidget,client);
     stackedWidget->addWidget(modify);
