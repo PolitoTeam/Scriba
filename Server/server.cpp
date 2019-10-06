@@ -17,10 +17,18 @@ Server::Server(QObject *parent,Database* db)
 
     // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
-    QDir dir(profile_images_path);
-    if (!dir.exists()){
+    QDir dir_images(profile_images_path);
+    if (!dir_images.exists()){
         qDebug().nospace() << "Folder " << profile_images_path << " created";
-        dir.mkpath(".");
+        dir_images.mkpath(".");
+    }
+
+    // create folder to store documents
+    QString user_documents_path = QDir::currentPath() + "/user_documents";
+    QDir dir_documents(user_documents_path);
+    if (!dir_documents.exists()){
+        qDebug().nospace() << "Folder " << user_documents_path << " created";
+        dir_documents.mkpath(".");
     }
 }
 
@@ -593,7 +601,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc)
     DatabaseError result = this->db->newFile(username, filename);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
-        message["reason"] = QStringLiteral("Database error");
+        message["reason"] = QStringLiteral("Database error.");
         return message;
     }
     if (result == ALREADY_EXISTING_FILE){
@@ -601,6 +609,16 @@ QJsonObject Server::createNewFile(const QJsonObject &doc)
         message["reason"] = QStringLiteral("This file already exists. Please enter a new filename.");
         return message;
     }
+
+    // create empty file for the specified user
+    QString documents_path = QDir::currentPath() + "/user_documents/" + username + "_" + filename;
+    QFile file(documents_path);
+    if (file.exists()) {
+        throw new std::runtime_error("File shouldn't already exist.");
+    } else {
+        file.open(QIODevice::WriteOnly);
+    }
+
     message["success"] = true;
     return message;
 }

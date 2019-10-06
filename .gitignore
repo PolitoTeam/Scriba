@@ -55,6 +55,8 @@ Server/Server
 
 # profile images folder
 profile_images
+# documents folder
+user_documents
 
 ### OSX ###
 # General
