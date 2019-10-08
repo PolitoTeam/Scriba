@@ -19,6 +19,9 @@ public:
     void setNickname(const QString &nickname);
     void clearNickname();
     void setUsername(const QString &username);
+    QString getFilename();
+    void setFilename(const QString& filename);
+    void closeFile();
 
 public slots:
     void disconnectFromClient();
@@ -37,6 +40,7 @@ private:
     QString username;
     QString nickname;
     QString image_name;
+    QString filename;
 };
 
 #endif // SERVERWORKER_H

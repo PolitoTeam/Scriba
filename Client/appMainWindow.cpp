@@ -56,7 +56,7 @@ AppMainWindow::~AppMainWindow()
 void AppMainWindow::on_logOut()
 {
     login->disconnect();
-     editor->clear();
+    editor->clear();
 }
 
 void AppMainWindow::on_changeWidget(int widget) {

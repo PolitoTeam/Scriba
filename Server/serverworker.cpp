@@ -146,4 +146,14 @@ void ServerWorker::receiveJson()
     }
 }
 
+QString ServerWorker::getFilename(){
+    return filename;
+}
 
+void ServerWorker::setFilename(const QString& filename){
+    this->filename=filename;
+}
+
+void ServerWorker::closeFile(){
+    this->filename.clear();
+}

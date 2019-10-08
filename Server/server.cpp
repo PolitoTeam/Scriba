@@ -127,6 +127,15 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 {
     --m_threadsLoad[threadIdx];
     m_clients.removeAll(sender);
+
+    if (!sender->getFilename().isNull() || !sender->getFilename().isNull()){
+        openFile->value(sender->getFilename())->removeOne(sender);
+        if (openFile->value(sender->getFilename())->isEmpty()){
+            delete openFile->value(sender->getFilename());
+            openFile->remove(sender->getFilename());
+        }
+    }
+
     const QString userName = sender->getNickname();
     if (!userName.isEmpty()) {
         QJsonObject disconnectedMessage;
@@ -681,6 +690,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     int pos = filename.lastIndexOf(QChar(','));
     QString file=filename.left(pos);
 
+
+
+    sender->setFilename(file);
+    qDebug()<<"sender->setFilename() "<<file<<endl;
     if (openFile->contains(file)){
         openFile->value(file)->append(sender);
     }
@@ -754,7 +767,12 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
     }
 
     if (openFile->contains(filename)){
+        sender->closeFile();
         openFile->value(filename)->removeOne(sender);
+        if (openFile->value(filename)->isEmpty()){
+            delete openFile->value(filename);
+            openFile->remove(filename);
+        }
     }
     else{
         message["success"] = false;
