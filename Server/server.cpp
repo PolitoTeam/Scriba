@@ -615,7 +615,8 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
         return message;
     }
 
-    DatabaseError result = this->db->newFile(username, filename);
+    QString sharedLink;
+    DatabaseError result = this->db->newFile(username, filename, sharedLink);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error.");
@@ -640,6 +641,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     }
 
     message["success"] = true;
+    message["shared_link"] = sharedLink;
     return message;
 }
 

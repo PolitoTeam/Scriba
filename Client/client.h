@@ -31,6 +31,7 @@ public:
     void createNewFile(QString filename);
     void closeFile();
 
+    QString getSharedLink();
 
 
 public slots:
@@ -72,7 +73,7 @@ signals:
     void wrongOpenedFile(const QString& reason);
     void usersConnectedReceived(QList<QPair<QString,QString>>);
     void contentReceived(const QString text);
-     void userDisconnected(const QString& username);
+    void userDisconnected(const QString& username);
 
 
 private:
