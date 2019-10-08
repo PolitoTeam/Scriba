@@ -28,7 +28,6 @@ private slots:
      void newFileCompleted();
      void openFileCompleted();
      void newFileError(const QString& reason);
-     void openFileError(const QString& reason);
      void on_openFilesError(const QString& reason);
 
 signals:

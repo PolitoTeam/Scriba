@@ -25,7 +25,7 @@ public:
     void overrideProfileImage(const QPixmap& pixmap);
 
     void getFiles();
-    QMap<QString,QString> getActiveFiles();
+    QList<QPair<QString,QString>> getActiveFiles();
 
     void sendJson(const QJsonObject& message);
     void createNewFile(QString filename);
@@ -67,10 +67,10 @@ signals:
 
     void remoteInsert(Symbol s);
     void remoteErase(Symbol s);
-    void correctNewFIle();
+    void correctNewFile();
     void correctOpenedFile();
-    void wrongNewFIle(const QString& reason);
-    void wrongOpenedFile(const QString& reason);
+    void wrongNewFile(const QString& reason);
+    void wrongListFiles(const QString& reason);
     void usersConnectedReceived(QList<QPair<QString,QString>>);
     void contentReceived(const QString text);
     void userDisconnected(const QString& username);
@@ -82,7 +82,7 @@ private:
     QString username;   //valutare se puntatore o no!
     QString nickname;
     QPixmap* profile;
-    QMap<QString,QString> files;
+    QList<QPair<QString,QString>> files;
     QString openfile;
     QString sharedLink;
 

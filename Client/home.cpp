@@ -14,10 +14,10 @@ Home::Home(QWidget *parent,Client* client) :
     ui->setupUi(this);
     connect(client, &Client::filesReceived, this, &Home::showActiveFiles);
     connect(client, &Client::openFilesError, this, &Home::on_openFilesError);
-    connect(client, &Client::correctNewFIle, this, &Home::newFileCompleted);
-    connect(client, &Client::wrongNewFIle, this, &Home::newFileError);
+    connect(client, &Client::correctNewFile, this, &Home::newFileCompleted);
+    connect(client, &Client::wrongNewFile, this, &Home::newFileError);
     connect(client, &Client::correctOpenedFile, this, &Home::openFileCompleted);
-    connect(client, &Client::wrongOpenedFile, this, &Home::openFileError);
+    connect(client, &Client::wrongListFiles, this, &Home::on_openFilesError);
     connect(this, &Home::fileChosen,client,&Client::openFile);
 }
 
@@ -54,6 +54,7 @@ void Home::newFileCompleted() {
 }
 
 void Home::openFileCompleted() {
+    // TODO: open the right file
     emit changeWidget(EDITOR);
 }
 
@@ -61,12 +62,6 @@ void Home::newFileError(const QString& reason) {
     QMessageBox::critical(this, tr("Error"),
                           reason, QMessageBox::Close);
     on_pushButtonNewFile_clicked();
-}
-
-void Home::openFileError(const QString& reason) {
-    QMessageBox::critical(this, tr("Error"),
-                          reason, QMessageBox::Close);
-
 }
 
 void Home::on_openFilesError(const QString& reason) {
@@ -87,8 +82,7 @@ void Home::on_pushButtonSharedLink_clicked()
                                                  tr(""), &ok);
     if (ok && !text.isEmpty()) {
         qDebug().nospace() << "Line read: " << text;
-        changeWidget(EDITOR);
-        //        emit openFromLink(text);
+        // TODO: same as open file
     }
 }
 
@@ -118,11 +112,11 @@ void Home::on_pushButtonOpenFile_clicked()
 
 void Home::showActiveFiles(){
     QStringList items;
-    QMap<QString,QString> map_files = client->getActiveFiles();
-    QMap<QString, QString>::iterator i;
+    QList<QPair<QString,QString>> map_files = client->getActiveFiles();
+    QList<QPair<QString, QString>>::iterator i;
     for (i = map_files.begin(); i != map_files.end(); ++i){
         //gestire poi meglio le due informazioni per la visualizzazione: nome del file e owner
-        items<<QString(i.key()+","+i.value());
+        items<<QString(i->first + "," + i->second);
     }
 
     bool ok;

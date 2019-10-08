@@ -278,7 +278,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 
             foreach (const QJsonValue& v, array_files){
                 qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
-                this->files.insert(v.toObject().value("name").toString(),v.toObject().value("owner").toString());
+                this->files.push_back(QPair<QString, QString>(v.toObject().value("name").toString(),v.toObject().value("owner").toString()));
             }
 
             emit filesReceived();
@@ -293,10 +293,10 @@ void Client::jsonReceived(const QJsonObject &docObj)
         const bool success = resultVal.toBool();
         if (success) {
             sharedLink = docObj.value(QLatin1String("shared_link")).toString();
-            emit correctNewFIle();
+            emit correctNewFile();
         } else {
             const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
-            emit wrongNewFIle(reasonVal.toString());
+            emit wrongNewFile(reasonVal.toString());
         }
     }
     else if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0) {
@@ -329,7 +329,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             } else {
                 this->openfile.clear();
                 const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
-                emit wrongOpenedFile(reasonVal.toString());
+                emit wrongListFiles(reasonVal.toString());
             }
         }
     else if (typeVal.toString().compare(QLatin1String("disconnection"), Qt::CaseInsensitive) == 0) {
@@ -488,7 +488,7 @@ void Client::overrideProfileImage(const QPixmap& pixmap)
 }
 
 
-QMap<QString,QString> Client::getActiveFiles(){
+QList<QPair<QString,QString>> Client::getActiveFiles(){
     return files;
 }
 
