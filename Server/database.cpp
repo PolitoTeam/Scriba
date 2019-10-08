@@ -6,8 +6,6 @@
 
 Database::Database()
 {
-    srand(time(NULL));
-
     db=QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("127.0.0.1");
     db.setDatabaseName("editor");
@@ -266,23 +264,27 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
     if (!db.open())
         err = CONNECTION_ERROR;
 
+    QSqlDatabase::database().transaction();
     QSqlQuery qry;
-    qry.prepare("SELECT Name FROM FILE WHERE Name=:filename AND Owner=:username");
+    qry.prepare("SELECT Name FROM FILE WHERE Name=:filename AND Owner=:username FOR UPDATE");
     qry.bindValue(":filename", filename);
     qry.bindValue(":username", username);
 
-    if (!qry.exec())
+    if (!qry.exec()) {
         err = QUERY_ERROR;
+    }
     else if (qry.next())
         err = ALREADY_EXISTING_FILE;
     else {
         bool alreadyExisitingLink = true;
         while (alreadyExisitingLink) {
-            sharedLink = generateRandomString();
-
+            sharedLink = "shared_editor://file/" + generateRandomString();
+            qDebug() << "link generation attempt: " << sharedLink;
             QSqlQuery qry;
-            qry.prepare("SELECT * FROM FILE WHERE Link=:link");
+            qry.prepare("SELECT * FROM FILE WHERE Link=:link FOR UPDATE");
             qry.bindValue(":link", sharedLink);
+            if (!qry.exec())
+                err = QUERY_ERROR;
 
             if (!qry.next())
                 alreadyExisitingLink = false;
@@ -298,6 +300,7 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
             err = QUERY_ERROR;
         }
     }
+    QSqlDatabase::database().commit();
 
     db.close();
     return err;
@@ -309,7 +312,7 @@ QString Database::generateRandomString() const
 
    QString randomString;
    for(int i = 0; i < SHARE_LINK_LENGTH; i++) {
-       int index = qrand() % possibleCharacters.length();
+       int index = QRandomGenerator::global()->generate() % possibleCharacters.length(); // qrand is obsolete
        QChar nextChar = possibleCharacters.at(index);
        randomString.append(nextChar);
    }
