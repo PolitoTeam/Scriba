@@ -33,6 +33,7 @@ public:
 
     QString getSharedLink();
     QString getOpenedFile();
+    int getColor();
 
 
 public slots:
@@ -86,6 +87,7 @@ private:
     QList<QPair<QString,QString>> files;
     QString openfile;
     QString sharedLink;
+    int cursor_color_rgb;
 
     void jsonReceived(const QJsonObject &doc);
 };

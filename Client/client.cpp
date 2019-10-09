@@ -313,7 +313,16 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 if (name.isNull() || !name.isString())
                     return;
                 this->openfile=name.toString();
-                emit contentReceived(cont.toString());
+
+                const QJsonValue shared_link = docObj.value(QLatin1String("shared_link"));
+                if (shared_link.isNull() || !shared_link.isString())
+                    return;
+                this->sharedLink = shared_link.toString();
+
+                const QJsonValue color= docObj.value(QLatin1String("color"));
+                if (color.isNull() || !color.isDouble())
+                    return;
+                this->cursor_color_rgb = color.toInt();
 
                 const QJsonValue array= docObj.value(QLatin1String("users"));
                 if (array.isNull() || !array.isArray())
@@ -324,6 +333,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                     qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
                     connected.append(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()));
                 }
+                emit contentReceived(cont.toString());
                 emit usersConnectedReceived(connected);
                 emit correctOpenedFile();
             } else {
@@ -538,6 +548,11 @@ QString Client::getSharedLink()
 QString Client::getOpenedFile()
 {
     return openfile;
+}
+
+int Client::getColor()
+{
+    return cursor_color_rgb;
 }
 
 

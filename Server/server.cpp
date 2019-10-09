@@ -1,5 +1,6 @@
 #include "server.h"
 #include "serverworker.h"
+#include "colors.h"
 #include <QThread>
 #include <functional>
 #include <QJsonDocument>
@@ -655,7 +656,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 }
 
 QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
-    //questo dovrebbe mandare il file...per ora è limitato a rispondere alla richiesta in modo che il client apra l'editor
+    // TODO: questo dovrebbe mandare il file...per ora è limitato a rispondere alla richiesta in modo che il client apra l'editor
 
     QJsonObject message;
     message["type"] = QStringLiteral("file_to_open");
@@ -693,8 +694,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
 
 
     sender->setFilename(file);
+    int index = 0;
     qDebug()<<"sender->setFilename() "<<file<<endl;
     if (openFile->contains(file)){
+        index = openFile->value(file)->size();
         openFile->value(file)->append(sender);
     }
     else{
@@ -702,6 +705,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
         list->append(sender);
         openFile->insert(file,list);
     }
+
+    qDebug() << "index " << index;
+    int color = color_palette[index % color_palette.size()];
+    sender->setColor(color);
 
     QList<ServerWorker*>* list=openFile->value(file);
     QJsonArray array_users;
@@ -727,11 +734,14 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     message["content"]="ciao";
     message["filename"]=file;
     message["users"]=array_users;
+    // TODO: add correct shared link
+    message["shared_link"] = "fake_shared_link";
+    message["color"] = color;
+
     auto d = QJsonDocument(message);
     qDebug()<< d.toJson().constData()<<endl;
     return message;
 }
-
 
 QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
 

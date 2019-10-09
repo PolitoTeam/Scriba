@@ -130,8 +130,7 @@ void Editor::setFontItalic(bool italic)
 void Editor::sharedLink()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
-//    clipboard->setText(client->getSharedLink());
-    clipboard->setText("sharedLink");
+    clipboard->setText(client->getSharedLink());
 
     QMessageBox::information(this, tr("Shared Link"), tr("Link copied to clipboard."), QMessageBox::Ok);
 }
@@ -191,9 +190,15 @@ void Editor::on_erase(int index)
 //da cambiare
 void Editor::updateText(const QString& text){
     ui->listWidget->clear();
-    this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),client->getUsername()));
-    this->ui->textEdit->setText(text);
+//    this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),client->getUsername()));
 
+    QListWidgetItem *item = new QListWidgetItem;
+    item->setIcon(*client->getProfile());
+    item->setText(client->getUsername());
+    qDebug() << "color: " << client->getColor();
+    item->setTextColor(QColor(client->getColor()));
+    this->ui->listWidget->addItem(item);
+    this->ui->textEdit->setText(text);
 }
 
 void Editor::addUsers(const QList<QPair<QString,QString>> users){
@@ -201,7 +206,7 @@ void Editor::addUsers(const QList<QPair<QString,QString>> users){
     for (int i=0;i<users.count();i++){
         this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first));
 
-        }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
+    }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
 }
 
 void Editor::clear(){
