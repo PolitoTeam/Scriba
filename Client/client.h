@@ -32,6 +32,7 @@ public:
     void closeFile();
 
     QString getSharedLink();
+    QString getOpenedFile();
 
 
 public slots:

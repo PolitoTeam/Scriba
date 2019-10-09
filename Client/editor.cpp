@@ -212,7 +212,12 @@ void Editor::clear(){
 void Editor::removeUser(const QString& name){
     qDebug()<<"Here"<<endl;
 
-   // this->ui->listWidget->removeItemWidget(this->ui->listWidget->findItems(name,Qt::MatchFixedString).first());
+    // this->ui->listWidget->removeItemWidget(this->ui->listWidget->findItems(name,Qt::MatchFixedString).first());
+}
+
+void Editor::showEvent(QShowEvent *)
+{
+    this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
 }
 
 

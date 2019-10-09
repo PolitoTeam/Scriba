@@ -52,6 +52,8 @@ private:
     Ui::Editor *ui;
     Client* client;
     CRDT *crdt;
+
+    void showEvent(QShowEvent* event);
 };
 
 #endif // EDITOR_H

@@ -535,4 +535,9 @@ QString Client::getSharedLink()
     return this->sharedLink;
 }
 
+QString Client::getOpenedFile()
+{
+    return openfile;
+}
+
 
