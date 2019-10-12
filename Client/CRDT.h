@@ -19,8 +19,8 @@ class CRDT : public QObject
 public:
     CRDT(int site, Client *client);
     int getId();
-    void localInsert(int index, char value);
-    void localErase(int index);
+    void localInsert(int line, int index, char value);
+    void localErase(int line, int index);
     int getSize();
     QString to_string();
 
@@ -29,22 +29,30 @@ private slots:
     void handleRemoteErase(const Symbol& s);
 
 signals:
-    void insert(int index, char value);
-    void erase(int index);
+    void insert(int line, int index, char value);
+    void erase(int line, int index);
 
 private:
     int _siteId;
-    std::vector<Symbol> _symbols;
+    QVector<QVector<Symbol>> _symbols;
     int _counter = 0;
     std::map<int,bool> strategyCache;
     Client *client;
+    int size = 0;
 
-    std::vector<Identifier> generatePositionBetween(std::vector<Identifier>& pos1, std::vector<Identifier> pos2, std::vector<Identifier>& newPos, int level=0);
+    QVector<Identifier> generatePositionBetween(QVector<Identifier>& pos1, QVector<Identifier> pos2, QVector<Identifier>& newPos, int level=0);
     int generateIdBetween(int id1, int id2, int level);
     bool generateRandomBool();
     int generateRandomNumBetween(int n1,int n2);
-    int findIndexByPosition(Symbol s);
-    int findInsertIndex(Symbol s);
+    bool findPosition(Symbol s, int& line, int& index); // TODO: use reference
+    int findIndexInLine(Symbol s, QVector<Symbol> line);
+    void findInsertPosition(Symbol s, int& line, int& index);
+    int findInsertIndexInLine(Symbol s, QVector<Symbol> line);
+    void findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalLines, int& line, int& index);
+    void insertChar(Symbol s, int line, int index);
+
+    QVector<Identifier> findPosBefore(int line, int index);
+    QVector<Identifier> findPosAfter(int line, int index);
 };
 
 #endif // CRDT_H

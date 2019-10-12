@@ -246,7 +246,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         char value = symbol["value"].toString().at(0).toLatin1();
         int counter = symbol["counter"].toInt();
 
-        std::vector<Identifier> position;
+        QVector<Identifier> position;
         QJsonArray positionJson = symbol["position"].toArray();
         for (int i = 0; i < positionJson.size(); i++) {
             QJsonObject identifier = positionJson[i].toObject();
@@ -276,6 +276,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 return;
             const QJsonArray array_files=array.toArray();
 
+            this->files.clear();
             foreach (const QJsonValue& v, array_files){
                 qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
                 this->files.push_back(QPair<QString, QString>(v.toObject().value("name").toString(),v.toObject().value("owner").toString()));
@@ -333,7 +334,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                     qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
                     connected.append(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()));
                 }
-                emit contentReceived(cont.toString());
+//                emit contentReceived(cont.toString()); TODO: remove comment
                 emit usersConnectedReceived(connected);
                 emit correctOpenedFile();
             } else {

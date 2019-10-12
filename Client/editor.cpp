@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QClipboard>
 #include <QMessageBox>
+#include <QTextBlock>
 
 Editor::Editor(QWidget *parent,Client* client) :
     QMainWindow(parent),
@@ -41,6 +42,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     // TODO: create/load new crdt for every file created/opened; here just to test
     crdt = new CRDT(QDateTime::currentMSecsSinceEpoch(), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
 
@@ -147,44 +149,59 @@ void Editor::setFontBold(bool bold)
 
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     // if symbol received from remote (not entered by client), returns without doing anything
+    qDebug() << ui->textEdit->toPlainText().size() << crdt->getSize();
+    // TODO: change crdt::getsize
     if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
-            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize()))
+            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
+        qDebug() << "remote operation";
         return;
+    }
 
     if (charsAdded > 0) {
         QString added = ui->textEdit->toPlainText().mid(position,charsAdded);
-        qDebug() << "Added " << added << " in position " << position;
+        qDebug() << "Added " << added << "in position (" << this->line << "," << this->index << ")";
 
-//        if (added != "")
-            crdt->localInsert(position, added.at(0).toLatin1());
+        // TODO: fix problem with first character
+        if (added == "") {
+            qDebug() << "empty";
+            ui->textEdit->undo();
+            return;
+        }
+        crdt->localInsert(line, index, added.at(0).toLatin1());
 
     } else if (charsRemoved > 0) {
         ui->textEdit->undo();
         QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
-        qDebug() << "Removed " << removed << " in position " << position;
         ui->textEdit->redo();
 
-        crdt->localErase(position);
+        qDebug() << "Removed " << removed << "in position (" << this->line << "," << this->index << ")";
+        crdt->localErase(line, index);
     }
 }
 
-void Editor::on_insert(int index, char value)
+void Editor::on_insert(int line, int index, char value)
 {
-//    qDebug() << "ON INSERT " << index << " " << QString(1, value);
+//    qDebug() << "ON INSERT" << line << index << QString(1, value);
     QTextCursor cursor = ui->textEdit->textCursor();
-    cursor.setPosition(index);
+//    cursor.setPosition(index);
+
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    cursor.setPosition(block.position() + index);
     cursor.insertText(QString(1, value));
 
-    qDebug() << crdt->to_string();
+    qDebug().noquote() << crdt->to_string();
 }
 
-void Editor::on_erase(int index)
+void Editor::on_erase(int line, int index)
 {
     QTextCursor cursor = ui->textEdit->textCursor();
     cursor.setPosition(index);
+
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    cursor.setPosition(block.position() + index);
     cursor.deleteChar();
 
-    qDebug() << crdt->to_string();
+    qDebug().noquote() << crdt->to_string();
 }
 
 //da cambiare
@@ -218,6 +235,14 @@ void Editor::removeUser(const QString& name){
     qDebug()<<"Here"<<endl;
 
     // this->ui->listWidget->removeItemWidget(this->ui->listWidget->findItems(name,Qt::MatchFixedString).first());
+}
+
+void Editor::saveCursorPosition()
+{
+    QTextCursor cursor = ui->textEdit->textCursor();
+    this->line = cursor.blockNumber();
+    this->index = cursor.positionInBlock();
+//    qDebug() << "X: " << cursor.blockNumber() << ", Y: " << cursor.positionInBlock();
 }
 
 void Editor::showEvent(QShowEvent *)

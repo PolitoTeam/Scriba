@@ -5,6 +5,7 @@
 #include <vector>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QVector>
 
 class Identifier {
 public:
@@ -12,6 +13,7 @@ public:
     int site;
 
 public:
+    Identifier() {} // empty constructor needed, otherwise compile error
     Identifier(int digit, int site) : digit(digit), site(site) {}
 
     static int compare(const Identifier& i1, const Identifier& i2) {
@@ -46,17 +48,21 @@ class Symbol
 {
 private:
     char value;
-    std::vector<Identifier> position;
+    QVector<Identifier> position;
     bool italic, bold, underline; // TODO: add these attributes
     int counter; // TODO: when/where is it used???
 
 public:
-    Symbol(char value, std::vector<Identifier> position, int counter) : value(value), position(position), counter(counter) {};
+    Symbol() {} // empty constructor needed, otherwise compile error
+    Symbol(char value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
     char getValue() const { return value; }
-    std::vector<Identifier> getPosition() const { return position; }
+    QVector<Identifier> getPosition() const { return position; }
     int getCounter() const { return counter; }
 
-    static int compare(const std::vector<Identifier>& p1, const std::vector<Identifier>& p2) {
+    static int compare(const Symbol& s1, const Symbol& s2) {
+        QVector<Identifier> p1 = s1.getPosition();
+        QVector<Identifier> p2 = s2.getPosition();
+
         for (int i = 0; i < std::min(p1.size(), p2.size()); i++) {
             int comp = Identifier::compare(p1[i], p2[i]);
             if (comp != 0) {
@@ -73,7 +79,8 @@ public:
     }
 
     QString to_string() {
-        QString result = QString(1, value) + "[";
+        QString value_string = (value == '\n') ? "NL" : QString(1, value);
+        QString result = value_string + "[";
         bool first = true;
 
         for (Identifier i : position) {

@@ -5,6 +5,7 @@
 #include "appMainWindow.h"
 #include "client.h"
 #include "CRDT.h"
+#include <QTextCursor>
 
 namespace Ui {
 class Editor;
@@ -42,16 +43,18 @@ private slots:
     void textChange();
 
     void on_contentsChange(int position, int charsRemoved, int charsAdded);
-    void on_insert(int index, char value);
-    void on_erase(int index);
+    void on_insert(int line, int index, char value);
+    void on_erase(int line, int index);
     void addUsers(const QList<QPair<QString,QString>> users);
      void updateText(const QString& text);
     void removeUser(const QString& name);
+    void saveCursorPosition();
 
 private:
     Ui::Editor *ui;
     Client* client;
     CRDT *crdt;
+    int line = 0, index = 0;
 
     void showEvent(QShowEvent* event);
 };

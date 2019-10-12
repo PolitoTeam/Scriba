@@ -61,3 +61,6 @@ user_documents
 ### OSX ###
 # General
 .DS_Store
+
+# CLion
+.idea
