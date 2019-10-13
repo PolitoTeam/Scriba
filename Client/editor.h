@@ -43,10 +43,10 @@ private slots:
     void textChange();
 
     void on_contentsChange(int position, int charsRemoved, int charsAdded);
-    void on_insert(int line, int index, char value);
+    void on_insert(int line, int index, const Symbol& s);
     void on_erase(int line, int index);
     void addUsers(const QList<QPair<QString,QString>> users);
-     void updateText(const QString& text);
+    void updateText(const QString& text);
     void removeUser(const QString& name);
     void saveCursorPosition();
 

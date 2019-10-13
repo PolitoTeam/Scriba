@@ -1,4 +1,5 @@
 #include "CRDT.h"
+#include <QFont>
 
 CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
     connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
@@ -16,7 +17,7 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
 
 int CRDT::getId() { return _siteId; }
 
-void CRDT::localInsert(int line, int index, char value) {
+void CRDT::localInsert(int line, int index, char value, QFont font) {
     if (line < 0 || index < 0)
         throw std::runtime_error("Error: index out of bound.\n");
 
@@ -27,7 +28,7 @@ void CRDT::localInsert(int line, int index, char value) {
     QVector<Identifier> position = generatePositionBetween(posBefore, posAfter, newPos);
 
     // generate symbol
-    Symbol s(value, newPos, ++_counter);
+    Symbol s(value, newPos, ++_counter, font);
 
     insertChar(s, line, index);
 
@@ -264,7 +265,7 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
     this->size++;
 
 //    qDebug() << "remote insert" << s.getValue() << line << index;
-    emit insert(line, index, s.getValue());
+    emit insert(line, index, s);
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {

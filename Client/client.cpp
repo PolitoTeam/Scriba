@@ -255,15 +255,16 @@ void Client::jsonReceived(const QJsonObject &docObj)
             position.push_back(Identifier(digit, site));
         }
 
-        Symbol s(value, position, counter);
+        SymbolFormat format = SymbolFormat::fromJson(symbol["format"].toObject());
+        Symbol s(value, position, counter, format);
         qDebug() << s.to_string();
 
         int operation_type = docObj["operation_type"].toInt();
         qDebug() << "operation" << operation_type;
         if (operation_type == INSERT)
-            emit remoteInsert(Symbol(value, position, counter));
+            emit remoteInsert(s);
         else
-            emit remoteErase(Symbol(value, position, counter));
+            emit remoteErase(s);
     }
     else if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0) {
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));

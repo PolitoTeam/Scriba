@@ -4,12 +4,13 @@
 #include <QJsonObject>
 #include <map>
 #include <random>
-#include "message.h"
 #include "symbol.h"
 #include "client.h"
 
 #define BASE 32
 #define BOUNDARY 10
+
+typedef enum {INSERT, DELETE} OperationType;
 
 class CRDT : public QObject
 {
@@ -19,7 +20,7 @@ class CRDT : public QObject
 public:
     CRDT(int site, Client *client);
     int getId();
-    void localInsert(int line, int index, char value);
+    void localInsert(int line, int index, char value, QFont font);
     void localErase(int line, int index);
     int getSize();
     QString to_string();
@@ -29,7 +30,7 @@ private slots:
     void handleRemoteErase(const Symbol& s);
 
 signals:
-    void insert(int line, int index, char value);
+    void insert(int line, int index, const Symbol& s);
     void erase(int line, int index);
 
 private:

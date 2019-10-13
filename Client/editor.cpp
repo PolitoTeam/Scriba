@@ -147,10 +147,10 @@ void Editor::setFontBold(bool bold)
 //    this->crdt = crdt;
 //}
 
-void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
-    // if symbol received from remote (not entered by client), returns without doing anything
+void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
     qDebug() << ui->textEdit->toPlainText().size() << crdt->getSize();
-    // TODO: change crdt::getsize
+
+    // if symbol received from remote (not entered by client), returns without doing anything
     if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
             || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
         qDebug() << "remote operation";
@@ -167,7 +167,10 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             ui->textEdit->undo();
             return;
         }
-        crdt->localInsert(line, index, added.at(0).toLatin1());
+
+        QFont font = ui->textEdit->currentCharFormat().font();
+        qDebug() << "on contents change"<< font.italic() << font.bold() << font.underline();
+        crdt->localInsert(line, index, added.at(0).toLatin1(), font);
 
     } else if (charsRemoved > 0) {
         ui->textEdit->undo();
@@ -179,7 +182,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     }
 }
 
-void Editor::on_insert(int line, int index, char value)
+void Editor::on_insert(int line, int index, const Symbol& s)
 {
 //    qDebug() << "ON INSERT" << line << index << QString(1, value);
     QTextCursor cursor = ui->textEdit->textCursor();
@@ -187,7 +190,15 @@ void Editor::on_insert(int line, int index, char value)
 
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
     cursor.setPosition(block.position() + index);
-    cursor.insertText(QString(1, value));
+
+    // save old format to restore it later
+    QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+//    qDebug() << "oldFormat" << oldFormat.font().italic() << oldFormat.font().bold() << oldFormat.font().underline();
+    QTextCharFormat newFormat = s.getQTextCharFormat();
+//    qDebug() << "format" << newFormat.font().bold();
+    cursor.setCharFormat(newFormat);
+    cursor.insertText(QString(1, s.getValue()));
+    ui->textEdit->setCurrentCharFormat(oldFormat);
 
     qDebug().noquote() << crdt->to_string();
 }

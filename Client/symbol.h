@@ -6,6 +6,10 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QVector>
+#include <QFont>
+#include <QJsonObject>
+#include <QTextCharFormat>
+#include <QDebug>
 
 class Identifier {
 public:
@@ -44,20 +48,75 @@ public:
     }
 };
 
+class SymbolFormat {
+public:
+    enum Alignment {ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER} left;
+    bool italic, bold, underline;
+    QString font;
+    double size;
+
+    QJsonObject toJson() {
+        QJsonObject json;
+
+        json["italic"] = italic;
+        json["bold"] = bold;
+        json["underline"] = underline;
+
+        return json;
+    }
+
+    static SymbolFormat fromJson(QJsonObject json) {
+        SymbolFormat format;
+        format.italic = json["italic"].toBool();
+        format.bold = json["bold"].toBool();
+        format.underline = json["underline"].toBool();
+        qDebug() << "from json" << format.italic << format.bold << format.underline;
+        return format;
+    }
+
+    QTextCharFormat getQTextCharFormat() const {
+        QTextCharFormat format;
+        qDebug() << "Format class" << italic << bold << underline;
+        QFont font;
+        font.setItalic(italic);
+        font.setBold(bold);
+        font.setUnderline(underline);
+        format.setFont(font);
+        qDebug() << "Format class2" << format.font().italic() << format.font().bold() << format.font().underline();
+
+        //            charFormat.setFont(QFont("Times", 15, QFont::Bold));
+    //        charFormat.setFontWeight(QFont::Bold);
+    //        charFormat.setForeground(QBrush(QColor(0xff0000)));
+        return format;
+    }
+};
+
 class Symbol
 {
 private:
     char value;
     QVector<Identifier> position;
-    bool italic, bold, underline; // TODO: add these attributes
     int counter; // TODO: when/where is it used???
+    SymbolFormat format;
 
 public:
     Symbol() {} // empty constructor needed, otherwise compile error
     Symbol(char value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
+    Symbol(char value, QVector<Identifier> position, int counter, QFont font) : value(value),
+            position(position), counter(counter) {
+        format.italic = font.italic();
+        format.bold = font.bold();
+        format.underline = font.underline();
+
+        qDebug() << "constructor" << format.italic << format.bold << format.underline;
+    }
+    Symbol(char value, QVector<Identifier> position, int counter, SymbolFormat format) : value(value),
+            position(position), counter(counter), format(format) {}
     char getValue() const { return value; }
     QVector<Identifier> getPosition() const { return position; }
     int getCounter() const { return counter; }
+
+    QTextCharFormat getQTextCharFormat() const { return format.getQTextCharFormat(); }
 
     static int compare(const Symbol& s1, const Symbol& s2) {
         QVector<Identifier> p1 = s1.getPosition();
@@ -105,6 +164,7 @@ public:
         }
         json["position"] = jsonArray;
         json["counter"] = counter;
+        json["format"] = format.toJson();
 
         return json;
     }

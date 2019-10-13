@@ -41,7 +41,6 @@ HEADERS += \
     login.h \
     editor.h \
     home.h \
-    message.h \
     modify.h \
     signup.h \
     symbol.h
