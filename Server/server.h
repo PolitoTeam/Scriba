@@ -8,6 +8,9 @@ class QThread;
 class ServerWorker;
 class QJsonObject;
 
+#define IMAGES_PATH "/profile_images"
+#define DOCUMENTS_PATH "/user_documents"
+
 class Server : public QTcpServer
 {
     Q_OBJECT

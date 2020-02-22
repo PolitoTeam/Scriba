@@ -21,7 +21,7 @@ Server::Server(QObject *parent,Database* db)
     mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
 
     // create folder to store profile images
-    QString profile_images_path = QDir::currentPath() + "/profile_images";
+    QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
     QDir dir_images(profile_images_path);
     if (!dir_images.exists()){
         qDebug().nospace() << "Folder " << profile_images_path << " created";
@@ -29,7 +29,7 @@ Server::Server(QObject *parent,Database* db)
     }
 
     // create folder to store documents
-    QString user_documents_path = QDir::currentPath() + "/user_documents";
+    QString user_documents_path = QDir::currentPath() + DOCUMENTS_PATH;
 //    qDebug() << "document path: " << user_documents_path;
     QDir dir_documents(user_documents_path);
     if (!dir_documents.exists()){
@@ -367,7 +367,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
         // store on disk -> CHANGE to save every X minutes
         // TODO: use the proper filename
-        QString filePath = QDir::currentPath() + "/user_documents/" + "test.json";
+        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getUsername() + "_" + sender->getFilename();
         QFile file(filePath);
         file.open(QIODevice::WriteOnly | QFile::Truncate);
         QJsonArray symbols_json;

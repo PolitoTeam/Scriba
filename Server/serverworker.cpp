@@ -1,4 +1,5 @@
 #include "serverworker.h"
+#include "server.h"
 #include <QDataStream>
 #include <QJsonDocument>
 #include <QJsonParseError>
@@ -38,7 +39,7 @@ void ServerWorker::sendProfileImage()
     QDataStream socketStream(m_serverSocket);
     socketStream.setVersion(QDataStream::Qt_5_7);
 
-    QString image_path = QDir::currentPath() + "/profile_images/" + username + ".png";
+    QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + username + ".png";
 
     QFileInfo file(image_path);
     if (!file.exists()) {
@@ -128,7 +129,7 @@ void ServerWorker::receiveJson()
                 qDebug() << image_name;
                 if (image_name.isEmpty() || image_name.isNull())
                     image_name=username;
-                QString image_path = QDir::currentPath() + "/profile_images/" + image_name + ".png";
+                QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + image_name + ".png";
                 image_name.clear();
 
                 QFile file(image_path);
