@@ -27,7 +27,8 @@ private:
     QVector<int> m_threadsLoad;
     QVector<ServerWorker *> m_clients;
     Database* db;
-    QMap<QString,QList<ServerWorker*>*>* openFile;
+    QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
+    QSet<QJsonObject> symbols_set;
 
 private slots:
     void broadcast(const QJsonObject &message, ServerWorker *exclude);

@@ -77,6 +77,12 @@ void Editor::print()
 void Editor::exit()
 {
     client->closeFile();
+
+    // clean the editor
+//    qDebug() << ui->textEdit;
+//    qDebug() << ui->textEdit->toPlainText();
+//    ui->textEdit->setText("");
+//    ui->textEdit->clear();
     emit changeWidget(HOME);
 }
 

@@ -18,7 +18,7 @@ Server::Server(QObject *parent,Database* db)
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
     qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
 
-    openFile=new QMap<QString,QList<ServerWorker*>*>();
+    mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
 
     // create folder to store profile images
     QString profile_images_path = QDir::currentPath() + "/profile_images";
@@ -30,6 +30,7 @@ Server::Server(QObject *parent,Database* db)
 
     // create folder to store documents
     QString user_documents_path = QDir::currentPath() + "/user_documents";
+//    qDebug() << "document path: " << user_documents_path;
     QDir dir_documents(user_documents_path);
     if (!dir_documents.exists()){
         qDebug().nospace() << "Folder " << user_documents_path << " created";
@@ -130,10 +131,10 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
     m_clients.removeAll(sender);
 
     if (!sender->getFilename().isNull() || !sender->getFilename().isNull()){
-        openFile->value(sender->getFilename())->removeOne(sender);
-        if (openFile->value(sender->getFilename())->isEmpty()){
-            delete openFile->value(sender->getFilename());
-            openFile->remove(sender->getFilename());
+        mapFileWorkers->value(sender->getFilename())->removeOne(sender);
+        if (mapFileWorkers->value(sender->getFilename())->isEmpty()){
+            delete mapFileWorkers->value(sender->getFilename());
+            mapFileWorkers->remove(sender->getFilename());
         }
     }
 
@@ -358,7 +359,23 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
 
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
+        QJsonObject symbol = docObj["symbol"].toObject();
+
+        // store symbol in server memory and broadcast operation to other editors
+        symbols_set.insert(symbol);
         broadcast(docObj, sender);
+
+        // store on disk -> CHANGE to save every X minutes
+        // TODO: use the proper filename
+        QString filePath = QDir::currentPath() + "/user_documents/" + "test.json";
+        QFile file(filePath);
+        file.open(QIODevice::WriteOnly | QFile::Truncate);
+        QJsonArray symbols_json;
+        for (QJsonObject symbol : symbols_set) {
+            symbols_json.append(symbol);
+        }
+        file.write(QJsonDocument(symbols_json).toJson());
+        file.close();
     }
 
     if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
@@ -646,7 +663,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     } else {
         QList<ServerWorker*>* list=new QList<ServerWorker*>();
         list->append(sender);
-        openFile->insert(documents_path,list);
+        mapFileWorkers->insert(documents_path,list);
         file.open(QIODevice::WriteOnly);
     }
 
@@ -696,21 +713,22 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     sender->setFilename(file);
     int index = 0;
     qDebug()<<"sender->setFilename() "<<file<<endl;
-    if (openFile->contains(file)){
-        index = openFile->value(file)->size();
-        openFile->value(file)->append(sender);
+
+    if (mapFileWorkers->contains(filename)){
+        index = mapFileWorkers->value(filename)->size();
+        mapFileWorkers->value(filename)->append(sender);
     }
     else{
         QList<ServerWorker*>* list=new QList<ServerWorker*>();
         list->append(sender);
-        openFile->insert(file,list);
+        mapFileWorkers->insert(filename,list);
     }
 
     qDebug() << "index " << index;
     int color = color_palette[index % color_palette.size()];
     sender->setColor(color);
 
-    QList<ServerWorker*>* list=openFile->value(file);
+    QList<ServerWorker*>* list=mapFileWorkers->value(filename);
     QJsonArray array_users;
 
     //per ora manda il contenuto del file insieme alla lista di chi è connesso;
@@ -776,12 +794,12 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         return message;
     }
 
-    if (openFile->contains(filename)){
+    if (mapFileWorkers->contains(filename)){
         sender->closeFile();
-        openFile->value(filename)->removeOne(sender);
-        if (openFile->value(filename)->isEmpty()){
-            delete openFile->value(filename);
-            openFile->remove(filename);
+        mapFileWorkers->value(filename)->removeOne(sender);
+        if (mapFileWorkers->value(filename)->isEmpty()){
+            delete mapFileWorkers->value(filename);
+            mapFileWorkers->remove(filename);
         }
     }
     else{

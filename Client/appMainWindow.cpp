@@ -67,7 +67,13 @@ void AppMainWindow::on_changeWidget(int widget) {
     }
     else
     {
+        // IMPORTANT: created new editor otherwise if the existing ui->textEdit
+        // is cleaned it is interpreted as removing all chars (delete operations)
         editor->hide();
+        editor = new Editor(this, client);
+        connect(editor, &Editor::changeWidget, this, &AppMainWindow::on_changeWidget);
+        editor->hide();
+
         stackedWidget->setCurrentIndex(widget);
         this->show();
     }
