@@ -168,6 +168,25 @@ public:
 
         return json;
     }
+
+    static Symbol fromJson(QJsonObject json) {
+        char value = json["value"].toString().at(0).toLatin1();
+        int counter = json["counter"].toInt();
+
+        QVector<Identifier> position;
+        QJsonArray positionJson = json["position"].toArray();
+        for (int i = 0; i < positionJson.size(); i++) {
+            QJsonObject identifier = positionJson[i].toObject();
+            int digit = identifier["digit"].toInt();
+            int site = identifier["site"].toInt();
+            position.push_back(Identifier(digit, site));
+        }
+
+        SymbolFormat format = SymbolFormat::fromJson(json["format"].toObject());
+        Symbol s(value, position, counter, format);
+
+        return s;
+    }
 };
 
 #endif // SYMBOL_H

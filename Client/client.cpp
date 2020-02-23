@@ -243,20 +243,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit correctOldPassword();
     } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {   
         QJsonObject symbol = docObj["symbol"].toObject();
-        char value = symbol["value"].toString().at(0).toLatin1();
-        int counter = symbol["counter"].toInt();
-
-        QVector<Identifier> position;
-        QJsonArray positionJson = symbol["position"].toArray();
-        for (int i = 0; i < positionJson.size(); i++) {
-            QJsonObject identifier = positionJson[i].toObject();
-            int digit = identifier["digit"].toInt();
-            int site = identifier["site"].toInt();
-            position.push_back(Identifier(digit, site));
-        }
-
-        SymbolFormat format = SymbolFormat::fromJson(symbol["format"].toObject());
-        Symbol s(value, position, counter, format);
+        Symbol s = Symbol::fromJson(symbol);
         qDebug() << s.to_string();
 
         int operation_type = docObj["operation_type"].toInt();
@@ -307,10 +294,16 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 return;
             const bool success = resultVal.toBool();
             if (success) {
-
                 const QJsonValue cont = docObj.value(QLatin1String("content"));
-                if (cont.isNull() || !cont.isString())
+                if (cont.isNull() || !cont.isArray())
                     return;
+                const QJsonArray symbols = cont.toArray();
+                // read the symbols in the file and parse them into the editor
+                foreach (const QJsonValue & symbol, symbols) {
+                    Symbol s = Symbol::fromJson(symbol.toObject());
+                    emit remoteInsert(s);
+                }
+
                 const QJsonValue name = docObj.value(QLatin1String("filename"));
                 if (name.isNull() || !name.isString())
                     return;

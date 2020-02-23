@@ -365,8 +365,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         symbols_set.insert(symbol);
         broadcast(docObj, sender);
 
-        // store on disk -> CHANGE to save every X minutes
-        // TODO: use the proper filename
+        // TODO: store on disk -> CHANGE to save every X minutes
         QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getUsername() + "_" + sender->getFilename();
         QFile file(filePath);
         file.open(QIODevice::WriteOnly | QFile::Truncate);
@@ -384,6 +383,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
     if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
         QJsonObject message = this->sendFile(docObj,sender);
+        qDebug() << "JSON PRINT" << message;
         this->sendJson(sender,message);
     }
     if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
@@ -687,7 +687,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     const QString filename = name.toString().simplified();
     if (filename.isEmpty()){
         message["success"] = false;
-        message["reason"] = QStringLiteral("Empty old password");
+        message["reason"] = QStringLiteral("Empty filename");
         return message;
     }
 
@@ -707,8 +707,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
 
     int pos = filename.lastIndexOf(QChar(','));
     QString file=filename.left(pos);
-
-
+    QString author = filename.right(filename.length() - pos - 1);
 
     sender->setFilename(file);
     int index = 0;
@@ -748,8 +747,27 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     }
 
 
+    QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + author + "_" + file;
+    QFile f(filePath);
+    f.open(QIODevice::ReadOnly | QIODevice::Text);
+    QByteArray json_data = f.readAll();
+    f.close();
+
+    QJsonParseError parseError;
+    QJsonDocument document = QJsonDocument::fromJson(json_data, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Json parsing error");
+    }
+    if (!document.isArray()) {
+        message["success"] = false;
+        message["reason"] = QStringLiteral("File content different form json array");
+    }
+
+    QJsonArray o = document.array();
     message["success"] = true;
-    message["content"]="ciao";
+    message["content"] = o;
+//    message["content"] = "ciao";
     message["filename"]=file;
     message["users"]=array_users;
     // TODO: add correct shared link
