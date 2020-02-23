@@ -16,7 +16,7 @@ Server::Server(QObject *parent,Database* db)
 {
     m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
-    qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
+//    qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
 
     mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
 
@@ -42,9 +42,9 @@ Server::Server(QObject *parent,Database* db)
 //    db->getFiles("b@b", a);
 
     // testing the timer TODO: use slot to save all files
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, [=]() { qDebug()<<"Timer!"<<endl;});
-    timer->start(1000 * SAVE_INTERVAL_SEC);
+//    QTimer *timer = new QTimer(this);
+//    connect(timer, &QTimer::timeout, [=]() { qDebug()<<"Timer!"<<endl;});
+//    timer->start(1000 * SAVE_INTERVAL_SEC);
 }
 
 Server::~Server()
@@ -74,7 +74,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
         threadIdx = std::distance(m_threadsLoad.cbegin(), std::min_element(m_threadsLoad.cbegin(), m_threadsLoad.cend()));
         ++m_threadsLoad[threadIdx];
     }
-    qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
+//    qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
     worker->moveToThread(m_availableThreads.at(threadIdx)); //asssegnazione client al thread scelto.
 
     connect(m_availableThreads.at(threadIdx), &QThread::finished,[=]() { qDebug()<<"Thread: "<<threadIdx<<" terminato!"<<endl;});
@@ -123,6 +123,7 @@ void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
+//    qDebug() << json;
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
     else
@@ -143,6 +144,7 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
         }
     }
 
+    // TODO: when is the message sent??
     const QString userName = sender->getNickname();
     if (!userName.isEmpty()) {
         QJsonObject disconnectedMessage;
@@ -430,7 +432,7 @@ QJsonObject Server::updateNick(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty nickname");
         return message;
     }
-    qDebug()<<"nickname: "<<nickname;
+//    qDebug()<<"nickname: "<<nickname;
     DatabaseError result = this->db->updateNickname(username,nickname);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
@@ -445,7 +447,6 @@ QJsonObject Server::updateNick(const QJsonObject &doc){
 
     message["success"] = true;
     return message;
-
 }
 
 
@@ -515,9 +516,6 @@ QJsonObject Server::updatePass(const QJsonObject &doc){
         return message;
 
     }
-
-
-
 }
 
 QJsonObject Server::checkOldPass(const QJsonObject &doc){
@@ -617,7 +615,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     message["success"] = true;
     message["files"]=array_files;
     auto d = QJsonDocument(message);
-    qDebug()<< d.toJson().constData()<<endl;
+//    qDebug()<< d.toJson().constData()<<endl;
     return message;
 }
 
@@ -719,9 +717,9 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     QString file=filename.left(pos);
     QString author = filename.right(filename.length() - pos - 1);
 
-    sender->setFilename(file);
+    sender->setFilename(filename);
     int index = 0;
-    qDebug()<<"sender->setFilename() "<<file<<endl;
+//    qDebug()<<"sender->setFilename() "<<file<<endl;
 
     if (mapFileWorkers->contains(filename)){
         index = mapFileWorkers->value(filename)->size();
@@ -733,7 +731,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
         mapFileWorkers->insert(filename,list);
     }
 
-    qDebug() << "index " << index;
+//    qDebug() << "index " << index;
     int color = color_palette[index % color_palette.size()];
     sender->setColor(color);
 
@@ -775,12 +773,16 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     }
     QJsonArray symbols = document.array();
 
+    // retrieve shared link
+    QString sharedLink;
+    db->getSharedLink(author, file, sharedLink);
+
     message["success"] = true;
     message["content"] = symbols;
     message["filename"]=file;
     message["users"]=array_users;
-    // TODO: add correct shared link
-    message["shared_link"] = "fake_shared_link";
+//    message["shared_link"] = "fake_shared_link";
+    message["shared_link"] = sharedLink;
     message["color"] = color;
 
     auto d = QJsonDocument(message);
@@ -789,7 +791,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
 }
 
 QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
-
 
     QJsonObject message;
     message["type"] = QStringLiteral("close");
@@ -820,13 +821,15 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         message["reason"] = QStringLiteral("Empty username");
         return message;
     }
-
+//    qDebug() << mapFileWorkers->keys();
     if (mapFileWorkers->contains(filename)){
         sender->closeFile();
+        qDebug() << "first";
         mapFileWorkers->value(filename)->removeOne(sender);
         if (mapFileWorkers->value(filename)->isEmpty()){
             delete mapFileWorkers->value(filename);
             mapFileWorkers->remove(filename);
+            qDebug() << "second";
         }
     }
     else{

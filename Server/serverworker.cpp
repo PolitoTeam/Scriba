@@ -93,7 +93,7 @@ void ServerWorker::receiveJson()
     QByteArray jsonData;
     QDataStream socketStream(m_serverSocket);
 
-    qDebug()<<"Thread: "<<QThread::currentThreadId()<<endl;
+//    qDebug()<<"Thread: "<<QThread::currentThreadId()<<endl;
     socketStream.setVersion(QDataStream::Qt_5_7);
     for (;;) {
         socketStream.startTransaction();

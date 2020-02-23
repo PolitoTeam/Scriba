@@ -239,7 +239,6 @@ DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,
             while (qry.next()) {
                 files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
             }
-
         }
 
         if (files.isEmpty())
@@ -299,6 +298,27 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
     }
     QSqlDatabase::database().commit();
 
+    db.close();
+    return err;
+}
+
+DatabaseError Database::getSharedLink(const QString &author,const QString &filename, QString &sharedLink){
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Link FROM FILE WHERE Owner=:owner AND Name=:name");
+    qry.bindValue(":owner", author);
+    qry.bindValue(":name", filename);
+    if (!qry.exec())
+        err = QUERY_ERROR;
+    else if (!qry.next())
+        // no file with such name
+        err = NON_EXISTING_FILE;
+    else {
+        sharedLink = qry.value(0).toString();
+    }
     db.close();
     return err;
 }

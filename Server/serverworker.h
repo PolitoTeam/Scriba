@@ -40,6 +40,7 @@ private:
     QTcpSocket *m_serverSocket;
     QString username;
     QString nickname;
+    QString shared_link;
     QString image_name;
     QString filename;
     int color_rgb;

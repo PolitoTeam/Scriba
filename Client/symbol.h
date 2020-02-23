@@ -70,19 +70,19 @@ public:
         format.italic = json["italic"].toBool();
         format.bold = json["bold"].toBool();
         format.underline = json["underline"].toBool();
-        qDebug() << "from json" << format.italic << format.bold << format.underline;
+//        qDebug() << "from json" << format.italic << format.bold << format.underline;
         return format;
     }
 
     QTextCharFormat getQTextCharFormat() const {
         QTextCharFormat format;
-        qDebug() << "Format class" << italic << bold << underline;
+//        qDebug() << "Format class" << italic << bold << underline;
         QFont font;
         font.setItalic(italic);
         font.setBold(bold);
         font.setUnderline(underline);
         format.setFont(font);
-        qDebug() << "Format class2" << format.font().italic() << format.font().bold() << format.font().underline();
+//        qDebug() << "Format class2" << format.font().italic() << format.font().bold() << format.font().underline();
 
         //            charFormat.setFont(QFont("Times", 15, QFont::Bold));
     //        charFormat.setFontWeight(QFont::Bold);
@@ -108,7 +108,7 @@ public:
         format.bold = font.bold();
         format.underline = font.underline();
 
-        qDebug() << "constructor" << format.italic << format.bold << format.underline;
+//        qDebug() << "constructor" << format.italic << format.bold << format.underline;
     }
     Symbol(char value, QVector<Identifier> position, int counter, SymbolFormat format) : value(value),
             position(position), counter(counter), format(format) {}
