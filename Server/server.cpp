@@ -40,6 +40,11 @@ Server::Server(QObject *parent,Database* db)
 //    DEBUG
 //    QVector<QPair<QString, QString>> a;
 //    db->getFiles("b@b", a);
+
+    // testing the timer TODO: use slot to save all files
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, [=]() { qDebug()<<"Timer!"<<endl;});
+    timer->start(1000 * SAVE_INTERVAL_SEC);
 }
 
 Server::~Server()

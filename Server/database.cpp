@@ -117,7 +117,6 @@ DatabaseError Database::updateNickname(const QString &username,const QString &ni
         if (!qry.exec()){
             err = QUERY_ERROR;
         }
-
     }
 
     db.close();
@@ -163,7 +162,6 @@ DatabaseError  Database::updatePassword(const QString &username,const QString &o
         if (!qry.exec()){
             err = QUERY_ERROR;
         }
-
     }
 
     db.close();
@@ -228,7 +226,6 @@ DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,
             while (qry.next()) {
                 files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
             }
-
         }
 
         // add files--> private ones: the files that are privat and that the user has already accessed: it means that PUBLIC=false and the file is in the FILE_USER table with FIRST_ACESS=FALSE

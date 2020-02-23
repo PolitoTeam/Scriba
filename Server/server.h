@@ -10,6 +10,7 @@ class QJsonObject;
 
 #define IMAGES_PATH "/profile_images"
 #define DOCUMENTS_PATH "/user_documents"
+#define SAVE_INTERVAL_SEC 5 // saving interval in seconds
 
 class Server : public QTcpServer
 {
