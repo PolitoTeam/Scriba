@@ -1,6 +1,7 @@
 #include "server.h"
 #include "serverworker.h"
 #include "colors.h"
+#include "../Client/CRDT.h"
 #include <QThread>
 #include <functional>
 #include <QJsonDocument>
@@ -367,19 +368,37 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
         QJsonObject symbol = docObj["symbol"].toObject();
+        int operation_type = docObj["operation_type"].toInt();
 
-        // store symbol in server memory and broadcast operation to other editors
-        symbols_set.insert(symbol);
+        // update symbols in server memory and broadcast operation to other editors
+        // TODO: handle changes (only deletion and insertion)
+        if (operation_type == INSERT) {
+            qDebug() << "insertion";
+            symbols_list.append(symbol);
+        } else if (operation_type == DELETE) {
+            qDebug() << "deletion";
+            symbols_list.removeOne(symbol);
+        } else {
+
+        }
         broadcast(docObj, sender);
 
         // TODO: store on disk -> CHANGE to save every X minutes
-        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getUsername() + "_" + sender->getFilename();
+        // TODO: wrong, shouldn't be username but author!
+        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
+        if (QFile::exists(filePath))
+        {
+            QFile::remove(filePath);
+        }
+//        qDebug() << filePath;
         QFile file(filePath);
-        file.open(QIODevice::WriteOnly | QFile::Truncate);
+        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
         QJsonArray symbols_json;
-        for (QJsonObject symbol : symbols_set) {
+        for (QJsonObject symbol : symbols_list) {
             symbols_json.append(symbol);
         }
+
+        qDebug() << symbols_json;
         file.write(QJsonDocument(symbols_json).toJson());
         file.close();
     }
@@ -395,7 +414,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
         // store symbols in server memory
         foreach (const QJsonValue & symbol, message["content"].toArray()) {
-            symbols_set.insert(symbol.toObject());
+            symbols_list.append(symbol.toObject());
         }
     }
     if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
@@ -664,7 +683,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     }
 
     // create empty file for the specified user
-    QString documents_path = QDir::currentPath() + "/user_documents/" + username + "_" + filename;
+    QString documents_path = QDir::currentPath() + "/user_documents/" + filename + "," + username;
     QFile file(documents_path);
     if (file.exists()) {
         throw new std::runtime_error("File shouldn't already exist.");
@@ -681,8 +700,6 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 }
 
 QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
-    // TODO: questo dovrebbe mandare il file...per ora è limitato a rispondere alla richiesta in modo che il client apra l'editor
-
     QJsonObject message;
     message["type"] = QStringLiteral("file_to_open");
 
@@ -698,20 +715,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
         message["reason"] = QStringLiteral("Empty filename");
         return message;
     }
-
-   /* DatabaseError result = this->db->newFile(username, filename);
-    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
-        message["success"] = false;
-        message["reason"] = QStringLiteral("Database error.");
-        return message;
-    }
-    if (result == ALREADY_EXISTING_FILE){
-        message["success"] = false;
-        message["reason"] = QStringLiteral("This file already exists. Please enter a new filename.");
-        return message;
-    }
-
-    */
 
     int pos = filename.lastIndexOf(QChar(','));
     QString file=filename.left(pos);
@@ -755,7 +758,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     }
 
     // read symbols from file...
-    QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + author + "_" + file;
+    QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
     QFile f(filePath);
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     QByteArray json_data = f.readAll();
@@ -779,8 +782,8 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
 
     message["success"] = true;
     message["content"] = symbols;
-    message["filename"]=file;
-    message["users"]=array_users;
+    message["filename"]= filename;
+    message["users"] = array_users;
 //    message["shared_link"] = "fake_shared_link";
     message["shared_link"] = sharedLink;
     message["color"] = color;
@@ -821,31 +824,30 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         message["reason"] = QStringLiteral("Empty username");
         return message;
     }
-//    qDebug() << mapFileWorkers->keys();
+
+    // remove client from list of clients using current file
     if (mapFileWorkers->contains(filename)){
         sender->closeFile();
-        qDebug() << "first";
         mapFileWorkers->value(filename)->removeOne(sender);
         if (mapFileWorkers->value(filename)->isEmpty()){
             delete mapFileWorkers->value(filename);
             mapFileWorkers->remove(filename);
-            qDebug() << "second";
         }
-    }
-    else{
+    } else{
         message["success"] = false;
         message["reason"] = QStringLiteral("File not exist");
         return message;
     }
 
-    message["success"] = true;
+    // empty symbol list
+    symbols_list.clear();
 
     QJsonObject message_broadcast;
     message_broadcast["type"] = QStringLiteral("disconnection");
     message_broadcast["filename"]=filename;
     message_broadcast["user"]=username;
-
     this->broadcast(message_broadcast,sender);
 
+    message["success"] = true;
     return message;
 }
