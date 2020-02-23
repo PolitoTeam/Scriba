@@ -353,7 +353,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         this->sendJson(sender,message);
     }
 
-    if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0){
+    if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0){
         QJsonObject message = this->getFiles(docObj);
         this->sendJson(sender,message);
     }
@@ -382,9 +382,14 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         this->sendJson(sender,message);
     }
     if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
+        // send symbols in file to client
         QJsonObject message = this->sendFile(docObj,sender);
-        qDebug() << "JSON PRINT" << message;
         this->sendJson(sender,message);
+
+        // store symbols in server memory
+        foreach (const QJsonValue & symbol, message["content"].toArray()) {
+            symbols_set.insert(symbol.toObject());
+        }
     }
     if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
         QJsonObject message = this->closeFile(docObj,sender);
@@ -563,7 +568,7 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 QJsonObject Server::getFiles(const QJsonObject &doc){
     const QJsonValue user = doc.value(QLatin1String("username"));
     QJsonObject message;
-    message["type"] = QStringLiteral("open_file");
+    message["type"] = QStringLiteral("list_files");
 
     if (user.isNull() || !user.isString()){
         message["success"] = false;
@@ -746,13 +751,13 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
         array_users.push_back(QJsonValue(data));
     }
 
-
+    // read symbols from file...
     QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + author + "_" + file;
     QFile f(filePath);
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     QByteArray json_data = f.readAll();
     f.close();
-
+    // ...and check for errors in the format
     QJsonParseError parseError;
     QJsonDocument document = QJsonDocument::fromJson(json_data, &parseError);
     if (parseError.error != QJsonParseError::NoError) {
@@ -763,11 +768,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
         message["success"] = false;
         message["reason"] = QStringLiteral("File content different form json array");
     }
+    QJsonArray symbols = document.array();
 
-    QJsonArray o = document.array();
     message["success"] = true;
-    message["content"] = o;
-//    message["content"] = "ciao";
+    message["content"] = symbols;
     message["filename"]=file;
     message["users"]=array_users;
     // TODO: add correct shared link
@@ -775,7 +779,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     message["color"] = color;
 
     auto d = QJsonDocument(message);
-    qDebug()<< d.toJson().constData()<<endl;
+//    qDebug()<< d.toJson().constData()<<endl;
     return message;
 }
 

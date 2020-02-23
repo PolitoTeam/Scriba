@@ -84,7 +84,7 @@ void Client::getFiles(){
         clientStream.setVersion(QDataStream::Qt_5_7);
         // Create the JSON we want to send
         QJsonObject message;
-        message["type"] = QStringLiteral("open_file");
+        message["type"] = QStringLiteral("list_files");
         message["username"] = this->username;
         //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream
@@ -253,7 +253,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         else
             emit remoteErase(s);
     }
-    else if (typeVal.toString().compare(QLatin1String("open_file"), Qt::CaseInsensitive) == 0) {
+    else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
         if (resultVal.isNull() || !resultVal.isBool())
             return;
