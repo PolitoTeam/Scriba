@@ -275,7 +275,7 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
         bool alreadyExisitingLink = true;
         while (alreadyExisitingLink) {
             sharedLink = "shared_editor://file/" + generateRandomString();
-            qDebug() << "link generation attempt: " << sharedLink;
+//            qDebug() << "link generation attempt: " << sharedLink;
             QSqlQuery qry;
             qry.prepare("SELECT * FROM FILE WHERE Link=:link FOR UPDATE");
             qry.bindValue(":link", sharedLink);

@@ -386,6 +386,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         // TODO: store on disk -> CHANGE to save every X minutes
         // TODO: wrong, shouldn't be username but author!
         QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
+        qDebug() << "filename " << sender->getFilename();
 //        if (QFile::exists(filePath))
 //        {
 //            QFile::remove(filePath);
@@ -640,10 +641,10 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
 
 QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 {
-    const QJsonValue user = doc.value(QLatin1String("author"));
     QJsonObject message;
     message["type"] = QStringLiteral("new_file");
 
+    const QJsonValue user = doc.value(QLatin1String("author"));
     if (user.isNull() || !user.isString()){
         message["success"] = false;
         message["reason"] = QStringLiteral("Wrong username format");
@@ -682,17 +683,21 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
         return message;
     }
 
+    // save the name of the file used by the worker
+    sender->setFilename(filename + "," + username);
+
     // create empty file for the specified user
-    QString documents_path = QDir::currentPath() + DOCUMENTS_PATH + filename + "," + username;
+    QString documents_path = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename + "," + username;
     QFile file(documents_path);
     if (file.exists()) {
         throw new std::runtime_error("File shouldn't already exist.");
     }
+    file.open(QIODevice::WriteOnly);
 
+    // add current worker to the map <file, list_of_workers>
     QList<ServerWorker*>* list=new QList<ServerWorker*>();
     list->append(sender);
     mapFileWorkers->insert(documents_path,list);
-    file.open(QIODevice::WriteOnly);
 
     message["success"] = true;
     message["shared_link"] = sharedLink;
