@@ -697,8 +697,10 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     // add current worker to the map <file, list_of_workers>
     QList<ServerWorker*>* list=new QList<ServerWorker*>();
     list->append(sender);
-    mapFileWorkers->insert(documents_path,list);
+    mapFileWorkers->insert(filename + "," + username,list);
+    qDebug() << mapFileWorkers;
 
+//    symbols_list.insert()
     message["success"] = true;
     message["shared_link"] = sharedLink;
     return message;
