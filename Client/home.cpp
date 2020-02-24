@@ -44,7 +44,9 @@ void Home::on_pushButtonNewFile_clicked()
                                          tr(""), &ok);
 
     if (ok && !text.isEmpty()) {
-        qDebug().nospace() << "Line read: " << text;
+        // to update the window title in the editor
+        client->setOpenedFile(text + "," + client->getUsername());
+
         client->createNewFile(text);
     }
 }

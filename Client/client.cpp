@@ -542,9 +542,11 @@ QString Client::getSharedLink()
 
 QString Client::getOpenedFile()
 {
-    return openfile;
+    return this->openfile;
 }
-
+void Client::setOpenedFile(const QString& name) {
+    this->openfile = name;
+}
 int Client::getColor()
 {
     return cursor_color_rgb;

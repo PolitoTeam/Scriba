@@ -33,6 +33,7 @@ public:
 
     QString getSharedLink();
     QString getOpenedFile();
+    void setOpenedFile(const QString& name);
     int getColor();
 
 
