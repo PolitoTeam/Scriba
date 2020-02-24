@@ -322,6 +322,24 @@ DatabaseError Database::getSharedLink(const QString &author,const QString &filen
     db.close();
     return err;
 }
+DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink, QString& filename) {
+    DatabaseError err = SUCCESS;
+    if (!db.open())
+        err = CONNECTION_ERROR;
+
+    QSqlQuery qry;
+    qry.prepare("SELECT Name, Owner FROM FILE WHERE Link=:link");
+    qry.bindValue(":link", sharedLink);
+    if (!qry.exec())
+        err = QUERY_ERROR;
+    else if (!qry.next())
+        err = NON_EXISTING_FILE;
+    else {
+        filename = qry.value(0).toString() + "," + qry.value(1).toString();
+    }
+    db.close();
+    return err;
+}
 
 QString Database::generateRandomString() const
 {

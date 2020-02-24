@@ -25,6 +25,7 @@ public:
     void overrideProfileImage(const QPixmap& pixmap);
 
     void getFiles();
+    void getFilenameFromLink(const QString& sharedLink);
     QList<QPair<QString,QString>> getActiveFiles();
 
     void sendJson(const QJsonObject& message);
@@ -35,7 +36,6 @@ public:
     QString getOpenedFile();
     void setOpenedFile(const QString& name);
     int getColor();
-
 
 public slots:
     void connectToServer(const QHostAddress &address, quint16 port);
@@ -77,7 +77,7 @@ signals:
     void usersConnectedReceived(QList<QPair<QString,QString>>);
     void contentReceived(const QString text);
     void userDisconnected(const QString& username);
-
+    void wrongSharedLink(const QString& filename);
 
 private:
     QTcpSocket *m_clientSocket;

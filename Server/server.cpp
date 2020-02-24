@@ -422,6 +422,10 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject message = this->closeFile(docObj,sender);
         this->sendJson(sender,message);
     }
+    if (typeVal.toString().compare(QLatin1String("filename_from_sharedLink"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->getFilenameFromSharedLink(docObj);
+        this->sendJson(sender,message);
+    }
 }
 
 QJsonObject Server::updateNick(const QJsonObject &doc){
@@ -639,6 +643,43 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     return message;
 }
 
+QJsonObject Server::getFilenameFromSharedLink(const QJsonObject &doc){
+    QJsonObject message;
+    message["type"] = QStringLiteral("filename_from_sharedLink");
+
+    const QJsonValue sharedLink_json = doc.value(QLatin1String("sharedLink"));
+    if (sharedLink_json.isNull() || !sharedLink_json.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong shared link format");
+        return message;
+    }
+    const QString sharedLink = sharedLink_json.toString().simplified();
+    if (sharedLink.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty shared link");
+        return message;
+    }
+
+    QString filename;
+    DatabaseError result = this->db->getFilenameFromSharedLink(sharedLink, filename);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error.");
+        return message;
+    }
+    if (result == NON_EXISTING_FILE){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("No file corresponding to shared link.");
+        return message;
+    }
+
+    message["success"] = true;
+    message["filename"] = filename;
+//    auto d = QJsonDocument(message);
+//    qDebug()<< d.toJson().constData()<<endl;
+    return message;
+}
+
 QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 {
     QJsonObject message;
@@ -791,7 +832,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     message["content"] = symbols;
     message["filename"]= filename;
     message["users"] = array_users;
-//    message["shared_link"] = "fake_shared_link";
     message["shared_link"] = sharedLink;
     message["color"] = color;
 

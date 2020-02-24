@@ -92,6 +92,22 @@ void Client::getFiles(){
     }
 }
 
+void Client::getFilenameFromLink(const QString& sharedLink) {
+    if (m_clientSocket->waitForConnected()) {
+        // create a QDataStream operating on the socket
+        QDataStream clientStream(m_clientSocket);
+        // set the version so that programs compiled with different versions of Qt can agree on how to serialise
+        clientStream.setVersion(QDataStream::Qt_5_7);
+        // Create the JSON we want to send
+        QJsonObject message;
+        message["type"] = QStringLiteral("filename_from_sharedLink");
+        message["sharedLink"] = sharedLink;
+        //aggiungere cifratura oppure passare a QSSLsocket
+        // send the JSON using QDataStream
+        clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    }
+}
+
 void Client::updateNickname(const QString &nickname)
 {
     if (m_clientSocket->waitForConnected()) {
@@ -349,6 +365,19 @@ void Client::jsonReceived(const QJsonObject &docObj)
             }
 
         }
+    else if (typeVal.toString().compare(QLatin1String("filename_from_sharedLink"), Qt::CaseInsensitive) == 0) {
+        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+        if (resultVal.isNull() || !resultVal.isBool())
+            return;
+        const bool success = resultVal.toBool();
+        if (success) {
+            QString filename = docObj.value(QLatin1String("filename")).toString();
+            this->openFile(filename);
+        } else {
+            const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+            emit wrongSharedLink(reasonVal.toString());
+        }
+    }
 
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text

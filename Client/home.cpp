@@ -18,6 +18,7 @@ Home::Home(QWidget *parent,Client* client) :
     connect(client, &Client::wrongNewFile, this, &Home::newFileError);
     connect(client, &Client::correctOpenedFile, this, &Home::openFileCompleted);
     connect(client, &Client::wrongListFiles, this, &Home::on_openFilesError);
+    connect(client, &Client::wrongSharedLink, this, &Home::on_openFilesError);
     connect(this, &Home::fileChosen,client,&Client::openFile);
 }
 
@@ -56,7 +57,6 @@ void Home::newFileCompleted() {
 }
 
 void Home::openFileCompleted() {
-    // TODO: open the right file
     emit changeWidget(EDITOR);
 }
 
@@ -85,6 +85,7 @@ void Home::on_pushButtonSharedLink_clicked()
     if (ok && !text.isEmpty()) {
         qDebug().nospace() << "Line read: " << text;
         // TODO: same as open file
+        client->getFilenameFromLink(text);
     }
 }
 

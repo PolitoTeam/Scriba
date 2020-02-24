@@ -19,7 +19,7 @@ public:
     DatabaseError getFiles(const QString &username, QVector<QPair<QString,QString>> &files);
     DatabaseError newFile(const QString &username, const QString &filename, QString &sharedLink);
     DatabaseError getSharedLink(const QString &author,const QString &password, QString &sharedLink);
-
+    DatabaseError getFilenameFromSharedLink(const QString& sharedLink, QString& filename);
 private:
     QSqlDatabase db;
     QString generateRandomString() const;

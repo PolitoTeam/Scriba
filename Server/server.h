@@ -52,6 +52,7 @@ private:
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
     QJsonObject getFiles(const QJsonObject &doc);
+    QJsonObject getFilenameFromSharedLink(const QJsonObject &doc);
     QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
     QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender);
     QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
