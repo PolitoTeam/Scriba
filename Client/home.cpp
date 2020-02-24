@@ -122,9 +122,9 @@ void Home::showActiveFiles(){
     bool ok;
     QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
                                                 tr("Files:"), items, 0, false, &ok);
-     if (ok && !item.isEmpty())
-         qDebug()<<"File scelto: "<<item<<endl;
-
-     emit fileChosen(item);
+    if (ok && !item.isEmpty()) {
+        qDebug()<<"File scelto: "<<item<<endl;
+        emit fileChosen(item);
+    }
 }
 

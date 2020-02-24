@@ -33,6 +33,7 @@ private:
     Database* db;
     QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
     QVector<QJsonObject> symbols_list;
+//    QMap<QString, QVector<QJsonObject>> symbols_list;
 
 private slots:
     void broadcast(const QJsonObject &message, ServerWorker *exclude);

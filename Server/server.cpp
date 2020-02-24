@@ -386,10 +386,10 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         // TODO: store on disk -> CHANGE to save every X minutes
         // TODO: wrong, shouldn't be username but author!
         QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
-        if (QFile::exists(filePath))
-        {
-            QFile::remove(filePath);
-        }
+//        if (QFile::exists(filePath))
+//        {
+//            QFile::remove(filePath);
+//        }
 //        qDebug() << filePath;
         QFile file(filePath);
         file.open(QIODevice::ReadWrite | QIODevice::Truncate);
@@ -683,16 +683,16 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     }
 
     // create empty file for the specified user
-    QString documents_path = QDir::currentPath() + "/user_documents/" + filename + "," + username;
+    QString documents_path = QDir::currentPath() + DOCUMENTS_PATH + filename + "," + username;
     QFile file(documents_path);
     if (file.exists()) {
         throw new std::runtime_error("File shouldn't already exist.");
-    } else {
-        QList<ServerWorker*>* list=new QList<ServerWorker*>();
-        list->append(sender);
-        mapFileWorkers->insert(documents_path,list);
-        file.open(QIODevice::WriteOnly);
     }
+
+    QList<ServerWorker*>* list=new QList<ServerWorker*>();
+    list->append(sender);
+    mapFileWorkers->insert(documents_path,list);
+    file.open(QIODevice::WriteOnly);
 
     message["success"] = true;
     message["shared_link"] = sharedLink;
