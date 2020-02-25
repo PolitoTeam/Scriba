@@ -1,0 +1,59 @@
+cmake_minimum_required(VERSION 3.13)
+project(Client)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(.)
+include_directories(images)
+
+add_executable(Client
+        images/anonymous.jpg
+        images/bold.png
+        images/copy.png
+        images/create.png
+        images/cut.png
+        images/edit_redo.png
+        images/edit_undo.png
+        images/exit.png
+        images/font.png
+        images/info.png
+        images/italic.png
+        images/new.png
+        images/open.png
+        images/paste.png
+        images/pencil.png
+        images/print.png
+        images/save.png
+        images/save_as.png
+        images/share.png
+        images/underline.png
+        appMainWindow.cpp
+        appMainWindow.h
+        char.cpp
+        char.h
+        client.cpp
+        client.h
+        Client.pro
+        Client.pro.user
+        Client.pro.user.163df52.4.8-pre1
+        client.qrc
+        CRDT.cpp
+        CRDT.h
+        editor.cpp
+        editor.h
+        editor.ui
+        home.cpp
+        home.h
+        home.ui
+        index.ui
+        login.cpp
+        login.h
+        login.ui
+        main.cpp
+        modify.cpp
+        modify.h
+        modify.ui
+        signup.cpp
+        signup.h
+        signup.ui
+        symbol.h)

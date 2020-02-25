@@ -394,19 +394,28 @@ void CRDT::handleRemoteErase(const Symbol& s) {
     if (!res)
         return;
 
+    bool newLineRemoved = (s.getValue() == '\n');
     if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
-        _symbols[line].erase(_symbols[line].begin() + index);
+        if (newLineRemoved){
+             qDebug()<<"new line removed: ";
+             qDebug()<<"LINE: "<< _symbols[line].data();
+            _symbols.erase(_symbols.begin()+line);
+        }
+        else
+            _symbols[line].erase(_symbols[line].begin() + index);
         qDebug() << "deleted";
+        this->size--;
         emit erase(line, index);
         return;
     }
 
-    bool newLineRemoved = (s.getValue() == '\n');
+    qDebug() << " CARATTERE: "<<s.getValue();
+
     if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
+        qDebug()<<"new line 2";
         std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
         _symbols.erase(_symbols.begin() + line + 1);
     }
-
     this->size--;
 
 //    qDebug() << "Erase" << line << index;
