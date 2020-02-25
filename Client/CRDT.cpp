@@ -259,7 +259,12 @@ QString CRDT::to_string(){
 void CRDT::handleRemoteInsert(const Symbol& s) {
     qDebug() << "REMOTE INSERT" << s.getValue(); // << QString(1, s.getValue());
     int line, index;
-    findInsertPosition(s, line, index);
+    if  (_symbols.size()!=0)
+     findInsertPosition(s, line, index);
+    else{
+        line=0;
+        index=0;
+    }
 
     // insert in crdt structure
     insertChar(s, line, index);
@@ -271,6 +276,7 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {
+    qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
     if (line >= _symbols.size()) {
         _symbols.push_back(QVector<Symbol>{});
     }
@@ -396,10 +402,13 @@ void CRDT::handleRemoteErase(const Symbol& s) {
 
     bool newLineRemoved = (s.getValue() == '\n');
     if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
-        if (newLineRemoved){
+        qDebug()<< "HERE: "<<index;
+        if (index==0){
              qDebug()<<"new line removed: ";
              qDebug()<<"LINE: "<< _symbols[line].data();
-            _symbols.erase(_symbols.begin()+line);
+             _symbols[line].erase(_symbols[line].begin() + index);
+             _symbols.erase(_symbols.begin()+line);
+             qDebug()<<"Symbols size after erase: "<<_symbols.size();
         }
         else
             _symbols[line].erase(_symbols[line].begin() + index);
