@@ -165,47 +165,49 @@ void Editor::setFontBold(bool bold)
 //    this->crdt = crdt;
 //}
 
-/*********************************************************
-LOCAL OPERATION: update textedit THEN crdt
-REMOTE OPERATION: update crdt THEN textedit
-*********************************************************/
-
+/****************************************************
+    LOCAL OPERATION: update textedit THEN crdt
+    REMOTE OPERATION: update crdt THEN textedit
+****************************************************/
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
     qDebug() << "total text size" << ui->textEdit->toPlainText().size() << "crdt size" << crdt->getSize();
     qDebug() << "added" << charsAdded << "removed" << charsRemoved;
+    qDebug() << "line" << this->line << "index" << this->index;
 
-    // REMOTE OPERATION
-    // if symbol received from remote (not entered by client), returns without doing anything
-    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
-            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
+    // REMOTE OPERATION: insert/delete received from remote client
+    // nothing to update
+    // "charsRemoved == 0" and "charsAdded == 0" are conditions added to handle QTextDocument::contentsChange bug QTBUG-3495
+    if ((charsAdded > 0 && charsRemoved == 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
+            || (charsRemoved > 0 && charsAdded == 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
         return;
     }
 
-    // LOCAL OPERATION
-    if (charsAdded > 0) {
-        QString added = ui->textEdit->toPlainText().mid(position,charsAdded);
-        qDebug() << "Added " << added << "in position (" << this->line << "," << this->index << ")";
+    // LOCAL OPERATION: insert/deleted performed in this editor
+    // update CRDT structure
+    // "charsAdded - charsRemoved" and "charsRemoved - charsAdded" are conditions added to handle QTextDocument::contentsChange bug QTBUG-3495
+    if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
+        QString added = ui->textEdit->toPlainText().mid(position, charsAdded - charsRemoved);
 
-        // TODO: fix problem with first character
-        if (added == "") {
-            qDebug() << "empty";
-            ui->textEdit->undo();
-            return;
+        // add multiple chars
+        for (int i = 0; i < charsAdded - charsRemoved; i++) {
+            QFont font = ui->textEdit->currentCharFormat().font();
+
+            qDebug() << "Added " << added << "in position (" << this->line << "," << this->index + i << ")";
+            crdt->localInsert(line, index + i, added.at(i).toLatin1(), font);
         }
-
-        QFont font = ui->textEdit->currentCharFormat().font();
-//        qDebug() << "on contents change"<< font.italic() << font.bold() << font.underline();
-        crdt->localInsert(line, index, added.at(0).toLatin1(), font);
-
-    } else if (charsRemoved > 0) {
+    } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
+        // undo to retrieve the content deleted
         disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         ui->textEdit->undo();
         QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
         ui->textEdit->redo();
         connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
 
-        qDebug() << "Removed " << removed << "in position (" << this->line << "," << this->index << ")";
-        crdt->localErase(line, index);
+        // remove multiple chars
+        for (int i = 0; i < removed.length(); i++) {
+            qDebug() << "Removed " << removed.at(i) << "in position (" << this->line << "," << this->index << ")";
+            crdt->localErase(line, index);
+        }
     }
 }
 
