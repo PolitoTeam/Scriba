@@ -8,6 +8,7 @@
 #include <QClipboard>
 #include <QMessageBox>
 #include <QTextBlock>
+#include <QCryptographicHash>
 
 Editor::Editor(QWidget *parent,Client* client) :
     QMainWindow(parent),
@@ -39,13 +40,20 @@ Editor::Editor(QWidget *parent,Client* client) :
 
     connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
 
-    // TODO: create/load new crdt for every file created/opened; here just to test
-    crdt = new CRDT(QDateTime::currentMSecsSinceEpoch(), client);
+    crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
 
+}
+
+int Editor::fromStringToIntegerHash(QString str) {
+    auto hash = QCryptographicHash::hash(str.toLatin1(),QCryptographicHash::Md5);
+    QDataStream data(hash);
+    int intHash;
+    data >> intHash;
+    return intHash;
 }
 
 Editor::~Editor()
@@ -54,7 +62,7 @@ Editor::~Editor()
 }
 
 void Editor::textChange(){
-    qDebug()<<"Position: "<<ui->textEdit->textCursor().position()<<endl;
+//    qDebug()<<"Cursor position: "<<ui->textEdit->textCursor().position()<<endl;
 }
 
 void Editor::setClient(Client *client){
@@ -82,7 +90,11 @@ void Editor::exit()
 //    qDebug() << ui->textEdit;
 //    qDebug() << ui->textEdit->toPlainText();
 //    ui->textEdit->setText("");
-//    ui->textEdit->clear();
+    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    ui->textEdit->clear();
+    delete crdt;
+    crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     emit changeWidget(HOME);
 }
 
@@ -153,16 +165,23 @@ void Editor::setFontBold(bool bold)
 //    this->crdt = crdt;
 //}
 
-void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
-    qDebug() << ui->textEdit->toPlainText().size() << crdt->getSize();
+/*********************************************************
+LOCAL OPERATION: update textedit THEN crdt
+REMOTE OPERATION: update crdt THEN textedit
+*********************************************************/
 
+void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
+    qDebug() << "total text size" << ui->textEdit->toPlainText().size() << "crdt size" << crdt->getSize();
+    qDebug() << "added" << charsAdded << "removed" << charsRemoved;
+
+    // REMOTE OPERATION
     // if symbol received from remote (not entered by client), returns without doing anything
     if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
             || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
-        qDebug() << "remote operation";
         return;
     }
 
+    // LOCAL OPERATION
     if (charsAdded > 0) {
         QString added = ui->textEdit->toPlainText().mid(position,charsAdded);
         qDebug() << "Added " << added << "in position (" << this->line << "," << this->index << ")";
@@ -175,13 +194,15 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         }
 
         QFont font = ui->textEdit->currentCharFormat().font();
-        qDebug() << "on contents change"<< font.italic() << font.bold() << font.underline();
+//        qDebug() << "on contents change"<< font.italic() << font.bold() << font.underline();
         crdt->localInsert(line, index, added.at(0).toLatin1(), font);
 
     } else if (charsRemoved > 0) {
+        disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         ui->textEdit->undo();
         QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
         ui->textEdit->redo();
+        connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
 
         qDebug() << "Removed " << removed << "in position (" << this->line << "," << this->index << ")";
         crdt->localErase(line, index);
@@ -190,7 +211,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
 void Editor::on_insert(int line, int index, const Symbol& s)
 {
-//    qDebug() << "ON INSERT" << line << index << QString(1, value);
+//    qDebug() << "ON_INSERT";
     QTextCursor cursor = ui->textEdit->textCursor();
 //    cursor.setPosition(index);
 
@@ -214,15 +235,21 @@ void Editor::on_erase(int line, int index)
     QTextCursor cursor = ui->textEdit->textCursor();
     cursor.setPosition(index);
 
+//    qDebug() << line << index;
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+
     cursor.setPosition(block.position() + index);
+//    qDebug() << "block position" << block.position();
+
+//    qDebug() << "before deleting";
     cursor.deleteChar();
+//    qDebug() << "after deleting";
 
     qDebug().noquote() << crdt->to_string();
 }
-
 //da cambiare
 void Editor::updateText(const QString& text){
+    qDebug() << "Update text!";
     ui->listWidget->clear();
 //    this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),client->getUsername()));
 
@@ -249,7 +276,7 @@ void Editor::clear(){
 }
 
 void Editor::removeUser(const QString& name){
-    qDebug()<<"Here"<<endl;
+//    qDebug()<<"Here"<<endl;
 
     // this->ui->listWidget->removeItemWidget(this->ui->listWidget->findItems(name,Qt::MatchFixedString).first());
 }

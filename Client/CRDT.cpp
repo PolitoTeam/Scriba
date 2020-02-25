@@ -2,7 +2,7 @@
 #include <QFont>
 
 CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
-    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert, Qt::UniqueConnection);
     connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
 
     // WARNING: need to change
@@ -257,14 +257,16 @@ QString CRDT::to_string(){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
-//    qDebug() << "REMOTE INSERT" << s.getValue() << QString(1, s.getValue());
+    qDebug() << "REMOTE INSERT" << s.getValue(); // << QString(1, s.getValue());
     int line, index;
     findInsertPosition(s, line, index);
 
+    // insert in crdt structure
     insertChar(s, line, index);
     this->size++;
 
 //    qDebug() << "remote insert" << s.getValue() << line << index;
+    // insert in editor
     emit insert(line, index, s);
 }
 
@@ -394,6 +396,8 @@ void CRDT::handleRemoteErase(const Symbol& s) {
 
     if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
         _symbols[line].erase(_symbols[line].begin() + index);
+        qDebug() << "deleted";
+        emit erase(line, index);
         return;
     }
 

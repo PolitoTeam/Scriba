@@ -263,11 +263,14 @@ void Client::jsonReceived(const QJsonObject &docObj)
         qDebug() << s.to_string();
 
         int operation_type = docObj["operation_type"].toInt();
-        qDebug() << "operation" << operation_type;
-        if (operation_type == INSERT)
+//        qDebug() << "operation" << operation_type;
+        if (operation_type == INSERT) {
+//            qDebug() << "INSERT";
             emit remoteInsert(s);
-        else
+        } else {
+//            qDebug() << "ERASE";
             emit remoteErase(s);
+        }
     }
     else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
@@ -282,7 +285,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 
             this->files.clear();
             foreach (const QJsonValue& v, array_files){
-                qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
+//                qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
                 this->files.push_back(QPair<QString, QString>(v.toObject().value("name").toString(),v.toObject().value("owner").toString()));
             }
 

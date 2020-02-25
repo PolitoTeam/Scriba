@@ -57,6 +57,7 @@ private:
     int line = 0, index = 0;
 
     void showEvent(QShowEvent* event);
+    int fromStringToIntegerHash(QString str);
 };
 
 #endif // EDITOR_H
