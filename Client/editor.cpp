@@ -46,6 +46,8 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
 
+    connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
+
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
@@ -296,4 +298,11 @@ void Editor::showEvent(QShowEvent *)
     this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
 }
 
-
+void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
+{
+//    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
+//    comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
+    ui->actionBold->setChecked(format.font().bold());
+    ui->actionItalic->setChecked(format.font().italic());
+    ui->actionUnderline->setChecked(format.font().underline());
+}

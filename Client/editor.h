@@ -49,6 +49,8 @@ private slots:
     void updateText(const QString& text);
     void removeUser(const QString& name);
     void saveCursorPosition();
+    void on_currentCharFormatChanged(const QTextCharFormat &format);
+
 
 private:
     Ui::Editor *ui;
