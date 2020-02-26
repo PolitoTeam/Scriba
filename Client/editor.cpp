@@ -284,11 +284,17 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         QString added = ui->textEdit->toPlainText().mid(position, charsAdded - charsRemoved);
 
         // add multiple chars
+        QTextCursor cursor = ui->textEdit->textCursor();
+        qDebug() << "position" << cursor.position();
         for (int i = 0; i < charsAdded - charsRemoved; i++) {
-            QFont font = ui->textEdit->currentCharFormat().font();
-
-            qDebug() << "Added " << added << "in position (" << this->line << "," << this->index + i << ")";
+            // move cursor after each char inserted, starting from the first one
+            cursor.setPosition(ui->textEdit->textCursor().position() - (charsAdded - charsRemoved) + 1 + i);
+            QFont font = cursor.charFormat().font();
+//            qDebug() << font.bold() << font.italic() << font.underline();
+            qDebug() << "Added " << added.at(i) << "in position (" << this->line << "," << this->index + i << ")";
             crdt->localInsert(line, index + i, added.at(i).toLatin1(), font);
+
+            cursor.movePosition(QTextCursor::Left);
         }
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
         // undo to retrieve the content deleted
