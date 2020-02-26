@@ -148,18 +148,6 @@ void Editor::setClient(Client *client){
     this->client=client;
 }
 
-//void Editor::print()
-//{
-//#if QT_CONFIG(printer)
-//    QPrinter printDev;
-//#if QT_CONFIG(printdialog)
-//    QPrintDialog dialog(&printDev, this);
-//    if (dialog.exec() == QDialog::Rejected)
-//        return;
-//#endif // QT_CONFIG(printdialog)
-//    ui->textEdit->print(&printDev);
-//#endif // QT_CONFIG(printer)
-//}
 void Editor::printPdf()
 {
 #ifndef QT_NO_PRINTER
@@ -184,11 +172,15 @@ void Editor::exit()
 {
     client->closeFile();
 
-    // clean the editor
+    // clean the editor: disconnect...
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     ui->textEdit->clear();
+    // create new CRDT with connections
     delete crdt;
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
+    connect(crdt, &CRDT::insert, this, &Editor::on_insert);
+    connect(crdt, &CRDT::erase, this, &Editor::on_erase);
+    // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
 
     emit changeWidget(HOME);
@@ -266,10 +258,6 @@ void Editor::textAlign(QAction *a)
     else if (a == actionAlignRight)
         ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
 }
-
-//void Editor::setCRDT(CRDT *crdt) {
-//    this->crdt = crdt;
-//}
 
 /****************************************************
     LOCAL OPERATION: update textedit THEN crdt
