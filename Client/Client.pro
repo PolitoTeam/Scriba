@@ -6,6 +6,7 @@
 
 QT       += core gui sql network
 
+qtHaveModule(printsupport): QT += printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Client

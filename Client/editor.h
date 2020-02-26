@@ -28,7 +28,7 @@ signals:
     void changeWidget(int);
 
 private slots:
-    void print();
+    void printPdf();
     void exit();
     void copy();
     void cut();

@@ -10,6 +10,18 @@
 #include <QTextBlock>
 #include <QCryptographicHash>
 #include <QtWidgets>
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printer)
+#if QT_CONFIG(printdialog)
+#include <QPrintDialog>
+#endif
+#include <QPrinter>
+#if QT_CONFIG(printpreviewdialog)
+#include <QPrintPreviewDialog>
+#endif
+#endif
+#endif
 
 Editor::Editor(QWidget *parent,Client* client) :
     QMainWindow(parent),
@@ -23,7 +35,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 //    cursor.insertText(tr("Hello world!"));
 //    cursor.movePosition(QTextCursor::End);
 
-    connect(ui->actionPrint, &QAction::triggered, this, &Editor::print);
+    connect(ui->actionPrint, &QAction::triggered, this, &Editor::printPdf);
     connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
     connect(ui->actionCopy, &QAction::triggered, this, &Editor::copy);
     connect(ui->actionCut, &QAction::triggered, this, &Editor::cut);
@@ -118,8 +130,8 @@ void Editor::setClient(Client *client){
     this->client=client;
 }
 
-void Editor::print()
-{
+//void Editor::print()
+//{
 //#if QT_CONFIG(printer)
 //    QPrinter printDev;
 //#if QT_CONFIG(printdialog)
@@ -129,8 +141,27 @@ void Editor::print()
 //#endif // QT_CONFIG(printdialog)
 //    ui->textEdit->print(&printDev);
 //#endif // QT_CONFIG(printer)
+//}
+void Editor::printPdf()
+{
+#ifndef QT_NO_PRINTER
+//! [0]
+    QFileDialog fileDialog(this, tr("Export PDF"));
+    fileDialog.setAcceptMode(QFileDialog::AcceptSave);
+    fileDialog.setMimeTypeFilters(QStringList("application/pdf"));
+    fileDialog.setDefaultSuffix("pdf");
+    if (fileDialog.exec() != QDialog::Accepted)
+        return;
+    QString fileName = fileDialog.selectedFiles().first();
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(fileName);
+    ui->textEdit->document()->print(&printer);
+    statusBar()->showMessage(tr("Exported \"%1\"")
+                             .arg(QDir::toNativeSeparators(fileName)));
+//! [0]
+#endif
 }
-
 void Editor::exit()
 {
     client->closeFile();
