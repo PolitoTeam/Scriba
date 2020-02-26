@@ -51,6 +51,8 @@ private slots:
     void saveCursorPosition();
     void on_currentCharFormatChanged(const QTextCharFormat &format);
 
+    void textColor();
+
 
 private:
     Ui::Editor *ui;

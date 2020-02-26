@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QTextBlock>
 #include <QCryptographicHash>
+#include <QtWidgets>
 
 Editor::Editor(QWidget *parent,Client* client) :
     QMainWindow(parent),
@@ -48,6 +49,27 @@ Editor::Editor(QWidget *parent,Client* client) :
 
     connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
 
+
+    QFontComboBox *comboFont = new QFontComboBox(ui->toolBar);
+    ui->toolBar->addWidget(comboFont);
+//    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
+
+    QComboBox *comboSize = new QComboBox(ui->toolBar);
+//    comboSize->setObjectName("comboSize");
+    ui->toolBar->addWidget(comboSize);
+//    comboSize->setEditable(true);
+
+    const QList<int> standardSizes = QFontDatabase::standardSizes();
+    foreach (int size, standardSizes)
+        comboSize->addItem(QString::number(size));
+//    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
+
+//    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
+
+    QPixmap pix(16, 16);
+    pix.fill(Qt::black);
+    QAction *actionTextColor = ui->toolBar->addAction(pix, tr("&Color..."), this, &Editor::textColor);
+//    ui->to->addAction(actionTextColor);
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
@@ -298,6 +320,7 @@ void Editor::showEvent(QShowEvent *)
     this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
 }
 
+// update icons in toolbar (italic, bold, ...) depending on the char before cursor
 void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
 {
 //    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
@@ -305,4 +328,15 @@ void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
     ui->actionBold->setChecked(format.font().bold());
     ui->actionItalic->setChecked(format.font().italic());
     ui->actionUnderline->setChecked(format.font().underline());
+}
+
+void Editor::textColor()
+{
+    QColor col = QColorDialog::getColor(ui->textEdit->textColor(), this);
+    if (!col.isValid())
+        return;
+    QTextCharFormat fmt;
+    fmt.setForeground(col);
+//    mergeFormatOnWordOrSelection(fmt);
+//    colorChanged(col);
 }
