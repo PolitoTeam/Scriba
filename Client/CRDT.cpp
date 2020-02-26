@@ -17,7 +17,7 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
 
 int CRDT::getId() { return _siteId; }
 
-void CRDT::localInsert(int line, int index, char value, QFont font) {
+void CRDT::localInsert(int line, int index, char value, QFont font, QColor color) {
     if (line < 0 || index < 0)
         throw std::runtime_error("Error: index out of bound.\n");
 
@@ -28,7 +28,7 @@ void CRDT::localInsert(int line, int index, char value, QFont font) {
     QVector<Identifier> position = generatePositionBetween(posBefore, posAfter, newPos);
 
     // generate symbol
-    Symbol s(value, newPos, ++_counter, font);
+    Symbol s(value, newPos, ++_counter, font, color);
 
     insertChar(s, line, index);
 

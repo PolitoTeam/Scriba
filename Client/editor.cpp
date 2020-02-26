@@ -292,7 +292,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             QFont font = cursor.charFormat().font();
 //            qDebug() << font.bold() << font.italic() << font.underline();
             qDebug() << "Added " << added.at(i) << "in position (" << this->line << "," << this->index + i << ")";
-            crdt->localInsert(line, index + i, added.at(i).toLatin1(), font);
+            crdt->localInsert(line, index + i, added.at(i).toLatin1(), font, cursor.charFormat().foreground().color());
 
             cursor.movePosition(QTextCursor::Left);
         }

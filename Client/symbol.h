@@ -53,15 +53,17 @@ public:
     enum Alignment {ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER} left;
     bool italic, bold, underline;
     QString font;
-    double size;
+    int size;
+    QString color;
 
     QJsonObject toJson() {
         QJsonObject json;
-
         json["italic"] = italic;
         json["bold"] = bold;
         json["underline"] = underline;
-
+        json["font"] = font;
+        json["size"] = size;
+        json["color"] = color;
         return json;
     }
 
@@ -70,6 +72,9 @@ public:
         format.italic = json["italic"].toBool();
         format.bold = json["bold"].toBool();
         format.underline = json["underline"].toBool();
+        format.font = json["font"].toString();
+        format.size = json["size"].toInt();
+        format.color = json["color"].toString();
 //        qDebug() << "from json" << format.italic << format.bold << format.underline;
         return format;
     }
@@ -78,10 +83,13 @@ public:
         QTextCharFormat format;
 //        qDebug() << "Format class" << italic << bold << underline;
         QFont font;
-        font.setItalic(italic);
-        font.setBold(bold);
-        font.setUnderline(underline);
+        font.setItalic(this->italic);
+        font.setBold(this->bold);
+        font.setUnderline(this->underline);
+        font.setFamily(this->font);
+        font.setPointSize(this->size);
         format.setFont(font);
+        format.setForeground(QColor(color));
 //        qDebug() << "Format class2" << format.font().italic() << format.font().bold() << format.font().underline();
 
         //            charFormat.setFont(QFont("Times", 15, QFont::Bold));
@@ -102,11 +110,14 @@ private:
 public:
     Symbol() {} // empty constructor needed, otherwise compile error
     Symbol(char value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
-    Symbol(char value, QVector<Identifier> position, int counter, QFont font) : value(value),
+    Symbol(char value, QVector<Identifier> position, int counter, QFont font, QColor color) : value(value),
             position(position), counter(counter) {
         format.italic = font.italic();
         format.bold = font.bold();
         format.underline = font.underline();
+        format.size = font.pointSize();
+        format.font = font.family();
+        format.color = color.name();
 
 //        qDebug() << "constructor" << format.italic << format.bold << format.underline;
     }
