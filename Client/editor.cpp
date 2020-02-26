@@ -55,12 +55,11 @@ Editor::Editor(QWidget *parent,Client* client) :
 
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
 
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
-
 
     // ADD font, size and color to toolbar (cannot be otherwise achieved using Qt creator GUI):
     // 1. font
@@ -79,7 +78,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
 
-    // color
+    // 3. color
     QPixmap pix(16, 16);
     pix.fill(Qt::black);
     actionTextColor = ui->toolBar->addAction(pix, tr("&Color..."), this, &Editor::textColor);
@@ -99,14 +98,33 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &Editor::clipboardDataChanged);
 #endif
 
-    // set initial configuration TODO: reset for every new file
-    // is it necessary??
-//    QFont textFont("Helvetica");
-//    textFont.setStyleHint(QFont::SansSerif);
-//    ui->textEdit->setFont(textFont);
-//    fontChanged(ui->textEdit->font());
-//    colorChanged(ui->textEdit->textColor());
-//    alignmentChanged(ui->textEdit->alignment());
+    // add alignment icons
+    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":images/textleft.png"));
+    actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
+    actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
+    actionAlignLeft->setCheckable(true);
+    actionAlignLeft->setPriority(QAction::LowPriority);
+    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":images/textcenter.png"));
+    actionAlignCenter = new QAction(centerIcon, tr("C&enter"), this);
+    actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionAlignCenter->setCheckable(true);
+    actionAlignCenter->setPriority(QAction::LowPriority);
+    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":images/textright.png"));
+    actionAlignRight = new QAction(rightIcon, tr("&Right"), this);
+    actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
+    actionAlignRight->setCheckable(true);
+    actionAlignRight->setPriority(QAction::LowPriority);
+    ui->toolBar->addAction(actionAlignLeft);
+    ui->toolBar->addAction(actionAlignCenter);
+    ui->toolBar->addAction(actionAlignRight);
+
+    QActionGroup *alignGroup = new QActionGroup(this);
+    connect(alignGroup, &QActionGroup::triggered, this, &Editor::textAlign);
+    alignGroup->addAction(actionAlignLeft);
+    alignGroup->addAction(actionAlignCenter);
+    alignGroup->addAction(actionAlignRight);
+    ui->toolBar->addSeparator();
+    ui->toolBar->addActions(alignGroup->actions());
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
@@ -167,14 +185,12 @@ void Editor::exit()
     client->closeFile();
 
     // clean the editor
-//    qDebug() << ui->textEdit;
-//    qDebug() << ui->textEdit->toPlainText();
-//    ui->textEdit->setText("");
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     ui->textEdit->clear();
     delete crdt;
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+
     emit changeWidget(HOME);
 }
 
@@ -241,6 +257,16 @@ void Editor::setFontBold(bool bold)
            ui->textEdit->setFontWeight(QFont::Normal);
 }
 
+void Editor::textAlign(QAction *a)
+{
+    if (a == actionAlignLeft)
+        ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+    else if (a == actionAlignCenter)
+        ui->textEdit->setAlignment(Qt::AlignHCenter);
+    else if (a == actionAlignRight)
+        ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+}
+
 //void Editor::setCRDT(CRDT *crdt) {
 //    this->crdt = crdt;
 //}
@@ -293,7 +319,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
 void Editor::on_insert(int line, int index, const Symbol& s)
 {
-//    qDebug() << "ON_INSERT";
+    qDebug() << "ON_INSERT";
     QTextCursor cursor = ui->textEdit->textCursor();
 //    cursor.setPosition(index);
 
@@ -360,11 +386,15 @@ void Editor::clear(){
 void Editor::removeUser(const QString& name){
 //    qDebug()<<"Here"<<endl;
 
-    // this->ui->listWidget->removeItemWidget(this->ui->listWidget->findItems(name,Qt::MatchFixedString).first());
+    // this->ui->listWidget->removeItemWidget(this->uformattazionei->listWidget->findItems(name,Qt::MatchFixedString).first());
 }
 
 void Editor::saveCursorPosition()
 {
+    // update alignment icon
+    alignmentChanged(ui->textEdit->alignment());
+
+    // save cursor position
     QTextCursor cursor = ui->textEdit->textCursor();
     this->line = cursor.blockNumber();
     this->index = cursor.positionInBlock();
@@ -374,17 +404,19 @@ void Editor::saveCursorPosition()
 void Editor::showEvent(QShowEvent *)
 {
     this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
+
+    // set initial configuration TODO: reset for every new file
+    // is it necessary??
+//    QFont textFont("Helvetica");
+//    textFont.setStyleHint(QFont::SansSerif);
+//    ui->textEdit->setFont(textFont);
+//    fontChanged(ui->textEdit->currentCharFormat().font());
+//    colorChanged(ui->textEdit->currentCharFormat().foreground().color());
 }
 
 // update icons in toolbar (italic, bold, ...) depending on the char before cursor
 void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
 {
-//    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
-//    comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
-//    ui->actionBold->setChecked(format.font().bold());
-//    ui->actionItalic->setChecked(format.font().italic());
-//    ui->actionUnderline->setChecked(format.font().underline());
-
     fontChanged(format.font());
     colorChanged(format.foreground().color());
 }
@@ -419,6 +451,16 @@ void Editor::colorChanged(const QColor &c)
     QPixmap pix(16, 16);
     pix.fill(c);
     actionTextColor->setIcon(pix);
+}
+
+void Editor::alignmentChanged(Qt::Alignment a)
+{
+    if (a & Qt::AlignLeft)
+        actionAlignLeft->setChecked(true);
+    else if (a & Qt::AlignHCenter)
+        actionAlignCenter->setChecked(true);
+    else if (a & Qt::AlignRight)
+        actionAlignRight->setChecked(true);
 }
 
 void Editor::textFamily(const QString &f)

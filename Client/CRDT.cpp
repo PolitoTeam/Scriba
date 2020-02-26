@@ -259,9 +259,9 @@ QString CRDT::to_string(){
 void CRDT::handleRemoteInsert(const Symbol& s) {
     qDebug() << "REMOTE INSERT" << s.getValue(); // << QString(1, s.getValue());
     int line, index;
-    if  (_symbols.size()!=0)
-     findInsertPosition(s, line, index);
-    else{
+    if (_symbols.size() != 0) {
+        findInsertPosition(s, line, index);
+    } else {
         line=0;
         index=0;
     }

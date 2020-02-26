@@ -39,6 +39,7 @@ private slots:
     void setFontBold(bool bold);
     void setFontUnderline(bool underline);
     void setFontItalic(bool italic);
+    void textAlign(QAction *a);
     void sharedLink();
 
     void textChange();
@@ -66,11 +67,15 @@ private:
     QFontComboBox *comboFont;
     QComboBox *comboSize;
     QAction *actionTextColor;
+    QAction *actionAlignLeft;
+    QAction *actionAlignCenter;
+    QAction *actionAlignRight;
 
     void showEvent(QShowEvent* event);
     int fromStringToIntegerHash(QString str);
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
+    void alignmentChanged(Qt::Alignment a);
 };
 
 #endif // EDITOR_H
