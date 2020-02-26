@@ -6,6 +6,7 @@
 #include "client.h"
 #include "CRDT.h"
 #include <QTextCursor>
+#include <QtWidgets>
 
 namespace Ui {
 class Editor;
@@ -52,7 +53,9 @@ private slots:
     void on_currentCharFormatChanged(const QTextCharFormat &format);
 
     void textColor();
-
+    void clipboardDataChanged();
+    void textFamily(const QString &f);
+    void textSize(const QString &p);
 
 private:
     Ui::Editor *ui;
@@ -60,8 +63,14 @@ private:
     CRDT *crdt;
     int line = 0, index = 0;
 
+    QFontComboBox *comboFont;
+    QComboBox *comboSize;
+    QAction *actionTextColor;
+
     void showEvent(QShowEvent* event);
     int fromStringToIntegerHash(QString str);
+    void fontChanged(const QFont &f);
+    void colorChanged(const QColor &c);
 };
 
 #endif // EDITOR_H

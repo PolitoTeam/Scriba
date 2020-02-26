@@ -50,26 +50,51 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
 
 
-    QFontComboBox *comboFont = new QFontComboBox(ui->toolBar);
+    // ADD font, size and color to toolbar (cannot be otherwise achieved using Qt creator GUI):
+    // 1. font
+    comboFont = new QFontComboBox(ui->toolBar);
     ui->toolBar->addWidget(comboFont);
-//    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
+    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
 
-    QComboBox *comboSize = new QComboBox(ui->toolBar);
-//    comboSize->setObjectName("comboSize");
+    // 2. size
+    comboSize = new QComboBox(ui->toolBar);
     ui->toolBar->addWidget(comboSize);
-//    comboSize->setEditable(true);
 
     const QList<int> standardSizes = QFontDatabase::standardSizes();
     foreach (int size, standardSizes)
         comboSize->addItem(QString::number(size));
 //    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
-//    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
+    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
 
+    // color
     QPixmap pix(16, 16);
     pix.fill(Qt::black);
-    QAction *actionTextColor = ui->toolBar->addAction(pix, tr("&Color..."), this, &Editor::textColor);
-//    ui->to->addAction(actionTextColor);
+    actionTextColor = ui->toolBar->addAction(pix, tr("&Color..."), this, &Editor::textColor);
+
+    // undo/redo config
+    connect(ui->textEdit->document(), &QTextDocument::undoAvailable, ui->actionUndo, &QAction::setEnabled);
+    connect(ui->textEdit->document(), &QTextDocument::redoAvailable, ui->actionRedo, &QAction::setEnabled);
+    ui->actionUndo->setEnabled(ui->textEdit->document()->isUndoAvailable());
+    ui->actionRedo->setEnabled(ui->textEdit->document()->isRedoAvailable());
+
+    // copy/paste/cut config
+#ifndef QT_NO_CLIPBOARD
+    ui->actionCut->setEnabled(false);
+    connect(ui->textEdit, &QTextEdit::copyAvailable, ui->actionCut, &QAction::setEnabled);
+    ui->actionCopy->setEnabled(false);
+    connect(ui->textEdit, &QTextEdit::copyAvailable, ui->actionCopy, &QAction::setEnabled);
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &Editor::clipboardDataChanged);
+#endif
+
+    // set initial configuration TODO: reset for every new file
+    // is it necessary??
+//    QFont textFont("Helvetica");
+//    textFont.setStyleHint(QFont::SansSerif);
+//    ui->textEdit->setFont(textFont);
+//    fontChanged(ui->textEdit->font());
+//    colorChanged(ui->textEdit->textColor());
+//    alignmentChanged(ui->textEdit->alignment());
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
@@ -325,9 +350,12 @@ void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
 {
 //    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
 //    comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
-    ui->actionBold->setChecked(format.font().bold());
-    ui->actionItalic->setChecked(format.font().italic());
-    ui->actionUnderline->setChecked(format.font().underline());
+//    ui->actionBold->setChecked(format.font().bold());
+//    ui->actionItalic->setChecked(format.font().italic());
+//    ui->actionUnderline->setChecked(format.font().underline());
+
+    fontChanged(format.font());
+    colorChanged(format.foreground().color());
 }
 
 void Editor::textColor()
@@ -335,8 +363,42 @@ void Editor::textColor()
     QColor col = QColorDialog::getColor(ui->textEdit->textColor(), this);
     if (!col.isValid())
         return;
-    QTextCharFormat fmt;
-    fmt.setForeground(col);
-//    mergeFormatOnWordOrSelection(fmt);
-//    colorChanged(col);
+    ui->textEdit->setTextColor(col);
+}
+
+void Editor::clipboardDataChanged()
+{
+#ifndef QT_NO_CLIPBOARD
+    if (const QMimeData *md = QApplication::clipboard()->mimeData())
+        ui->actionPaste->setEnabled(md->hasText());
+#endif
+}
+
+void Editor::fontChanged(const QFont &f)
+{
+    comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
+    comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
+    ui->actionBold->setChecked(f.bold());
+    ui->actionItalic->setChecked(f.italic());
+    ui->actionUnderline->setChecked(f.underline());
+}
+
+void Editor::colorChanged(const QColor &c)
+{
+    QPixmap pix(16, 16);
+    pix.fill(c);
+    actionTextColor->setIcon(pix);
+}
+
+void Editor::textFamily(const QString &f)
+{
+    ui->textEdit->setFontFamily(f);
+}
+
+void Editor::textSize(const QString &p)
+{
+    qreal pointSize = p.toFloat();
+    if (p.toFloat() > 0) {
+        ui->textEdit->setFontPointSize(pointSize);
+    }
 }
