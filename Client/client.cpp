@@ -322,6 +322,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                     Symbol s = Symbol::fromJson(symbol.toObject());
                     emit remoteInsert(s);
                 }
+                emit moveCursorToEnd();
 
                 const QJsonValue name = docObj.value(QLatin1String("filename"));
                 if (name.isNull() || !name.isString())

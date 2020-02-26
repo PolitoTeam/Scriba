@@ -78,6 +78,7 @@ signals:
     void contentReceived(const QString text);
     void userDisconnected(const QString& username);
     void wrongSharedLink(const QString& filename);
+    void moveCursorToEnd();
 
 private:
     QTcpSocket *m_clientSocket;

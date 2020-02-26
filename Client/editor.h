@@ -57,6 +57,7 @@ private slots:
     void clipboardDataChanged();
     void textFamily(const QString &f);
     void textSize(const QString &p);
+    void on_moveCursorToEnd();
 
 private:
     Ui::Editor *ui;

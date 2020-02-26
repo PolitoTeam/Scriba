@@ -58,6 +58,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
 
+    connect(client, &Client::moveCursorToEnd, this, &Editor::on_moveCursorToEnd);
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
 
@@ -74,7 +75,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     const QList<int> standardSizes = QFontDatabase::standardSizes();
     foreach (int size, standardSizes)
         comboSize->addItem(QString::number(size));
-//    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
+    comboSize->setCurrentIndex(standardSizes.indexOf(QApplication::font().pointSize()));
 
     connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textSize);
 
@@ -462,4 +463,11 @@ void Editor::textSize(const QString &p)
     if (p.toFloat() > 0) {
         ui->textEdit->setFontPointSize(pointSize);
     }
+}
+
+void Editor::on_moveCursorToEnd() {
+    // move the cursor to end of the text
+    QTextCursor cursor(ui->textEdit->document());
+    cursor.movePosition(QTextCursor::End);
+    ui->textEdit->setTextCursor(cursor);
 }
