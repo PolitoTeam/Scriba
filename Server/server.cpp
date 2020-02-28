@@ -378,7 +378,8 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         } else if (operation_type == DELETE) {
             qDebug() << "deletion";
             symbols_list.removeOne(symbol);
-        } else {
+        } else if (operation_type == CHANGE) {
+            qDebug() << "change";
 
         }
         broadcast(docObj, sender);
@@ -399,7 +400,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             symbols_json.append(symbol);
         }
 
-        qDebug() << symbols_json;
+//        qDebug() << symbols_json;
         file.write(QJsonDocument(symbols_json).toBinaryData());
         file.close();
     }

@@ -267,9 +267,12 @@ void Client::jsonReceived(const QJsonObject &docObj)
         if (operation_type == INSERT) {
 //            qDebug() << "INSERT";
             emit remoteInsert(s);
-        } else {
+        } else if (operation_type == DELETE) {
 //            qDebug() << "ERASE";
             emit remoteErase(s);
+        } else if (operation_type == CHANGE) {
+            qDebug() << "CHANGE";
+            emit remoteChange(s);
         }
     }
     else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {

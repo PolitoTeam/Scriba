@@ -127,6 +127,15 @@ public:
     QVector<Identifier> getPosition() const { return position; }
     int getCounter() const { return counter; }
 
+    void setFormat(QFont font, QColor color) {
+        format.italic = font.italic();
+        format.bold = font.bold();
+        format.underline = font.underline();
+        format.size = font.pointSize();
+        format.font = font.family();
+        format.color = color.name();
+    }
+
     QTextCharFormat getQTextCharFormat() const { return format.getQTextCharFormat(); }
 
     static int compare(const Symbol& s1, const Symbol& s2) {

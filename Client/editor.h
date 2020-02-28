@@ -26,6 +26,7 @@ public:
 
 signals:
     void changeWidget(int);
+    void formatChange();
 
 private slots:
     void printPdf();
@@ -47,6 +48,7 @@ private slots:
     void on_contentsChange(int position, int charsRemoved, int charsAdded);
     void on_insert(int line, int index, const Symbol& s);
     void on_erase(int line, int index);
+    void on_change(int line, int index, const Symbol& s);
     void addUsers(const QList<QPair<QString,QString>> users);
     void updateText(const QString& text);
     void removeUser(const QString& name);
@@ -58,6 +60,8 @@ private slots:
     void textFamily(const QString &f);
     void textSize(const QString &p);
     void on_moveCursorToEnd();
+    void on_formatChange();
+
 
 private:
     Ui::Editor *ui;

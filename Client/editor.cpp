@@ -57,6 +57,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
+    connect(crdt, &CRDT::change, this, &Editor::on_change);
 
     connect(client, &Client::moveCursorToEnd, this, &Editor::on_moveCursorToEnd);
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
@@ -126,6 +127,16 @@ Editor::Editor(QWidget *parent,Client* client) :
     alignGroup->addAction(actionAlignRight);
     ui->toolBar->addSeparator();
     ui->toolBar->addActions(alignGroup->actions());
+
+    //
+//    connect(ui->actionFont, &QAction::triggered, this, &Editor::on_formatChange);
+//    connect(ui->actionBold, &QAction::triggered, this, &Editor::on_formatChange);
+//    connect(ui->actionUnderline, &QAction::triggered, this, &Editor::on_formatChange);
+//    connect(comboFont, &QFontComboBox::currentFontChanged, this, &Editor::on_formatChange);
+//    connect(comboSize, &QComboBox::, this, &Editor::on_formatChange);
+//    connect(actionTextColor, &QAction::triggered, this, &Editor::on_formatChange);
+      connect(this, &Editor::formatChange, this, &Editor::on_formatChange);
+
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
@@ -181,6 +192,7 @@ void Editor::exit()
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
+    connect(crdt, &CRDT::change, this, &Editor::on_change);
     // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
 
@@ -229,11 +241,14 @@ void Editor::selectFont()
 void Editor::setFontUnderline(bool underline)
 {
     ui->textEdit->setFontUnderline(underline);
+    emit formatChange();
 }
 
 void Editor::setFontItalic(bool italic)
 {
     ui->textEdit->setFontItalic(italic);
+    emit formatChange();
+
 }
 
 void Editor::sharedLink()
@@ -248,6 +263,7 @@ void Editor::setFontBold(bool bold)
 {
     bold ? ui->textEdit->setFontWeight(QFont::Bold) :
            ui->textEdit->setFontWeight(QFont::Normal);
+    emit formatChange();
 }
 
 void Editor::textAlign(QAction *a)
@@ -350,6 +366,27 @@ void Editor::on_erase(int line, int index)
 
     qDebug().noquote() << crdt->to_string();
 }
+
+void Editor::on_change(int line, int index, const Symbol& s) {
+    qDebug() << "ON_CHANGE";
+    QTextCursor cursor = ui->textEdit->textCursor();
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    cursor.setPosition(block.position() + index);
+
+    // save old format to restore it later
+    QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+    QTextCharFormat newFormat = s.getQTextCharFormat();
+//    cursor.setCharFormat(newFormat);
+//    cursor.insertText(QString(1, s.getValue()));
+    QTextCursor tempCursor = cursor;
+    tempCursor.setPosition(block.position() + index);
+    tempCursor.setPosition(block.position() + index + 1, QTextCursor::KeepAnchor);
+    tempCursor.setCharFormat(newFormat);
+    ui->textEdit->setCurrentCharFormat(oldFormat);
+
+    qDebug().noquote() << crdt->to_string();
+}
+
 //da cambiare
 void Editor::updateText(const QString& text){
     qDebug() << "Update text!";
@@ -399,14 +436,6 @@ void Editor::saveCursorPosition()
 void Editor::showEvent(QShowEvent *)
 {
     this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
-
-    // set initial configuration TODO: reset for every new file
-    // is it necessary??
-//    QFont textFont("Helvetica");
-//    textFont.setStyleHint(QFont::SansSerif);
-//    ui->textEdit->setFont(textFont);
-//    fontChanged(ui->textEdit->currentCharFormat().font());
-//    colorChanged(ui->textEdit->currentCharFormat().foreground().color());
 }
 
 // update icons in toolbar (italic, bold, ...) depending on the char before cursor
@@ -414,6 +443,47 @@ void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
 {
     fontChanged(format.font());
     colorChanged(format.foreground().color());
+
+//    qDebug() << "***FORMAT CHANGED***";
+//    qDebug() << "changed" << ui->textEdit->textCursor().selectedText();
+//    QString changed = ui->textEdit->textCursor().selectedText();
+//    if (changed.isEmpty()) {
+//        qDebug() << "nothing to do";
+//        return;
+//    }
+////    int a = ui->textEdit->textCursor().selectionStart();
+////    ui->textEdit->textCursor().selection().
+////    this->line = cursor.blockNumber();
+////    this->index = cursor.positionInBlock();
+//    // change multiple chars
+////    for (int i = 0; i < changed.length(); i++) {
+////        qDebug() << "Changed " << changed.at(i) << "in position (" << this->line << "," << this->index << ")";
+//////        crdt->localErase(line, index);
+////    }
+
+//    int start = ui->textEdit->textCursor().selectionStart();
+//    int end = ui->textEdit->textCursor().selectionEnd();
+//    qDebug() << "start/end selection" << start << end;
+//    QTextCursor cursor = ui->textEdit->textCursor();
+//    for (int i = start; i < end; i++) {
+//        cursor.setPosition(i);
+//        int line = cursor.blockNumber();
+//        int index = cursor.positionInBlock();
+//        qDebug() << "line/index/char" << line << index << changed.at(i - start) << QChar(0x2029);
+////        qDebug() << "aaa" << (changed.at(i - start).toInt()=='\u2029');
+//        QString a =  changed.at(i - start);
+//        QChar c = a.data()[0];
+//        if (changed.at(i - start) == QChar(0x2029))
+//            qDebug() << "NEWLINE";
+//    }
+////    QTextCursor cursor = ui->textEdit->textCursor();
+////    int start = cursor.selectionStart();
+////    int end = cursor.selectionEnd();
+
+////    cursor.setPosition(end, QTextCursor::KeepAnchor);
+////    QTextBlock endBlock = cursor.block();
+////    cursor.setPosition(start, QTextCursor::KeepAnchor);
+////    QTextBlock block = cursor.block();
 }
 
 void Editor::textColor()
@@ -476,4 +546,31 @@ void Editor::on_moveCursorToEnd() {
     QTextCursor cursor(ui->textEdit->document());
     cursor.movePosition(QTextCursor::End);
     ui->textEdit->setTextCursor(cursor);
+}
+
+void Editor::on_formatChange() {
+    qDebug() << "CHANGED" << ui->textEdit->textCursor().selectedText();
+    QString changed = ui->textEdit->textCursor().selectedText();
+
+    int start = ui->textEdit->textCursor().selectionStart();
+    int end = ui->textEdit->textCursor().selectionEnd();
+    qDebug() << "start/end selection" << start << end;
+    QTextCursor cursor = ui->textEdit->textCursor();
+    for (int i = start; i < end; i++) {
+        cursor.setPosition(i);
+        int line = cursor.blockNumber();
+        int index = cursor.positionInBlock();
+        qDebug() << "line/index/char" << line << index << changed.at(i - start);
+
+        // if newline ('\n') do nothing
+        if (changed.at(i - start) == QChar(0x2029)) {
+//            qDebug() << "NEWLINE";
+            continue;
+        }
+
+        // position AFTER the char to read its format
+        cursor.setPosition(i + 1);
+        QFont font = cursor.charFormat().font();
+        crdt->localChange(line, index, font, cursor.charFormat().foreground().color());
+    }
 }
