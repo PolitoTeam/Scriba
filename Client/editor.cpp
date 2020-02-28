@@ -60,7 +60,6 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(crdt, &CRDT::change, this, &Editor::on_change);
     connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
 
-    connect(client, &Client::moveCursorToEnd, this, &Editor::on_moveCursorToEnd);
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
 
@@ -476,6 +475,7 @@ void Editor::saveCursorPosition()
 void Editor::showEvent(QShowEvent *)
 {
     this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
+    moveCursorToEnd();
 }
 
 // update icons in toolbar (italic, bold, ...) depending on the char before cursor
@@ -581,7 +581,7 @@ void Editor::textSize(const QString &p)
     }
 }
 
-void Editor::on_moveCursorToEnd() {
+void Editor::moveCursorToEnd() {
     // move the cursor to end of the text
     QTextCursor cursor(ui->textEdit->document());
     cursor.movePosition(QTextCursor::End);

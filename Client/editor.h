@@ -60,7 +60,7 @@ private slots:
     void clipboardDataChanged();
     void textFamily(const QString &f);
     void textSize(const QString &p);
-    void on_moveCursorToEnd();
+    void moveCursorToEnd();
     void on_formatChange();
 
 
