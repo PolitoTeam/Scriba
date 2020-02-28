@@ -253,17 +253,30 @@ void Editor::setFontBold(bool bold)
 
 void Editor::textAlign(QAction *a)
 {
-    if (a == actionAlignLeft){
-        ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-        crdt->localChangeAlignment(this->line,this->index,LEFT);
-    }
-    else if (a == actionAlignCenter){
-        ui->textEdit->setAlignment(Qt::AlignHCenter);
-        crdt->localChangeAlignment(this->line,this->index,MIDDLE);
-    }
-    else if (a == actionAlignRight){
-        ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-        crdt->localChangeAlignment(this->line,this->index,RIGHT);
+    QString changed = ui->textEdit->textCursor().selectedText();
+    QTextCursor cursor = ui->textEdit->textCursor();
+    int start = ui->textEdit->textCursor().selectionStart();
+    cursor.setPosition(start);
+    int line_start = cursor.blockNumber();
+    qDebug()<<"START POSITION: "<< line_start;
+    int end = ui->textEdit->textCursor().selectionEnd();
+    cursor.setPosition(end);
+    int line_end = cursor.blockNumber();
+    qDebug()<<"END POSITION: "<< line_end;
+
+    for (int i = line_start; i <= line_end; i++) {
+        if (a == actionAlignLeft){
+            ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
+            crdt->localChangeAlignment(i,LEFT);
+        }
+        else if (a == actionAlignCenter){
+            ui->textEdit->setAlignment(Qt::AlignHCenter);
+            crdt->localChangeAlignment(i,MIDDLE);
+        }
+        else if (a == actionAlignRight){
+            ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+            crdt->localChangeAlignment(i,RIGHT);
+        }
     }
 }
 

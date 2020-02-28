@@ -60,7 +60,7 @@ void CRDT::localInsert(int line, int index, char value, QFont font, QColor color
     client->sendJson(message);
 }
 
-void CRDT::localChangeAlignment(int line,int index,AlignType align){
+void CRDT::localChangeAlignment(int line,AlignType align){
 
     Symbol s = _symbols[line][_symbols[line].size()-1];
 
@@ -289,8 +289,11 @@ QString CRDT::to_string(){
 
 void CRDT::handleRemoteAlignChange(const Symbol& s,int align) {
     int line,index;
-    if (!findPosition(s,line,index))
+    bool res;
+    if (!(res=findPosition(s,line,index))){
+        qDebug()<<"---RES: "<<res;
         return;
+    }
 
 
     //    qDebug() << "remote insert" << s.getValue() << line << index;
@@ -315,7 +318,7 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 
 //    qDebug() << "remote insert" << s.getValue() << line << index;
     // insert in editor
-    if (_symbols.size()==1 && _symbols[0].size()==1 && index==1){
+    if (_symbols.size()==1 && _symbols[0].size()==2 && index==1){
         index-=1;
     }
     emit insert(line, index, s);

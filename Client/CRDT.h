@@ -23,7 +23,7 @@ public:
     int getId();
     void localInsert(int line, int index, char value, QFont font, QColor color);
     void localErase(int line, int index);
-    void localChangeAlignment(int line,int index,AlignType align);
+    void localChangeAlignment(int line,AlignType align);
     int getSize();
     QString to_string();
 
