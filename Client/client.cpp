@@ -267,7 +267,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         if (operation_type == INSERT) {
 //            qDebug() << "INSERT";
             emit remoteInsert(s);
-        } else if (operation_type == INSERT){
+        } else if (operation_type == DELETE){
 //            qDebug() << "ERASE";
             emit remoteErase(s);
         }

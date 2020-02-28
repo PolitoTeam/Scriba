@@ -315,6 +315,9 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 
 //    qDebug() << "remote insert" << s.getValue() << line << index;
     // insert in editor
+    if (_symbols.size()==1 && _symbols[0].size()==1 && index==1){
+        index-=1;
+    }
     emit insert(line, index, s);
 }
 
