@@ -2,8 +2,9 @@
 #include <QFont>
 
 CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
-    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert, Qt::UniqueConnection);
+    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
     connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
+    connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
     connect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
 
     // WARNING: need to change
@@ -182,6 +183,23 @@ void CRDT::localErase(int line, int index) {
     message["symbol"] = s.toJson();
 
     qDebug().noquote() << to_string();
+    client->sendJson(message);
+}
+
+void CRDT::localChange(int line, int index, QFont font, QColor color) {
+    Symbol s = _symbols[line][index];
+
+    // update font and color
+    s.setFormat(font, color);
+    _symbols[line][index] = s;
+
+    // broadcast
+    QJsonObject message;
+    message["type"] = QStringLiteral("operation");
+    message["editorId"] = _siteId;
+    message["operation_type"] = CHANGE;
+    message["symbol"] = s.toJson();
+
     client->sendJson(message);
 }
 
@@ -467,5 +485,18 @@ void CRDT::handleRemoteErase(const Symbol& s) {
         emit erase(line, index);
         return;
     }
+}
+
+void CRDT::handleRemoteChange(const Symbol& s) {
+    int line, index;
+    bool res = findPosition(s, line, index);
+    if (!res)
+        return;
+
+    // update symbol
+    _symbols[line][index] = s;
+    qDebug() << "updated";
+
+    emit change(line, index, s);
 }
 

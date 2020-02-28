@@ -10,7 +10,7 @@
 #define BASE 32
 #define BOUNDARY 10
 
-typedef enum {INSERT, DELETE, ALIGN} OperationType;
+typedef enum {INSERT, DELETE, CHANGE, ALIGN} OperationType;
 typedef enum {LEFT,MIDDLE,RIGHT} AlignType;
 
 class CRDT : public QObject
@@ -23,18 +23,22 @@ public:
     int getId();
     void localInsert(int line, int index, char value, QFont font, QColor color);
     void localErase(int line, int index);
+
     void localChangeAlignment(int line,AlignType align);
+    void localChange(int line, int index, QFont font, QColor color);
     int getSize();
     QString to_string();
 
 private slots:
     void handleRemoteInsert(const Symbol& s);
     void handleRemoteErase(const Symbol& s);
+    void handleRemoteChange(const Symbol& s);
     void handleRemoteAlignChange(const Symbol& s,int align);
 
 signals:
     void insert(int line, int index, const Symbol& s);
     void erase(int line, int index);
+    void change(int line, int index, const Symbol& s);
     void changeAlignment(int align, int line, int index);
 
 private:

@@ -257,7 +257,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongOldPassword();
         else
             emit correctOldPassword();
-    } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {   
+    } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {
         QJsonObject symbol = docObj["symbol"].toObject();
         Symbol s = Symbol::fromJson(symbol);
         qDebug() << s.to_string();
@@ -270,6 +270,9 @@ void Client::jsonReceived(const QJsonObject &docObj)
         } else if (operation_type == DELETE){
 //            qDebug() << "ERASE";
             emit remoteErase(s);
+        } else if (operation_type == CHANGE) {
+            qDebug() << "CHANGE";
+            emit remoteChange(s);
         }
         else{
             int align_type = docObj["alignment"].toInt();
