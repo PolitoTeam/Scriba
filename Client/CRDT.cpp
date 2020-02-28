@@ -334,37 +334,31 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
     insertChar(s, line, index);
     this->size++;
 
-//    qDebug() << "remote insert" << s.getValue() << line << index;
+    qDebug() << "remote insert" << s.getValue() << line << index;
     // insert in editor
-    if (_symbols.size()==1 && _symbols[0].size()==2 && index==1){
+    if (line==_symbols.size()-1 && index>0)
         index-=1;
-    }
+
     emit insert(line, index, s);
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {
     qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
-    if (line >= _symbols.size()) {
-        _symbols.push_back(QVector<Symbol>{});
-    }
+
     if (s.getValue() == '\n')  {// split line into two, before and after the '\n'
-        if (index >= _symbols[line].length()) {
-            _symbols[line].insert(index, s);
-        } else {
             QVector<Symbol> lineBefore;
+            qDebug()<<"Line: "<<line<< " index: "<<index;
             std::copy(_symbols[line].begin(), _symbols[line].begin() + index, std::back_inserter(lineBefore));
             QVector<Symbol> lineAfter;
+             qDebug()<<"Line: "<<line<< " index: "<<index;
             std::copy(_symbols[line].begin() + index, _symbols[line].end(), std::back_inserter(lineAfter));
 
             lineBefore.push_back(s); // include '\n' in line before
             _symbols[line] = lineBefore;
 
-            if (line >= _symbols.size() - 1) {
-                _symbols.push_back(QVector<Symbol>{});
-            }
-            std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(lineAfter));
-            _symbols[line + 1] = lineAfter;
-        }
+            _symbols.insert(line+1,lineAfter);
+
+
     } else {
         _symbols[line].insert(index, s);
     }
@@ -464,8 +458,11 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalL
 void CRDT::handleRemoteErase(const Symbol& s) {
     int line, index;
     bool res = findPosition(s, line, index);
-    if (!res)
+    qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
+    if (!res){
+
         return;
+      }
 
     bool newLineRemoved = (s.getValue() == '\n');
     if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
