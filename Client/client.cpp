@@ -267,9 +267,13 @@ void Client::jsonReceived(const QJsonObject &docObj)
         if (operation_type == INSERT) {
 //            qDebug() << "INSERT";
             emit remoteInsert(s);
-        } else {
+        } else if (operation_type == INSERT){
 //            qDebug() << "ERASE";
             emit remoteErase(s);
+        }
+        else{
+            int align_type = docObj["alignment"].toInt();
+            emit remoteAlignChange(s,align_type);
         }
     }
     else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {

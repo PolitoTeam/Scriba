@@ -378,8 +378,10 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         } else if (operation_type == DELETE) {
             qDebug() << "deletion";
             symbols_list.removeOne(symbol);
-        } else {
-
+        } else if (operation_type == ALIGN) {
+            qDebug() << "change alignment";
+           // symbols_list.removeOne(symbol);
+        } else{
         }
         broadcast(docObj, sender);
 

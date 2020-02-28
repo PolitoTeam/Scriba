@@ -4,6 +4,7 @@
 CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
     connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert, Qt::UniqueConnection);
     connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
+    connect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
 
     // WARNING: need to change
 //    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
@@ -13,6 +14,20 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
 //    _symbols.push_back(v);
 
     _symbols.push_back(QVector<Symbol>{});
+    // calculate position
+    QVector<Identifier> posBefore = findPosBefore(0, 0);
+    QVector<Identifier> posAfter = findPosAfter(0, 0);
+    QVector<Identifier> newPos;
+    QVector<Identifier> position = generatePositionBetween(posBefore, posAfter, newPos);
+
+    QFont font;
+    QColor color;
+
+    Symbol s('\0', newPos, ++_counter, font, color);
+    _symbols[0].insert(0,s);
+
+    qDebug()<<"qui SIZE: "<<_symbols.size()<< " SIZE 0: "<<_symbols[0].size();
+
 }
 
 int CRDT::getId() { return _siteId; }
@@ -40,6 +55,22 @@ void CRDT::localInsert(int line, int index, char value, QFont font, QColor color
     message["editorId"] = _siteId;
     message["operation_type"] = INSERT;
     message["symbol"] = s.toJson();
+
+    qDebug().noquote() << to_string(); // very useful for debugging
+    client->sendJson(message);
+}
+
+void CRDT::localChangeAlignment(int line,int index,AlignType align){
+
+    Symbol s = _symbols[line][_symbols[line].size()-1];
+
+    // broadcast
+    QJsonObject message;
+    message["type"] = QStringLiteral("operation");
+    message["editorId"] = _siteId;
+    message["operation_type"] = ALIGN;
+    message["symbol"] = s.toJson();
+    message["alignment"] = align;
 
     qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
@@ -254,6 +285,18 @@ QString CRDT::to_string(){
         str += "\n";
     }
     return str;
+}
+
+void CRDT::handleRemoteAlignChange(const Symbol& s,int align) {
+    int line,index;
+    if (!findPosition(s,line,index))
+        return;
+
+
+    //    qDebug() << "remote insert" << s.getValue() << line << index;
+    // insert in editor
+    emit changeAlignment(align,line, index);
+
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
