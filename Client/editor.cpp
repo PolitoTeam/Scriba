@@ -58,6 +58,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
     connect(crdt, &CRDT::change, this, &Editor::on_change);
+    connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
 
     connect(client, &Client::moveCursorToEnd, this, &Editor::on_moveCursorToEnd);
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
@@ -268,12 +269,18 @@ void Editor::setFontBold(bool bold)
 
 void Editor::textAlign(QAction *a)
 {
-    if (a == actionAlignLeft)
+    if (a == actionAlignLeft){
         ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-    else if (a == actionAlignCenter)
+        crdt->localChangeAlignment(this->line,this->index,LEFT);
+    }
+    else if (a == actionAlignCenter){
         ui->textEdit->setAlignment(Qt::AlignHCenter);
-    else if (a == actionAlignRight)
+        crdt->localChangeAlignment(this->line,this->index,MIDDLE);
+    }
+    else if (a == actionAlignRight){
         ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+        crdt->localChangeAlignment(this->line,this->index,RIGHT);
+    }
 }
 
 /****************************************************
@@ -327,6 +334,26 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         }
     }
 }
+
+void Editor::on_changeAlignment(int align,int line, int index)
+{
+
+    qDebug() << "ON_CHANGE_ALIGNMENT";
+    QTextCursor cursor = ui->textEdit->textCursor();
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    cursor.setPosition(block.position() + index);
+    QTextBlockFormat textBlockFormat = block.blockFormat();
+    if (align==LEFT)
+        textBlockFormat.setAlignment(Qt::AlignLeft);
+    else if (align==MIDDLE)
+        textBlockFormat.setAlignment(Qt::AlignCenter);
+    else if (align==RIGHT)
+        textBlockFormat.setAlignment(Qt::AlignRight);
+    cursor.mergeBlockFormat(textBlockFormat);
+
+    qDebug().noquote() << crdt->to_string();
+}
+
 
 void Editor::on_insert(int line, int index, const Symbol& s)
 {

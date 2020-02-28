@@ -380,7 +380,10 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             symbols_list.removeOne(symbol);
         } else if (operation_type == CHANGE) {
             qDebug() << "change";
-
+        } else if (operation_type == ALIGN) {
+            qDebug() << "change alignment";
+           // symbols_list.removeOne(symbol);
+        } else{
         }
         broadcast(docObj, sender);
 
