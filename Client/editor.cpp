@@ -536,6 +536,7 @@ void Editor::textColor()
     if (!col.isValid())
         return;
     ui->textEdit->setTextColor(col);
+    on_formatChange();
 }
 
 void Editor::clipboardDataChanged()
@@ -575,6 +576,7 @@ void Editor::alignmentChanged(Qt::Alignment a)
 void Editor::textFamily(const QString &f)
 {
     ui->textEdit->setFontFamily(f);
+    on_formatChange();
 }
 
 void Editor::textSize(const QString &p)
@@ -583,6 +585,7 @@ void Editor::textSize(const QString &p)
     if (p.toFloat() > 0) {
         ui->textEdit->setFontPointSize(pointSize);
     }
+    on_formatChange();
 }
 
 void Editor::moveCursorToEnd() {
