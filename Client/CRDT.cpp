@@ -9,7 +9,7 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
 
     _symbols.push_back(QVector<Symbol>{});
     // terminator ('\0') should not be included in the count
-    this->size--;
+    this->size = -1;
 }
 
 int CRDT::getId() { return _siteId; }
@@ -28,7 +28,6 @@ void CRDT::localInsert(int line, int index, char value, QFont font, QColor color
     Symbol s(value, newPos, ++_counter, font, color);
 
     insertChar(s, line, index);
-
     this->size++;
 
     // broadcast
@@ -313,13 +312,18 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 
     // insert in crdt structure
     insertChar(s, line, index);
+
     this->size++;
 
     qDebug() << "remote insert" << s.getValue() << line << index;
     // insert in editor
 //    if (line==_symbols.size()-1 && index>0)
 //        index-=1;
-
+    if (s.getValue() == '\0') {
+        qDebug() << "RETURN";
+        return;
+    }
+    // insert in text editor
     emit insert(line, index, s);
 }
 
@@ -477,4 +481,3 @@ void CRDT::handleRemoteChange(const Symbol& s) {
 
     emit change(line, index, s);
 }
-

@@ -319,7 +319,8 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     // "charsAdded - charsRemoved" and "charsRemoved - charsAdded" are conditions added to handle QTextDocument::contentsChange bug QTBUG-3495
     if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
         QString added = ui->textEdit->toPlainText().mid(position, charsAdded - charsRemoved);
-
+        if (added.at(0) == '\0')
+            return;
         // move cursor before first char to insert
         QTextCursor cursor = ui->textEdit->textCursor();
         cursor.setPosition(ui->textEdit->textCursor().position() - (charsAdded - charsRemoved));

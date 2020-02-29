@@ -370,25 +370,26 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject symbol = docObj["symbol"].toObject();
         int operation_type = docObj["operation_type"].toInt();
 
+        QString position = fromJsonArraytoString(symbol["position"].toArray());
         // update symbols in server memory and broadcast operation to other editors
-        // TODO: handle changes (only deletion and insertion)
         if (operation_type == INSERT) {
             qDebug() << "insertion";
-            symbols_list.append(symbol);
+            symbols_list.insert(position, symbol);
         } else if (operation_type == DELETE) {
             qDebug() << "deletion";
-            symbols_list.removeOne(symbol);
+            symbols_list.remove(position);
         } else if (operation_type == CHANGE) {
             qDebug() << "change";
+            symbols_list.insert(position, symbol);
         } else if (operation_type == ALIGN) {
             qDebug() << "change alignment";
+            symbols_list.insert(position, symbol);
            // symbols_list.removeOne(symbol);
         } else{
         }
         broadcast(docObj, sender);
 
         // TODO: store on disk -> CHANGE to save every X minutes
-        // TODO: wrong, shouldn't be username but author!
         QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
         qDebug() << "filename " << sender->getFilename();
 //        if (QFile::exists(filePath))
@@ -399,13 +400,13 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QFile file(filePath);
         file.open(QIODevice::ReadWrite | QIODevice::Truncate);
         QJsonArray symbols_json;
-        for (QJsonObject symbol : symbols_list) {
+        for (QJsonObject symbol : symbols_list.values()) {
             symbols_json.append(symbol);
         }
 
 //        qDebug() << symbols_json;
-        file.write(QJsonDocument(symbols_json).toBinaryData());
-//        file.write(QJsonDocument(symbols_json).toJson());
+//        file.write(QJsonDocument(symbols_json).toBinaryData());
+        file.write(QJsonDocument(symbols_json).toJson());
         file.close();
     }
 
@@ -420,7 +421,9 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
         // store symbols in server memory
         foreach (const QJsonValue & symbol, message["content"].toArray()) {
-            symbols_list.append(symbol.toObject());
+            QString position = fromJsonArraytoString(symbol["position"].toArray());
+            qDebug() << position;
+            symbols_list.insert(position, symbol.toObject());
         }
     }
     if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
@@ -818,8 +821,8 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     f.close();
     // ...and check for errors in the format
 //    QJsonParseError parseError;
-    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
-//    QJsonDocument document = QJsonDocument::fromJson(json_data);
+//    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
+    QJsonDocument document = QJsonDocument::fromJson(json_data);
 
 //    if (parseError.error != QJsonParseError::NoError) {
 //        message["success"] = false;
@@ -904,4 +907,11 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
 
     message["success"] = true;
     return message;
+}
+
+QString Server::fromJsonArraytoString(const QJsonArray& data) {
+    QJsonDocument doc;
+    doc.setArray(data);
+    QString str(doc.toJson());
+    return str;
 }

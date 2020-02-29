@@ -326,8 +326,15 @@ void Client::jsonReceived(const QJsonObject &docObj)
                     return;
                 const QJsonArray symbols = cont.toArray();
                 // read the symbols in the file and parse them into the editor
-                foreach (const QJsonValue & symbol, symbols) {
-                    Symbol s = Symbol::fromJson(symbol.toObject());
+//                foreach (const QJsonValue & symbol, symbols) {
+//                    Symbol s = Symbol::fromJson(symbol.toObject());
+//                    qDebug() << "SYMBOL" << s.getValue();
+//                    emit remoteInsert(s);
+//                }
+                // REVERSE ORDER to have '\0' as first char
+                for (int i = symbols.size() - 1; i >= 0; i--) {
+                    Symbol s = Symbol::fromJson(symbols[i].toObject());
+                    qDebug() << "SYMBOL" << s.getValue();
                     emit remoteInsert(s);
                 }
 
@@ -591,5 +598,4 @@ int Client::getColor()
 {
     return cursor_color_rgb;
 }
-
 

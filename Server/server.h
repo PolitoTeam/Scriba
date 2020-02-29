@@ -3,6 +3,7 @@
 
 #include <QTcpServer>
 #include <QVector>
+#include <QMap>
 #include "database.h"
 class QThread;
 class ServerWorker;
@@ -32,7 +33,9 @@ private:
     QVector<ServerWorker *> m_clients;
     Database* db;
     QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
-    QVector<QJsonObject> symbols_list;
+//    QVector<QJsonObject> symbols_list;
+    QMap<QString, QJsonObject> symbols_list;
+
 //    QMap<QString, QVector<QJsonObject>> symbols_list;
 
 private slots:
@@ -56,6 +59,7 @@ private:
     QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
     QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender);
     QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
+    static QString fromJsonArraytoString(const QJsonArray& data);
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);
