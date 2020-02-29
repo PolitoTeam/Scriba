@@ -318,18 +318,21 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
         QString added = ui->textEdit->toPlainText().mid(position, charsAdded - charsRemoved);
 
-        // add multiple chars
+        // move cursor before first char to insert
         QTextCursor cursor = ui->textEdit->textCursor();
-        qDebug() << "position" << cursor.position();
+        cursor.setPosition(ui->textEdit->textCursor().position() - (charsAdded - charsRemoved));
+        // add multiple chars
         for (int i = 0; i < charsAdded - charsRemoved; i++) {
-            // move cursor after each char inserted, starting from the first one
-            cursor.setPosition(ui->textEdit->textCursor().position() - (charsAdded - charsRemoved) + 1 + i);
-            QFont font = cursor.charFormat().font();
-//            qDebug() << font.bold() << font.italic() << font.underline();
-            qDebug() << "Added " << added.at(i) << "in position (" << this->line << "," << this->index + i << ")";
-            crdt->localInsert(line, index + i, added.at(i).toLatin1(), font, cursor.charFormat().foreground().color());
+            qDebug() << "position" << cursor.position();
 
-            cursor.movePosition(QTextCursor::Left);
+            QFont font = cursor.charFormat().font();
+            int line = cursor.blockNumber();
+            int index = cursor.positionInBlock();
+            qDebug() << "Added " << added.at(i) << "in position (" << line << "," << index << ")";
+            crdt->localInsert(line, index, added.at(i).toLatin1(), font, cursor.charFormat().foreground().color());
+
+            // move cursor to next char to insert
+            cursor.movePosition(QTextCursor::Right);
         }
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
         // undo to retrieve the content deleted
