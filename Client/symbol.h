@@ -158,7 +158,14 @@ public:
     }
 
     QString to_string() {
-        QString value_string = (value == '\n') ? "NL" : QString(1, value);
+        QString value_string;
+        if (value == '\n')
+            value_string = "NL";
+        else if (value == '\0')
+            value_string = "NULL";
+        else
+            value_string = QString(1, value);
+
         QString result = value_string + "[";
         bool first = true;
 
