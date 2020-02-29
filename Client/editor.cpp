@@ -326,14 +326,15 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         for (int i = 0; i < charsAdded - charsRemoved; i++) {
             qDebug() << "position" << cursor.position();
 
-            QFont font = cursor.charFormat().font();
             int line = cursor.blockNumber();
             int index = cursor.positionInBlock();
             qDebug() << "Added " << added.at(i) << "in position (" << line << "," << index << ")";
-            crdt->localInsert(line, index, added.at(i).toLatin1(), font, cursor.charFormat().foreground().color());
 
-            // move cursor to next char to insert
+            // to retrieve the format it is necessary to be on the RIGHT of the target char
             cursor.movePosition(QTextCursor::Right);
+            QFont font = cursor.charFormat().font();
+
+            crdt->localInsert(line, index, added.at(i).toLatin1(), font, cursor.charFormat().foreground().color());
         }
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
         // undo to retrieve the content deleted
