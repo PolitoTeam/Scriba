@@ -50,6 +50,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(client,&Client::contentReceived,this,&Editor::updateText);
     connect(ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
     connect(client,&Client::userDisconnected,this,&Editor::removeUser);
+    connect(client, &Client::addCRDTterminator, this, &Editor::on_addCRDTterminator);
 
     connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
 
@@ -621,4 +622,10 @@ void Editor::on_formatChange() {
         QFont font = cursor.charFormat().font();
         crdt->localChange(line, index, font, cursor.charFormat().foreground().color());
     }
+}
+
+void Editor::on_addCRDTterminator() {
+    QFont font;
+    QColor color;
+    this->crdt->localInsert(0, 0, '\0', font, color);
 }

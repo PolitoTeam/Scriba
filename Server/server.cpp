@@ -405,6 +405,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
 //        qDebug() << symbols_json;
         file.write(QJsonDocument(symbols_json).toBinaryData());
+//        file.write(QJsonDocument(symbols_json).toJson());
         file.close();
     }
 
@@ -818,6 +819,8 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     // ...and check for errors in the format
 //    QJsonParseError parseError;
     QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
+//    QJsonDocument document = QJsonDocument::fromJson(json_data);
+
 //    if (parseError.error != QJsonParseError::NoError) {
 //        message["success"] = false;
 //        message["reason"] = QStringLiteral("Json parsing error");

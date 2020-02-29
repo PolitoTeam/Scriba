@@ -7,28 +7,9 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
     connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
     connect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
 
-    // WARNING: need to change
-//    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
-//    to  if ((charsAdded > 0 && ui->textEdit->toPlainText().size() < crdt->getSize())
-//    QVector<Symbol> v;
-//    v.push_back(Symbol('$', QVector<Identifier>(1, Identifier(31, 0)), -1));
-//    _symbols.push_back(v);
-
     _symbols.push_back(QVector<Symbol>{});
-    // calculate position
-    QVector<Identifier> posBefore = findPosBefore(0, 0);
-    QVector<Identifier> posAfter = findPosAfter(0, 0);
-    QVector<Identifier> newPos;
-    QVector<Identifier> position = generatePositionBetween(posBefore, posAfter, newPos);
-
-    QFont font;
-    QColor color;
-
-    Symbol s('\0', newPos, ++_counter, font, color);
-    _symbols[0].insert(0,s);
-
-    qDebug()<<"qui SIZE: "<<_symbols.size()<< " SIZE 0: "<<_symbols[0].size();
-
+    // terminator ('\0') should not be included in the count
+    this->size--;
 }
 
 int CRDT::getId() { return _siteId; }

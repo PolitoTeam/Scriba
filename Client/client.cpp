@@ -308,6 +308,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         const bool success = resultVal.toBool();
         if (success) {
             sharedLink = docObj.value(QLatin1String("shared_link")).toString();
+            emit addCRDTterminator();
             emit correctNewFile();
         } else {
             const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));

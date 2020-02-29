@@ -53,6 +53,7 @@ void Home::on_pushButtonNewFile_clicked()
 }
 
 void Home::newFileCompleted() {
+    emit addCRDTterminator();
     emit changeWidget(EDITOR);
 }
 

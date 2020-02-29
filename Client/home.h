@@ -35,6 +35,7 @@ signals:
      void logOut();
      void modify();
      void fileChosen(const QString& filename);
+     void addCRDTterminator();
 
 private:
     Ui::Home *ui;

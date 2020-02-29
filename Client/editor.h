@@ -61,6 +61,7 @@ private slots:
     void textFamily(const QString &f);
     void textSize(const QString &p);
     void moveCursorToEnd();
+    void on_addCRDTterminator();
 
 private:
     Ui::Editor *ui;
