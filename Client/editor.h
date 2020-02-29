@@ -26,7 +26,7 @@ public:
 
 signals:
     void changeWidget(int);
-    void formatChange();
+//    void formatChange();
 
 private slots:
     void printPdf();
@@ -61,8 +61,6 @@ private slots:
     void textFamily(const QString &f);
     void textSize(const QString &p);
     void moveCursorToEnd();
-    void on_formatChange();
-
 
 private:
     Ui::Editor *ui;
@@ -82,6 +80,7 @@ private:
     void fontChanged(const QFont &f);
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
+    void on_formatChange();
 };
 
 #endif // EDITOR_H

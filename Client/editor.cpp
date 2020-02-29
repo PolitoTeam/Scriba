@@ -135,7 +135,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 //    connect(comboFont, &QFontComboBox::currentFontChanged, this, &Editor::on_formatChange);
 //    connect(comboSize, &QComboBox::, this, &Editor::on_formatChange);
 //    connect(actionTextColor, &QAction::triggered, this, &Editor::on_formatChange);
-      connect(this, &Editor::formatChange, this, &Editor::on_formatChange);
+//      connect(this, &Editor::formatChange, this, &Editor::on_formatChange);
 
 }
 
@@ -193,6 +193,7 @@ void Editor::exit()
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
     connect(crdt, &CRDT::change, this, &Editor::on_change);
+    connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
     // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
 
@@ -241,13 +242,13 @@ void Editor::selectFont()
 void Editor::setFontUnderline(bool underline)
 {
     ui->textEdit->setFontUnderline(underline);
-    emit formatChange();
+    on_formatChange();
 }
 
 void Editor::setFontItalic(bool italic)
 {
     ui->textEdit->setFontItalic(italic);
-    emit formatChange();
+    on_formatChange();
 
 }
 
@@ -263,7 +264,7 @@ void Editor::setFontBold(bool bold)
 {
     bold ? ui->textEdit->setFontWeight(QFont::Bold) :
            ui->textEdit->setFontWeight(QFont::Normal);
-    emit formatChange();
+    on_formatChange();
 }
 
 void Editor::textAlign(QAction *a)
