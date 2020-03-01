@@ -384,7 +384,6 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         } else if (operation_type == ALIGN) {
             qDebug() << "change alignment";
             symbols_list.insert(position, symbol);
-           // symbols_list.removeOne(symbol);
         } else{
         }
         broadcast(docObj, sender);

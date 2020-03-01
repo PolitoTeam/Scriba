@@ -108,7 +108,6 @@ private:
     QVector<Identifier> position;
     int counter; // TODO: when/where is it used???
     SymbolFormat format;
-
 public:
     Symbol() {} // empty constructor needed, otherwise compile error
     Symbol(char value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
