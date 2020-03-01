@@ -71,7 +71,7 @@ signals:
     void remoteInsert(Symbol s);
     void remoteErase(Symbol s);
     void remoteChange(Symbol s);
-    void remoteAlignChange(Symbol s,int align);
+    void remoteAlignChange(Symbol s);
     void correctNewFile();
     void correctOpenedFile();
     void wrongNewFile(const QString& reason);

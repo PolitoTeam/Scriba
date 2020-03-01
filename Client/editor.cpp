@@ -284,15 +284,15 @@ void Editor::textAlign(QAction *a)
     for (int i = line_start; i <= line_end; i++) {
         if (a == actionAlignLeft){
             ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-            crdt->localChangeAlignment(i,LEFT);
+            crdt->localChangeAlignment(i,SymbolFormat::Alignment::ALIGN_LEFT);
         }
         else if (a == actionAlignCenter){
             ui->textEdit->setAlignment(Qt::AlignHCenter);
-            crdt->localChangeAlignment(i,MIDDLE);
+            crdt->localChangeAlignment(i,SymbolFormat::Alignment::ALIGN_CENTER);
         }
         else if (a == actionAlignRight){
             ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-            crdt->localChangeAlignment(i,RIGHT);
+            crdt->localChangeAlignment(i,SymbolFormat::Alignment::ALIGN_RIGHT);
         }
     }
 }
@@ -362,11 +362,11 @@ void Editor::on_changeAlignment(int align,int line, int index)
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
     cursor.setPosition(block.position() + index);
     QTextBlockFormat textBlockFormat = block.blockFormat();
-    if (align==LEFT)
+    if (align==SymbolFormat::Alignment::ALIGN_LEFT)
         textBlockFormat.setAlignment(Qt::AlignLeft);
-    else if (align==MIDDLE)
+    else if (align==SymbolFormat::Alignment::ALIGN_CENTER)
         textBlockFormat.setAlignment(Qt::AlignCenter);
-    else if (align==RIGHT)
+    else if (align==SymbolFormat::Alignment::ALIGN_RIGHT)
         textBlockFormat.setAlignment(Qt::AlignRight);
     cursor.mergeBlockFormat(textBlockFormat);
 

@@ -275,8 +275,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit remoteChange(s);
         }
         else{
-            int align_type = docObj["alignment"].toInt();
-            emit remoteAlignChange(s,align_type);
+            emit remoteAlignChange(s);
         }
     }
     else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {

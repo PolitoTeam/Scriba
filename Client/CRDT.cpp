@@ -41,9 +41,10 @@ void CRDT::localInsert(int line, int index, char value, QFont font, QColor color
     client->sendJson(message);
 }
 
-void CRDT::localChangeAlignment(int line,AlignType align){
+void CRDT::localChangeAlignment(int line,SymbolFormat::Alignment align){
 
     Symbol s = _symbols[line][_symbols[line].size()-1];
+    s.setAlignment(align);
 
     // broadcast
     QJsonObject message;
@@ -51,7 +52,6 @@ void CRDT::localChangeAlignment(int line,AlignType align){
     message["editorId"] = _siteId;
     message["operation_type"] = ALIGN;
     message["symbol"] = s.toJson();
-    message["alignment"] = align;
 
     qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
@@ -285,8 +285,9 @@ QString CRDT::to_string(){
     return str;
 }
 
-void CRDT::handleRemoteAlignChange(const Symbol& s,int align) {
+void CRDT::handleRemoteAlignChange(const Symbol& s) {
     int line,index;
+    SymbolFormat::Alignment align = s.getAlignment();
     bool res;
     if (!(res=findPosition(s,line,index))){
         qDebug()<<"---RES: "<<res;

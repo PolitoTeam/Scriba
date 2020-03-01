@@ -50,7 +50,7 @@ public:
 
 class SymbolFormat {
 public:
-    enum Alignment {ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER} left;
+    enum Alignment {ALIGN_LEFT, ALIGN_RIGHT, ALIGN_CENTER} align;
     bool italic, bold, underline;
     QString font;
     int size;
@@ -64,6 +64,7 @@ public:
         json["font"] = font;
         json["size"] = size;
         json["color"] = color;
+        json["alignment"] = align;
         return json;
     }
 
@@ -75,6 +76,7 @@ public:
         format.font = json["font"].toString();
         format.size = json["size"].toInt();
         format.color = json["color"].toString();
+        format.align = static_cast<Alignment>(json["alignment"].toInt());
 //        qDebug() << "from json" << format.italic << format.bold << format.underline;
         return format;
     }
@@ -134,6 +136,14 @@ public:
         format.size = font.pointSize();
         format.font = font.family();
         format.color = color.name();
+    }
+
+    void setAlignment(SymbolFormat::Alignment a) {
+        format.align = a;
+    }
+
+    SymbolFormat::Alignment getAlignment() const {
+        return format.align;
     }
 
     QTextCharFormat getQTextCharFormat() const { return format.getQTextCharFormat(); }
