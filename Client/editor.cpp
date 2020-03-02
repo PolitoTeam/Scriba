@@ -362,12 +362,21 @@ void Editor::on_changeAlignment(int align,int line, int index)
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
     cursor.setPosition(block.position() + index);
     QTextBlockFormat textBlockFormat = block.blockFormat();
-    if (align==SymbolFormat::Alignment::ALIGN_LEFT)
+    if (align==SymbolFormat::Alignment::ALIGN_LEFT){
         textBlockFormat.setAlignment(Qt::AlignLeft);
-    else if (align==SymbolFormat::Alignment::ALIGN_CENTER)
+        if (line==this->line)
+          actionAlignLeft->setChecked(true);
+    }
+    else if (align==SymbolFormat::Alignment::ALIGN_CENTER){
         textBlockFormat.setAlignment(Qt::AlignCenter);
-    else if (align==SymbolFormat::Alignment::ALIGN_RIGHT)
+        if (line==this->line)
+            actionAlignCenter->setChecked(true);
+        }
+    else if (align==SymbolFormat::Alignment::ALIGN_RIGHT){
         textBlockFormat.setAlignment(Qt::AlignRight);
+        if (line==this->line)
+            actionAlignRight->setChecked(true);
+        }
     cursor.mergeBlockFormat(textBlockFormat);
 
     qDebug().noquote() << crdt->to_string();
