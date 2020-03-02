@@ -416,6 +416,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
         // send symbols in file to client
         QJsonObject message = this->sendFile(docObj,sender);
+        qDebug()<<"FILE TO OPEN: "<< message;
         this->sendJson(sender,message);
 
         // store symbols in server memory

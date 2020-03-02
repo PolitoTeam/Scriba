@@ -335,7 +335,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                     Symbol s = Symbol::fromJson(symbols[i].toObject());
                     qDebug() << "SYMBOL" << s.getValue();
                     emit remoteInsert(s);
-                    if (s.getAlignment() != NULL)
+                    if (s.getValue()=='\n' || s.getValue()=='\0')
                         emit remoteAlignChange(s);
 
                 }

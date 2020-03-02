@@ -27,6 +27,9 @@ void CRDT::localInsert(int line, int index, char value, QFont font, QColor color
     // generate symbol
     Symbol s(value, newPos, ++_counter, font, color);
 
+    if (value=='\0')
+        s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
+
     insertChar(s, line, index);
     this->size++;
 
@@ -45,6 +48,7 @@ void CRDT::localChangeAlignment(int line,SymbolFormat::Alignment align){
 
     Symbol s = _symbols[line][_symbols[line].size()-1];
     s.setAlignment(align);
+    qDebug()<<" Alignment local: "<<align<<" Symbol: "<<s.getValue();
 
     // broadcast
     QJsonObject message;
