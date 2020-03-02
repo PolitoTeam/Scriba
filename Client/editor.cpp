@@ -187,8 +187,7 @@ void Editor::exit()
 
     // clean the editor: disconnect...
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    ui->textEdit->clear();
-    ui->listWidget->clear();
+    this->clear();
     // create new CRDT with connections
     delete crdt;
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
