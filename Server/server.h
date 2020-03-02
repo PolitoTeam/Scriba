@@ -34,7 +34,7 @@ private:
     Database* db;
     QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
 //    QVector<QJsonObject> symbols_list;
-    QMap<QString, QJsonObject> symbols_list;
+    QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
 
 //    QMap<QString, QVector<QJsonObject>> symbols_list;
 

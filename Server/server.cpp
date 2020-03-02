@@ -377,16 +377,16 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         // update symbols in server memory and broadcast operation to other editors
         if (operation_type == INSERT) {
             qDebug() << "insertion";
-            symbols_list.insert(position, symbol);
+            symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == DELETE) {
             qDebug() << "deletion";
-            symbols_list.remove(position);
+            symbols_list.value(sender->getFilename())->remove(position);
         } else if (operation_type == CHANGE) {
             qDebug() << "change";
-            symbols_list.insert(position, symbol);
+            symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == ALIGN) {
             qDebug() << "change alignment";
-            symbols_list.insert(position, symbol);
+            symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else{
         }
         broadcast(docObj, sender);
@@ -402,7 +402,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         QFile file(filePath);
         file.open(QIODevice::ReadWrite | QIODevice::Truncate);
         QJsonArray symbols_json;
-        for (QJsonObject symbol : symbols_list.values()) {
+        for (QJsonObject symbol : symbols_list.value(sender->getFilename())->values()) {
             symbols_json.append(symbol);
         }
 
@@ -426,7 +426,9 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         foreach (const QJsonValue & symbol, message["content"].toArray()) {
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             qDebug() << position;
-            symbols_list.insert(position, symbol.toObject());
+            if (!symbols_list.contains(sender->getFilename()))
+                symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
+            symbols_list.value(sender->getFilename())->insert(position, symbol.toObject());
         }
     }
     if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
@@ -752,6 +754,9 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     mapFileWorkers->insert(filename + "," + username,list);
     qDebug() << mapFileWorkers;
 
+    if (!symbols_list.contains(sender->getFilename()))
+        symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
+
 //    symbols_list.insert()
     message["success"] = true;
     message["shared_link"] = sharedLink;
@@ -911,7 +916,7 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         delete mapFileWorkers->value(filename);
         mapFileWorkers->remove(filename);
         // empty symbol list
-        symbols_list.clear();
+        symbols_list.value(sender->getFilename())->clear();
     }
     else{ QJsonObject message_broadcast;
         message_broadcast["type"] = QStringLiteral("disconnection");
