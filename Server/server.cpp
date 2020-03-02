@@ -113,11 +113,14 @@ bool Server::tryConnectionToDatabase()
 
 void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 {
-    qDebug() << "BROADCAST";
-    for (ServerWorker *worker : m_clients) {
+    QString filename = exclude->getFilename();
+    QList<ServerWorker*>* active_clients = mapFileWorkers->value(filename);
+    qDebug() << "BROADCAST from: "<<exclude->getUsername();
+    for (ServerWorker *worker : *active_clients) {
         Q_ASSERT(worker);
         if (worker == exclude)
             continue;
+        qDebug() << "BROADCAST to: "<<worker->getUsername();
         sendJson(worker, message);
     }
 }
@@ -884,27 +887,30 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
 
     // remove client from list of clients using current file
     if (mapFileWorkers->contains(filename)){
-        sender->closeFile();
         mapFileWorkers->value(filename)->removeOne(sender);
-        if (mapFileWorkers->value(filename)->isEmpty()){
-            delete mapFileWorkers->value(filename);
-            mapFileWorkers->remove(filename);
-        }
+
     } else{
         message["success"] = false;
         message["reason"] = QStringLiteral("File not exist");
         return message;
     }
 
-    // empty symbol list
-    symbols_list.clear();
 
-    QJsonObject message_broadcast;
-    message_broadcast["type"] = QStringLiteral("disconnection");
-    message_broadcast["filename"]=filename;
-    message_broadcast["user"]=username;
-    this->broadcast(message_broadcast,sender);
+    if (mapFileWorkers->value(filename)->isEmpty()){
 
+        delete mapFileWorkers->value(filename);
+        mapFileWorkers->remove(filename);
+        // empty symbol list
+        symbols_list.clear();
+    }
+    else{ QJsonObject message_broadcast;
+        message_broadcast["type"] = QStringLiteral("disconnection");
+        message_broadcast["filename"]=filename;
+        message_broadcast["user"]=username;
+        this->broadcast(message_broadcast,sender);
+    }
+
+    sender->closeFile();
     message["success"] = true;
     return message;
 }
