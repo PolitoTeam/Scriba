@@ -848,6 +848,16 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     message["shared_link"] = sharedLink;
     message["color"] = color;
 
+    //inform all the connected clients of the new connection
+
+    QJsonObject message_broadcast;
+    message_broadcast["type"] = QStringLiteral("connection");
+    message_broadcast["filename"]=filename;
+    message_broadcast["username"]= sender->getUsername();
+    message_broadcast["nickname"]= sender->getNickname();
+
+    this->broadcast(message_broadcast,sender);
+
     auto d = QJsonDocument(message);
 //    qDebug()<< d.toJson().constData()<<endl;
     return message;

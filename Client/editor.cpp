@@ -188,6 +188,7 @@ void Editor::exit()
     // clean the editor: disconnect...
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     ui->textEdit->clear();
+    ui->listWidget->clear();
     // create new CRDT with connections
     delete crdt;
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
@@ -460,6 +461,7 @@ void Editor::updateText(const QString& text){
 void Editor::addUsers(const QList<QPair<QString,QString>> users){
 
     for (int i=0;i<users.count();i++){
+
         this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first));
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
@@ -471,9 +473,11 @@ void Editor::clear(){
 }
 
 void Editor::removeUser(const QString& name){
-//    qDebug()<<"Here"<<endl;
-
-    // this->ui->listWidget->removeItemWidget(this->uformattazionei->listWidget->findItems(name,Qt::MatchFixedString).first());
+   qDebug()<<"Here remove"<<endl;
+   QListWidgetItem* item = this->ui->listWidget->findItems(name,Qt::MatchFixedString).first();
+   qDebug()<<"ITEM TO REMOVE: "<<item->text();
+   this->ui->listWidget->removeItemWidget(item);
+   delete item;
 }
 
 void Editor::saveCursorPosition()

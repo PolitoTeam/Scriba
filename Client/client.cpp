@@ -373,6 +373,21 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 emit wrongListFiles(reasonVal.toString());
             }
         }
+    else if (typeVal.toString().compare(QLatin1String("connection"), Qt::CaseInsensitive) == 0) {
+            const QJsonValue file = docObj.value(QLatin1String("filename"));
+            qDebug()<<"connection "<<file.toString();
+            if (file.isNull() || !file.isString())
+                return;
+            const QJsonValue name = docObj.value(QLatin1String("username"));
+            if (name.isNull() || !name.isString())
+                return; 
+            if (!file.toString().compare(this->openfile)){
+                QList<QPair<QString,QString>> connected;
+                connected.append(QPair<QString,QString>(docObj.value("username").toString(),docObj.value("nickname").toString()));
+                emit usersConnectedReceived(connected);
+            }
+
+        }
     else if (typeVal.toString().compare(QLatin1String("disconnection"), Qt::CaseInsensitive) == 0) {
             const QJsonValue file = docObj.value(QLatin1String("filename"));
             if (file.isNull() || !file.isString())
