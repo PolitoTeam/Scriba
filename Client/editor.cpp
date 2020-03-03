@@ -57,6 +57,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
+    connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
     connect(crdt, &CRDT::change, this, &Editor::on_change);
     connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
@@ -324,19 +325,69 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         // move cursor before first char to insert
         QTextCursor cursor = ui->textEdit->textCursor();
         cursor.setPosition(ui->textEdit->textCursor().position() - (charsAdded - charsRemoved));
-        // add multiple chars
-        for (int i = 0; i < charsAdded - charsRemoved; i++) {
-            qDebug() << "position" << cursor.position();
-
+        if ((charsAdded - charsRemoved)==1){
+            //single character
             int line = cursor.blockNumber();
             int index = cursor.positionInBlock();
-            qDebug() << "Added " << added.at(i) << "in position (" << line << "," << index << ")";
+            qDebug() << "Added " << added.at(0) << "in position (" << line << "," << index << ")";
 
             // to retrieve the format it is necessary to be on the RIGHT of the target char
             cursor.movePosition(QTextCursor::Right);
             QFont font = cursor.charFormat().font();
 
-            crdt->localInsert(line, index, added.at(i).unicode(), font, cursor.charFormat().foreground().color());
+            crdt->localInsert(line, index, added.at(0).unicode(), font, cursor.charFormat().foreground().color());
+        } else{
+            QFont fontPrec;
+            QColor colorPrec;
+            QString partial;
+            Qt::Alignment alignPrec = ui->textEdit->document()->findBlockByNumber(line).blockFormat().alignment();
+            int linePrec = line;
+            int numLines = line;
+            // add multiple chars
+            qDebug() << "Multiple chars: position" << cursor.position()<<" (line,index): ( "<<line<<","<< index<<")";
+            for (int i = 0; i < charsAdded - charsRemoved; i++) {
+
+                //int line = cursor.blockNumber();
+                //int index = cursor.positionInBlock();
+
+                // to retrieve the format it is necessary to be on the RIGHT of the target char
+                cursor.movePosition(QTextCursor::Right);
+                QFont font = cursor.charFormat().font();
+                QColor color = cursor.charFormat().foreground().color();
+                Qt::Alignment align = alignPrec;
+                if (i==0){
+                    fontPrec=font;
+                    colorPrec=color;
+                }
+
+                if (numLines!=linePrec){
+                    QTextBlock block = ui->textEdit->document()->findBlockByNumber(numLines);
+                    QTextBlockFormat textBlockFormat = block.blockFormat();
+                    align = textBlockFormat.alignment();
+                    qDebug()<<"line: "<<numLines<<" alignment: "<<align;
+                }
+
+
+
+                if (font == fontPrec && color==colorPrec && align==alignPrec){
+                    qDebug()<<"concatenated: "<<added.at(i).unicode();
+                    partial.append(added.at(i).unicode());
+                }else{
+                    crdt->localInsertGroup(line, index, partial, fontPrec, colorPrec,alignPrec);
+                    fontPrec=font;
+                    colorPrec=color;
+                    alignPrec = align;
+                    partial.clear();
+                    partial.append(added.at(i).unicode());
+                }
+
+                if (i == (charsAdded - charsRemoved-1))
+                    crdt->localInsertGroup(line, index, partial, font, color,align);
+                linePrec=numLines;
+                if (added.at(i)=='\n'){
+                    numLines++;
+                }
+            }
         }
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
         // undo to retrieve the content deleted
@@ -399,6 +450,26 @@ void Editor::on_insert(int line, int index, const Symbol& s)
 //    qDebug() << "format" << newFormat.font().bold();
     cursor.setCharFormat(newFormat);
     cursor.insertText(QChar(s.getValue()));
+    ui->textEdit->setCurrentCharFormat(oldFormat);
+
+    qDebug().noquote() << crdt->to_string();
+}
+
+void Editor::on_insertGroup(int line, int index, const QString& s,QTextCharFormat newFormat){
+    qDebug() << "ON_INSERT";
+    QTextCursor cursor = ui->textEdit->textCursor();
+//    cursor.setPosition(index);
+
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    cursor.setPosition(block.position() + index);
+
+    // save old format to restore it later
+    QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+//    qDebug() << "oldFormat" << oldFormat.font().italic() << oldFormat.font().bold() << oldFormat.font().underline();
+
+//    qDebug() << "format" << newFormat.font().bold();
+    cursor.setCharFormat(newFormat);
+    cursor.insertText(s);
     ui->textEdit->setCurrentCharFormat(oldFormat);
 
     qDebug().noquote() << crdt->to_string();

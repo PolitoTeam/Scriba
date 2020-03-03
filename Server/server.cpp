@@ -370,23 +370,39 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
 
     if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
-        QJsonObject symbol = docObj["symbol"].toObject();
+
         int operation_type = docObj["operation_type"].toInt();
 
-        QString position = fromJsonArraytoString(symbol["position"].toArray());
         // update symbols in server memory and broadcast operation to other editors
         if (operation_type == INSERT) {
             qDebug() << "insertion";
+            QJsonObject symbol = docObj["symbol"].toObject();
+            QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == DELETE) {
             qDebug() << "deletion";
+            QJsonObject symbol = docObj["symbol"].toObject();
+            QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->remove(position);
         } else if (operation_type == CHANGE) {
             qDebug() << "change";
+            QJsonObject symbol = docObj["symbol"].toObject();
+            QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == ALIGN) {
             qDebug() << "change alignment";
+            QJsonObject symbol = docObj["symbol"].toObject();
+            QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
+        } else if (operation_type == PASTE) {
+            qDebug() << "change alignment";
+            QJsonArray symbols = docObj["symbols"].toArray();
+            for (int i = 0; i < symbols.size(); i++) {
+                    QJsonObject symbol = symbols[i].toObject();
+                    QString position = fromJsonArraytoString(symbol["position"].toArray());
+                    Symbol s = Symbol::fromJson(symbol);
+                    symbols_list.value(sender->getFilename())->insert(position, symbol);
+                }
         } else{
         }
         broadcast(docObj, sender);

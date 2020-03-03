@@ -258,23 +258,38 @@ void Client::jsonReceived(const QJsonObject &docObj)
         else
             emit correctOldPassword();
     } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {
-        QJsonObject symbol = docObj["symbol"].toObject();
-        Symbol s = Symbol::fromJson(symbol);
-        qDebug() << s.to_string();
 
         int operation_type = docObj["operation_type"].toInt();
 //        qDebug() << "operation" << operation_type;
         if (operation_type == INSERT) {
+            QJsonObject symbol = docObj["symbol"].toObject();
+            Symbol s = Symbol::fromJson(symbol);
+            qDebug() << s.to_string();
 //            qDebug() << "INSERT";
             emit remoteInsert(s);
         } else if (operation_type == DELETE){
+            QJsonObject symbol = docObj["symbol"].toObject();
+            Symbol s = Symbol::fromJson(symbol);
+            qDebug() << s.to_string();
 //            qDebug() << "ERASE";
             emit remoteErase(s);
         } else if (operation_type == CHANGE) {
+            QJsonObject symbol = docObj["symbol"].toObject();
+            Symbol s = Symbol::fromJson(symbol);
+            qDebug() << s.to_string();
+
             qDebug() << "CHANGE";
             emit remoteChange(s);
         }
+        else if (operation_type == PASTE) {
+            QJsonArray symbols = docObj["symbols"].toArray();
+
+            qDebug() << "PASTE";
+            emit remotePaste(symbols);
+            }
         else{
+            QJsonObject symbol = docObj["symbol"].toObject();
+            Symbol s = Symbol::fromJson(symbol);
             emit remoteAlignChange(s);
         }
     }

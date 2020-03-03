@@ -69,6 +69,7 @@ signals:
     void openFilesError(const QString& reason);
 
     void remoteInsert(Symbol s);
+    void remotePaste(QJsonArray s);
     void remoteErase(Symbol s);
     void remoteChange(Symbol s);
     void remoteAlignChange(Symbol s);

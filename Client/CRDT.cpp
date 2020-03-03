@@ -3,6 +3,7 @@
 
 CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
     connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    connect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
     connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
     connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
     connect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
@@ -39,6 +40,56 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
     message["editorId"] = _siteId;
     message["operation_type"] = INSERT;
     message["symbol"] = s.toJson();
+
+    qDebug().noquote() << to_string(); // very useful for debugging
+    client->sendJson(message);
+}
+
+void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align) {
+    qDebug()<<"Trying to insert "<<partial <<" in ("<<line<<" , "<<index<<")";
+    if (line < 0 || index < 0)
+        throw std::runtime_error("Error: index out of bound.\n");
+    QJsonArray symbols;
+    for (int i =0; i<partial.length(); i++){
+        // calculate position
+        QVector<Identifier> posBefore = findPosBefore(line, index);
+        QVector<Identifier> posAfter = findPosAfter(line, index);
+        QVector<Identifier> newPos;
+        QVector<Identifier> position = generatePositionBetween(posBefore, posAfter, newPos);
+
+        // generate symbol
+        Symbol s(partial.at(i).unicode(), newPos, ++_counter, font, color);
+
+
+        if (s.getValue()=='\0' || s.getValue()=='\n'){
+            if (align==(Qt::AlignLeft|Qt::AlignLeading))
+               s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
+            else if (align==Qt::AlignHCenter)
+               s.setAlignment(SymbolFormat::Alignment::ALIGN_CENTER);
+            else if (align==(Qt::AlignTrailing | Qt::AlignAbsolute))
+               s.setAlignment(SymbolFormat::Alignment::ALIGN_RIGHT);
+        }
+        symbols.append(s.toJson());
+
+        insertChar(s, line, index);
+        this->size++;
+        if (s.getValue()=='\n'){
+            line+=1;
+            index=0;
+        }
+        else {
+            index+=1;
+        }
+    }
+
+
+
+    // broadcast
+    QJsonObject message;
+    message["type"] = QStringLiteral("operation");
+    message["editorId"] = _siteId;
+    message["operation_type"] = PASTE;
+    message["symbols"] = symbols;
 
     qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
@@ -305,6 +356,53 @@ void CRDT::handleRemoteAlignChange(const Symbol& s) {
 
 }
 
+void CRDT::handleRemotePaste(const QJsonArray& symbols){
+    qDebug() << "REMOTE PASTE";
+    QString partial;
+    int firstLine, firstIndex;
+    QTextCharFormat newFormat;
+    QVector<Symbol> alignChanges;
+    for (int i = 0; i < symbols.size(); i++) {
+            QJsonObject symbol = symbols[i].toObject();
+            Symbol s = Symbol::fromJson(symbol);
+            int line, index;
+            if (_symbols.size() != 0) {
+                findInsertPosition(s, line, index);
+            } else {
+                line=0;
+                index=0;
+            }
+
+            if (i==0){
+                firstLine=line;
+                firstIndex=index;
+                newFormat=s.getQTextCharFormat();
+            }
+
+            // insert in crdt structure
+            insertChar(s, line, index);
+
+            this->size++;
+
+            qDebug() << "remote insert" << s.getValue() << line << index;
+            // insert in editor
+        //    if (line==_symbols.size()-1 && index>0)
+        //        index-=1;
+            if (s.getValue()=='\0' || s.getValue()=='\n')
+                alignChanges.append(s);
+            if (s.getValue() == '\0') {
+                continue;
+            }
+
+            partial.append(s.getValue());
+    }
+    emit insertGroup(firstLine,firstIndex,partial,newFormat);
+    //not optimal
+    for (int i=0;i<alignChanges.size();i++){
+          handleRemoteAlignChange(alignChanges.at(i));
+    }
+}
+
 void CRDT::handleRemoteInsert(const Symbol& s) {
     qDebug() << "REMOTE INSERT" << s.getValue(); // << QString(1, s.getValue());
     int line, index;
@@ -334,6 +432,7 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 
 void CRDT::insertChar(Symbol s, int line, int index) {
     qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
+    qDebug()<<" Trying to isnert "<< s.getValue()<<" to (line,index): ("<<line<<","<<index<<")";
 
     if (s.getValue() == '\n')  {// split line into two, before and after the '\n'
             QVector<Symbol> lineBefore;
