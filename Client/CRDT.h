@@ -21,7 +21,7 @@ class CRDT : public QObject
 public:
     CRDT(int site, Client *client);
     int getId();
-    void localInsert(int line, int index, char value, QFont font, QColor color);
+    void localInsert(int line, int index, ushort value, QFont font, QColor color);
     void localErase(int line, int index);
 
     void localChangeAlignment(int line,SymbolFormat::Alignment align);

@@ -104,14 +104,14 @@ public:
 class Symbol
 {
 private:
-    char value;
+    ushort value;
     QVector<Identifier> position;
     int counter; // TODO: when/where is it used???
     SymbolFormat format;
 public:
     Symbol() {} // empty constructor needed, otherwise compile error
-    Symbol(char value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
-    Symbol(char value, QVector<Identifier> position, int counter, QFont font, QColor color) : value(value),
+    Symbol(ushort value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
+    Symbol(ushort value, QVector<Identifier> position, int counter, QFont font, QColor color) : value(value),
             position(position), counter(counter) {
         format.italic = font.italic();
         format.bold = font.bold();
@@ -122,9 +122,9 @@ public:
 
 //        qDebug() << "constructor" << format.italic << format.bold << format.underline;
     }
-    Symbol(char value, QVector<Identifier> position, int counter, SymbolFormat format) : value(value),
+    Symbol(ushort value, QVector<Identifier> position, int counter, SymbolFormat format) : value(value),
             position(position), counter(counter), format(format) {}
-    char getValue() const { return value; }
+    ushort getValue() const { return value; }
     QVector<Identifier> getPosition() const { return position; }
     int getCounter() const { return counter; }
 
@@ -206,7 +206,7 @@ public:
     }
 
     static Symbol fromJson(QJsonObject json) {
-        char value = json["value"].toString().at(0).toLatin1();
+        ushort value = json["value"].toString().at(0).unicode();
         int counter = json["counter"].toInt();
 
         QVector<Identifier> position;

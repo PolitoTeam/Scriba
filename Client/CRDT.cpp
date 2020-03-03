@@ -14,7 +14,7 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
 
 int CRDT::getId() { return _siteId; }
 
-void CRDT::localInsert(int line, int index, char value, QFont font, QColor color) {
+void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor color) {
     if (line < 0 || index < 0)
         throw std::runtime_error("Error: index out of bound.\n");
 

@@ -336,7 +336,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             cursor.movePosition(QTextCursor::Right);
             QFont font = cursor.charFormat().font();
 
-            crdt->localInsert(line, index, added.at(i).toLatin1(), font, cursor.charFormat().foreground().color());
+            crdt->localInsert(line, index, added.at(i).unicode(), font, cursor.charFormat().foreground().color());
         }
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
         // undo to retrieve the content deleted
@@ -398,7 +398,7 @@ void Editor::on_insert(int line, int index, const Symbol& s)
     QTextCharFormat newFormat = s.getQTextCharFormat();
 //    qDebug() << "format" << newFormat.font().bold();
     cursor.setCharFormat(newFormat);
-    cursor.insertText(QString(1, s.getValue()));
+    cursor.insertText(QChar(s.getValue()));
     ui->textEdit->setCurrentCharFormat(oldFormat);
 
     qDebug().noquote() << crdt->to_string();
