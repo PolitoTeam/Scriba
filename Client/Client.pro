@@ -40,6 +40,7 @@ HEADERS += \
     CRDT.h \
     appMainWindow.h \
     client.h \
+    colors.h \
     highlighter.h \
     login.h \
     editor.h \

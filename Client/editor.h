@@ -8,6 +8,7 @@
 #include "highlighter.h"
 #include <QTextCursor>
 #include <QtWidgets>
+#include "colors.h"
 
 namespace Ui {
 class Editor;
@@ -71,7 +72,8 @@ private:
     CRDT *crdt;
     int line = 0, index = 0;
     Highlighter *highlighter;
-
+    int next = 0; //for the color
+    Colors list_colors;
 
     QFontComboBox *comboFont;
     QComboBox *comboSize;
@@ -87,7 +89,7 @@ private:
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
     void on_formatChange();
-     void on_showAssigned();
+    void on_showAssigned();
 };
 
 #endif // EDITOR_H
