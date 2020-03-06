@@ -56,7 +56,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     highlighter = new Highlighter(0,crdt);
-    connect(this->client,&Client::loggedIn,this->highlighter,[this]{this->highlighter->addClient(this->client->getUsername(),QColor(124,252,0,127)); next++;});
+    connect(this->client,&Client::loggedIn,this->highlighter,[this]{this->highlighter->addClient(this->client->getUsername(),QColor(124,252,0,127));});
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
@@ -555,7 +555,7 @@ void Editor::updateText(const QString& text){
 void Editor::addUsers(const QList<QPair<QString,QString>> users){
 
     for (int i=0;i<users.count();i++){
-        highlighter->addClient(users.at(i).first,list_colors.getColor(next++)); // for now all red
+        highlighter->addClient(users.at(i).first,list_colors.getColor()); // for now all red
         this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first));
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
@@ -564,7 +564,7 @@ void Editor::addUsers(const QList<QPair<QString,QString>> users){
 void Editor::clear(){
     ui->listWidget->clear();
     ui->textEdit->clear();
-    next = 0;
+    list_colors.clear();
 }
 
 void Editor::removeUser(const QString& name){

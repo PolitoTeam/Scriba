@@ -72,7 +72,6 @@ private:
     CRDT *crdt;
     int line = 0, index = 0;
     Highlighter *highlighter;
-    int next = 0; //for the color
     Colors list_colors;
 
     QFontComboBox *comboFont;

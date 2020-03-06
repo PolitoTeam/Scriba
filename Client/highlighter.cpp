@@ -1,7 +1,10 @@
 #include "highlighter.h"
 
 Highlighter::Highlighter(QTextDocument *document,CRDT* crdt)
-    : QSyntaxHighlighter(document),crdt(crdt){}
+    : QSyntaxHighlighter(document),crdt(crdt){
+
+
+}
 
 void Highlighter::addClient(QString username,QColor color){
 

@@ -6,10 +6,28 @@
 
 class Colors {
 private:
-      QList<QString> list_color = QColor::colorNames();
+      QMap<QString,bool> colors_map;
 public:
-    QColor getColor(int index){
-        return QColor(list_color.at(index%list_color.size()));
+     Colors(){
+         for (QString x: QColor::colorNames()){
+             colors_map.insert(x,false);
+         }
+         colors_map.insert(QString('green'),true);
+      }
+     void clear(){
+         for (QString x: colors_map.keys()){
+             colors_map[x]=false;
+         }
+     }
+    QColor getColor(){
+        // gestire il fatto di nessun colore disponibile
+        for (QString x: colors_map.keys()){
+            if (colors_map.value(x)==false){
+                colors_map[x]=true;
+                return QColor(x);
+            }
+
+        }
     }
 };
 
