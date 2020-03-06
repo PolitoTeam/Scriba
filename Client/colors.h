@@ -24,7 +24,9 @@ public:
         for (QString x: colors_map.keys()){
             if (colors_map.value(x)==false){
                 colors_map[x]=true;
-                return QColor(x);
+                QColor color(x);
+                color.setAlpha(256);
+                return color;
             }
 
         }
