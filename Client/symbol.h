@@ -108,6 +108,7 @@ private:
     QVector<Identifier> position;
     int counter; // TODO: when/where is it used???
     SymbolFormat format;
+    QString username;
 public:
     Symbol() {} // empty constructor needed, otherwise compile error
     Symbol(ushort value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
@@ -139,6 +140,14 @@ public:
 
     void setAlignment(SymbolFormat::Alignment a) {
         format.align = a;
+    }
+
+    void setUsername(QString username){
+        this->username=username;
+    }
+
+    QString getUsername(){
+        return this->username;
     }
 
     SymbolFormat::Alignment getAlignment() const {
@@ -201,6 +210,7 @@ public:
         json["position"] = jsonArray;
         json["counter"] = counter;
         json["format"] = format.toJson();
+        json["username"] = username;
 
         return json;
     }
@@ -208,6 +218,7 @@ public:
     static Symbol fromJson(QJsonObject json) {
         ushort value = json["value"].toString().at(0).unicode();
         int counter = json["counter"].toInt();
+        QString username = json["username"].toString();
 
         QVector<Identifier> position;
         QJsonArray positionJson = json["position"].toArray();
@@ -220,6 +231,7 @@ public:
 
         SymbolFormat format = SymbolFormat::fromJson(json["format"].toObject());
         Symbol s(value, position, counter, format);
+        s.setUsername(username);
 
         return s;
     }

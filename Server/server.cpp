@@ -78,7 +78,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
 //    qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
     worker->moveToThread(m_availableThreads.at(threadIdx)); //asssegnazione client al thread scelto.
 
-    connect(m_availableThreads.at(threadIdx), &QThread::finished,[=]() { qDebug()<<"Thread: "<<threadIdx<<" terminato!"<<endl;});
+    connect(m_availableThreads.at(threadIdx), &QThread::finished,[=]() {  qDebug()<<"Thread: "<<threadIdx<<" terminato!"<<endl;});
     //appena il thread finisce, inserisce nella coda degli eventi la cancellazione del worker...domanda:viene tolto anche dal vettore?
     connect(m_availableThreads.at(threadIdx), &QThread::finished, worker, &QObject::deleteLater);
     //viene invocata userDIsconnected quando la connessione viene chiusa dal client.

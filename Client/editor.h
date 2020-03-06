@@ -5,6 +5,7 @@
 #include "appMainWindow.h"
 #include "client.h"
 #include "CRDT.h"
+#include "highlighter.h"
 #include <QTextCursor>
 #include <QtWidgets>
 
@@ -69,6 +70,8 @@ private:
     Client* client;
     CRDT *crdt;
     int line = 0, index = 0;
+    Highlighter *highlighter;
+
 
     QFontComboBox *comboFont;
     QComboBox *comboSize;
@@ -76,6 +79,7 @@ private:
     QAction *actionAlignLeft;
     QAction *actionAlignCenter;
     QAction *actionAlignRight;
+    QAction *actionShowAssigned;
 
     void showEvent(QShowEvent* event);
     int fromStringToIntegerHash(QString str);
@@ -83,6 +87,7 @@ private:
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
     void on_formatChange();
+     void on_showAssigned();
 };
 
 #endif // EDITOR_H

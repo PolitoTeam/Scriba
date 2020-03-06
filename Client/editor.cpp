@@ -55,6 +55,8 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
 
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
+    highlighter = new Highlighter(0,crdt);
+    connect(this->client,&Client::loggedIn,this->highlighter,[this]{this->highlighter->addClient(this->client->getUsername(),QColor(255,0,0,127));});
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
@@ -130,6 +132,16 @@ Editor::Editor(QWidget *parent,Client* client) :
     ui->toolBar->addSeparator();
     ui->toolBar->addActions(alignGroup->actions());
 
+    //show assigned text
+    const QIcon assigned = QIcon::fromTheme("format-justify-right", QIcon(":images/textright.png"));
+    actionShowAssigned = new QAction(assigned, tr("C&enter"), this);
+    actionShowAssigned->setCheckable(true);
+    actionShowAssigned->setChecked(false);
+    ui->toolBar->addAction(actionShowAssigned);
+    connect(actionShowAssigned,&QAction::triggered,this,&Editor::on_showAssigned);
+
+
+
     //
 //    connect(ui->actionFont, &QAction::triggered, this, &Editor::on_formatChange);
 //    connect(ui->actionBold, &QAction::triggered, this, &Editor::on_formatChange);
@@ -147,6 +159,18 @@ int Editor::fromStringToIntegerHash(QString str) {
     int intHash;
     data >> intHash;
     return intHash;
+}
+
+void Editor::on_showAssigned(){
+    if (this->highlighter->document()==0){
+        qDebug()<< "Assigning file";
+        this->highlighter->setDocument(ui->textEdit->document());
+         qDebug()<< "Assigned file";
+    }
+    else {
+        this->highlighter->setDocument(0);
+        qDebug()<< "Removing file";
+    }
 }
 
 Editor::~Editor()
@@ -531,7 +555,7 @@ void Editor::updateText(const QString& text){
 void Editor::addUsers(const QList<QPair<QString,QString>> users){
 
     for (int i=0;i<users.count();i++){
-
+        highlighter->addClient(users.at(i).first,QColor(0,45,32,127)); // for now all red
         this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first));
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga

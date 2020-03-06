@@ -28,6 +28,7 @@ SOURCES += \
     CRDT.cpp \
     appMainWindow.cpp \
     client.cpp \
+    highlighter.cpp \
     login.cpp \
     editor.cpp \
     main.cpp \
@@ -39,6 +40,7 @@ HEADERS += \
     CRDT.h \
     appMainWindow.h \
     client.h \
+    highlighter.h \
     login.h \
     editor.h \
     home.h \

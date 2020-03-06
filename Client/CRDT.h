@@ -29,6 +29,7 @@ public:
     void localChange(int line, int index, QFont font, QColor color);
     int getSize();
     QString to_string();
+    Symbol getSymbol(int line,int index);
 
 private slots:
     void handleRemoteInsert(const Symbol& s);

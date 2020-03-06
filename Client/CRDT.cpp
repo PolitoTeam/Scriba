@@ -27,6 +27,7 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
 
     // generate symbol
     Symbol s(value, newPos, ++_counter, font, color);
+    s.setUsername(this->client->getUsername());
 
     if (value=='\0')
         s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
@@ -584,4 +585,12 @@ void CRDT::handleRemoteChange(const Symbol& s) {
     qDebug() << "updated";
 
     emit change(line, index, s);
+}
+
+Symbol CRDT::getSymbol(int line,int index) {
+    qDebug()<<"getSymbol "<<line<<" , "<<index;
+
+    Symbol s = _symbols[line][index];
+    qDebug()<<"symbol= "<<s.getValue();
+    return s;
 }
