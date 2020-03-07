@@ -51,7 +51,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->textEdit,&QTextEdit::textChanged,this,&Editor::textChange);
     connect(client,&Client::userDisconnected,this,&Editor::removeUser);
     connect(client, &Client::addCRDTterminator, this, &Editor::on_addCRDTterminator);
-
+    connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
     connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
 
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
@@ -217,6 +217,7 @@ void Editor::exit()
     delete crdt;
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
+    connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
     connect(crdt, &CRDT::change, this, &Editor::on_change);
     connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
@@ -600,6 +601,7 @@ void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
 {
     fontChanged(format.font());
     colorChanged(format.foreground().color());
+    void on_remoteCursor(int editor_id, Symbol s);
 
 //    qDebug() << "***FORMAT CHANGED***";
 //    qDebug() << "changed" << ui->textEdit->textCursor().selectedText();
@@ -739,4 +741,27 @@ void Editor::on_addCRDTterminator() {
     QFont font;
     QColor color;
     this->crdt->localInsert(0, 0, '\0', font, color);
+}
+
+void Editor::on_remoteCursor(int editor_id, Symbol s) {
+    int line, index;
+    qDebug() << QChar(s.getValue());
+    crdt->getPositionFromSymbol(s, line, index);
+    qDebug() << "LINE/INDEX" << line << index;
+    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    if (!remote_cursors.contains(editor_id)) {
+        // TODO: get the color instead of using red
+        RemoteCursor remote_cursor(ui->textEdit->textCursor(), block, index, "red");
+        remote_cursors.insert(editor_id, remote_cursor);
+    } else {
+        RemoteCursor remote_cursor = remote_cursors.value(editor_id);
+        remote_cursor.moveTo(block, index);
+        remote_cursors.insert(editor_id, remote_cursor);
+    }
+
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 }

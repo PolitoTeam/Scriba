@@ -31,7 +31,7 @@ public:
     QString to_string();
     Symbol getSymbol(int line,int index);
     void cursorPositionChanged(int line, int index);
-
+    void getPositionFromSymbol(const Symbol& s, int& line, int& index);
 
 private slots:
     void handleRemoteInsert(const Symbol& s);

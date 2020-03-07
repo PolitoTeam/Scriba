@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include "symbol.h"
+#include "remotecursor.h"
 
 class QHostAddress;
 class QJsonDocument;
@@ -82,6 +83,7 @@ signals:
     void userDisconnected(const QString& username);
     void wrongSharedLink(const QString& filename);
     void addCRDTterminator();
+    void remoteCursor(int editor_id, Symbol s);
 
 private:
     QTcpSocket *m_clientSocket;

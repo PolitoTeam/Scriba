@@ -296,7 +296,9 @@ void Client::jsonReceived(const QJsonObject &docObj)
             Symbol s = Symbol::fromJson(symbol);
             qDebug() << s.to_string();
 
-            qDebug() << "CURSOR";
+            int editor_id = docObj["editorId"].toInt();
+//            qDebug() << "CURSOR" << editor_id;
+            emit remoteCursor(editor_id, s);
         }
     }
     else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {

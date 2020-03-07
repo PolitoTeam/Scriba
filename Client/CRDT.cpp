@@ -241,7 +241,7 @@ void CRDT::localChange(int line, int index, QFont font, QColor color) {
 
 void CRDT::cursorPositionChanged(int line, int index) {
     Symbol s = _symbols[line][index];
-    qDebug() << "symbol AFTER: " << QChar(s.getValue());
+//    qDebug() << "symbol AFTER: " << QChar(s.getValue());
 
     // broadcast
     QJsonObject message;
@@ -607,4 +607,8 @@ Symbol CRDT::getSymbol(int line,int index) {
     Symbol s = _symbols[line][index];
     qDebug()<<"symbol= "<<s.getValue();
     return s;
+}
+
+void CRDT::getPositionFromSymbol(const Symbol& s, int& line, int& index) {
+    findPosition(s, line, index);
 }

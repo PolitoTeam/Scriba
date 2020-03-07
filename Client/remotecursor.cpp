@@ -1,36 +1,37 @@
 #include "remotecursor.h"
 #include <QTextDocument>
 #include <QDebug>
+#include <QTextBlock>
 
-RemoteCursor::RemoteCursor(QTextDocument *document, int initial_position, const QString& color)
+RemoteCursor::RemoteCursor(QTextCursor cursor, QTextBlock initial_block, int initial_index, const QString& color)
 {
     this->cursorHtml = "<span style='background-color:" + color + ";display:block'>&nbsp;</span>";
 
-    this->remoteCursor = new QTextCursor(document);
-    this->remoteCursor->setPosition(initial_position);
-    this->remoteCursor->insertHtml(cursorHtml);
+    this->remoteCursor = cursor;
+    this->remoteCursor.setPosition(initial_block.position() + initial_index);
+    this->remoteCursor.insertHtml(cursorHtml);
 }
+
+RemoteCursor::RemoteCursor() {} // necessary to use QMap
 
 RemoteCursor::~RemoteCursor() {
-    delete remoteCursor;
 }
 
-void RemoteCursor::moveTo(int position) {
-    if (position <= 0 || position >= remoteCursor->document()->characterCount()) {
-        return;
-    }
-
-    int oldPosition = remoteCursor->position();
+void RemoteCursor::moveTo(QTextBlock block, int index) {
+    qDebug() << "remote cursor" << index;
+    int oldPosition = remoteCursor.position();
     // set position before remote cursor and delete it
-    remoteCursor->setPosition(oldPosition - 1);
-    remoteCursor->deleteChar();
+    qDebug() << "deleting at" << oldPosition - 1;
+    this->remoteCursor.setPosition(oldPosition - 1);
+    this->remoteCursor.deleteChar();
 
     // put in new position
-    remoteCursor->setPosition(position - 1);
-    remoteCursor->insertHtml(cursorHtml);
+    this->remoteCursor.setPosition(block.position() + index);
+    this->remoteCursor.insertHtml(cursorHtml);
+    qDebug() << "new position" << this->remoteCursor.position();
 }
 
 int RemoteCursor::getPosition()
 {
-    return remoteCursor->position();
+    return remoteCursor.position();
 }

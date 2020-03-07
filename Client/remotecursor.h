@@ -6,14 +6,15 @@
 class RemoteCursor
 {
 public:
-    RemoteCursor(QTextDocument *document, int initial_position, const QString& color);
+    RemoteCursor(QTextCursor cursor, QTextBlock initial_block, int initial_index, const QString& color);
+    RemoteCursor(); // necessary to use QMap
     ~RemoteCursor();
-    void moveTo(int position);
+    void moveTo(QTextBlock block, int index);
     int getPosition();
 
 private:
     QString cursorHtml;
-    QTextCursor *remoteCursor;
+    QTextCursor remoteCursor;
 };
 
 #endif // REMOTECURSOR_H
