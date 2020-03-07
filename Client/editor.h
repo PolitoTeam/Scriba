@@ -76,7 +76,7 @@ private:
     Colors list_colors;
 
     // <editorid, cursor>
-    QMap<int, RemoteCursor> remote_cursors;
+    QMap<int, RemoteCursor*> remote_cursors;
 
     QFontComboBox *comboFont;
     QComboBox *comboSize;

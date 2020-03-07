@@ -754,12 +754,12 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
     if (!remote_cursors.contains(editor_id)) {
         // TODO: get the color instead of using red
-        RemoteCursor remote_cursor(ui->textEdit->textCursor(), block, index, "red");
+        RemoteCursor *remote_cursor = new RemoteCursor(ui->textEdit->textCursor(), block, index, "red");
         remote_cursors.insert(editor_id, remote_cursor);
     } else {
-        RemoteCursor remote_cursor = remote_cursors.value(editor_id);
-        remote_cursor.moveTo(block, index);
-        remote_cursors.insert(editor_id, remote_cursor);
+        RemoteCursor *remote_cursor = remote_cursors.value(editor_id);
+        remote_cursor->moveTo(block, index);
+//        remote_cursors.insert(editor_id, remote_cursor);
     }
 
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
