@@ -35,3 +35,8 @@ int RemoteCursor::getPosition()
 {
     return remoteCursor.position();
 }
+
+int RemoteCursor::getPosition(int& line, int& index) {
+    line = this->remoteCursor.blockNumber();
+    index = this->remoteCursor.positionInBlock();
+}

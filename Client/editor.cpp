@@ -328,15 +328,16 @@ void Editor::textAlign(QAction *a)
     REMOTE OPERATION: update crdt THEN textedit
 ****************************************************/
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
-    qDebug() << "total text size" << ui->textEdit->toPlainText().size() << "crdt size" << crdt->getSize();
+    qDebug() << "[total text size" << ui->textEdit->toPlainText().size() << "crdt size" << crdt->getSize();
     qDebug() << "added" << charsAdded << "removed" << charsRemoved;
-    qDebug() << "line" << this->line << "index" << this->index;
+    qDebug() << "line" << this->line << "index" << this->index << remote_cursors.size() << "]";
 
     // REMOTE OPERATION: insert/delete received from remote client
     // nothing to update
     // "charsRemoved == 0" and "charsAdded == 0" are conditions added to handle QTextDocument::contentsChange bug QTBUG-3495
-    if ((charsAdded > 0 && charsRemoved == 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
-            || (charsRemoved > 0 && charsAdded == 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
+    if ((charsAdded > 0 && charsRemoved == 0 && ui->textEdit->toPlainText().size() - remote_cursors.size() <= crdt->getSize())
+            || (charsRemoved > 0 && charsAdded == 0 && ui->textEdit->toPlainText().size() - remote_cursors.size() >= crdt->getSize())) {
+        qDebug() << "rem";
         return;
     }
 
@@ -354,6 +355,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             //single character
             int line = cursor.blockNumber();
             int index = cursor.positionInBlock();
+            correct_position(line, index);
             qDebug() << "Added " << added.at(0) << "in position (" << line << "," << index << ")";
 
             // to retrieve the format it is necessary to be on the RIGHT of the target char
@@ -461,7 +463,7 @@ void Editor::on_changeAlignment(int align,int line, int index)
 
 void Editor::on_insert(int line, int index, const Symbol& s)
 {
-    qDebug() << "ON_INSERT";
+    qDebug() << "ON_INSERT REMOTE";
     QTextCursor cursor = ui->textEdit->textCursor();
 //    cursor.setPosition(index);
 
@@ -587,7 +589,9 @@ void Editor::saveCursorPosition()
     this->index = cursor.positionInBlock();
 
     // use positon of symbol AFTER cursor as reference
-    crdt->cursorPositionChanged(line, index);
+    qDebug() << "cursor position before" << this->line << this->index;
+    correct_position(this->line, this->index);
+    crdt->cursorPositionChanged(this->line, this->index);
 }
 
 void Editor::showEvent(QShowEvent *)
@@ -759,9 +763,18 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     } else {
         RemoteCursor *remote_cursor = remote_cursors.value(editor_id);
         remote_cursor->moveTo(block, index);
-//        remote_cursors.insert(editor_id, remote_cursor);
     }
 
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+}
+
+void Editor::correct_position(int& line, int& index) {
+    for (RemoteCursor *cursor : this->remote_cursors) {
+        int cline, cindex;
+        cursor->getPosition(cline, cindex);
+        // TODO: less or less/equal? <= seems to work
+        if (line == cline && cindex <= index)
+            index--;
+    }
 }

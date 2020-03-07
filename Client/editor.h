@@ -66,6 +66,7 @@ private slots:
     void moveCursorToEnd();
     void on_addCRDTterminator();
     void on_remoteCursor(int editor_id, Symbol s);
+    void correct_position(int& line, int& index);
 
 private:
     Ui::Editor *ui;

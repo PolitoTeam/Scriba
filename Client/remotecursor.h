@@ -11,6 +11,7 @@ public:
     ~RemoteCursor();
     void moveTo(QTextBlock block, int index);
     int getPosition();
+    int getPosition(int& line, int& index);
 
 private:
     QString cursorHtml;
