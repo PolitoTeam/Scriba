@@ -239,6 +239,20 @@ void CRDT::localChange(int line, int index, QFont font, QColor color) {
     client->sendJson(message);
 }
 
+void CRDT::cursorPositionChanged(int line, int index) {
+    Symbol s = _symbols[line][index];
+    qDebug() << "symbol AFTER: " << QChar(s.getValue());
+
+    // broadcast
+    QJsonObject message;
+    message["type"] = QStringLiteral("operation");
+    message["editorId"] = _siteId;
+    message["operation_type"] = CURSOR;
+    message["symbol"] = s.toJson();
+
+    client->sendJson(message);
+}
+
 int CRDT::getSize()
 {
     return size;

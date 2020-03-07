@@ -404,6 +404,9 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
                     symbols_list.value(sender->getFilename())->insert(position, symbol);
                 }
         } else{
+            // if CURSOR operation just broadcast it
+            // TODO: now saving after every cursor change (code right after), but this shouldn't be
+            // a problem once we set the saving every X seconds
         }
         broadcast(docObj, sender);
 

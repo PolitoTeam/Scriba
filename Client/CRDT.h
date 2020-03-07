@@ -10,7 +10,7 @@
 #define BASE 32
 #define BOUNDARY 10
 
-typedef enum {INSERT, DELETE, CHANGE, ALIGN, PASTE} OperationType;
+typedef enum {INSERT, DELETE, CHANGE, ALIGN, PASTE, CURSOR} OperationType;
 
 
 class CRDT : public QObject
@@ -30,6 +30,8 @@ public:
     int getSize();
     QString to_string();
     Symbol getSymbol(int line,int index);
+    void cursorPositionChanged(int line, int index);
+
 
 private slots:
     void handleRemoteInsert(const Symbol& s);

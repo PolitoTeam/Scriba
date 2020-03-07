@@ -584,7 +584,9 @@ void Editor::saveCursorPosition()
     QTextCursor cursor = ui->textEdit->textCursor();
     this->line = cursor.blockNumber();
     this->index = cursor.positionInBlock();
-//    qDebug() << "X: " << cursor.blockNumber() << ", Y: " << cursor.positionInBlock();
+
+    // use positon of symbol AFTER cursor as reference
+    crdt->cursorPositionChanged(line, index);
 }
 
 void Editor::showEvent(QShowEvent *)
