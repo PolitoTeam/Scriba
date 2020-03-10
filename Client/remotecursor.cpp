@@ -21,7 +21,7 @@ void RemoteCursor::moveTo(QTextBlock block, int index) {
     qDebug() << "remote cursor" << index;
     int oldPosition = remoteCursor.position();
     // set position before remote cursor and delete it
-    qDebug() << "deleting at" << oldPosition - 1;
+    // qDebug() << "deleting at" << oldPosition - 1;
     this->remoteCursor.setPosition(oldPosition - 1);
     this->remoteCursor.deleteChar();
 
@@ -31,11 +31,13 @@ void RemoteCursor::moveTo(QTextBlock block, int index) {
     qDebug() << "new position" << this->remoteCursor.position();
 }
 
+// get absolute position
 int RemoteCursor::getPosition()
 {
     return remoteCursor.position();
 }
 
+// get position in terms of line and index
 int RemoteCursor::getPosition(int& line, int& index) {
     line = this->remoteCursor.blockNumber();
     index = this->remoteCursor.positionInBlock();

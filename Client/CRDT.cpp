@@ -241,7 +241,7 @@ void CRDT::localChange(int line, int index, QFont font, QColor color) {
 }
 
 void CRDT::cursorPositionChanged(int line, int index) {
-    qDebug() << "curosr position changed" << line << index;
+//    qDebug() << "curosr position changed" << line << index;
     Symbol s = _symbols[line][index];
 //    qDebug() << "symbol AFTER: " << QChar(s.getValue());
 

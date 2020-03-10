@@ -592,6 +592,22 @@ void Editor::saveCursorPosition()
     qDebug() << "cursor position before" << this->line << this->index;
     correct_position(this->line, this->index);
     crdt->cursorPositionChanged(this->line, this->index);
+
+    // select format icon of the first char before the remote cursor
+    int pos = cursor.position();
+    while (pos >= 0) {
+        bool not_found = true;
+        for (RemoteCursor *c : remote_cursors.values()) {
+//            qDebug() << "pos" <<  c->getPosition() << pos;
+            if (c->getPosition() == pos)
+                not_found = false;
+        }
+        if (not_found)
+            break;
+        pos--;
+    }
+    cursor.setPosition(pos);
+    ui->textEdit->setCurrentCharFormat(cursor.charFormat());
 }
 
 void Editor::showEvent(QShowEvent *)
