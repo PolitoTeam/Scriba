@@ -34,6 +34,7 @@ SOURCES += \
     main.cpp \
     home.cpp \
     modify.cpp \
+    remotecursor.cpp \
     signup.cpp
 
 HEADERS += \
@@ -46,6 +47,7 @@ HEADERS += \
     editor.h \
     home.h \
     modify.h \
+    remotecursor.h \
     signup.h \
     symbol.h
 

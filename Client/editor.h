@@ -65,6 +65,8 @@ private slots:
     void textSize(const QString &p);
     void moveCursorToEnd();
     void on_addCRDTterminator();
+    void on_remoteCursor(int editor_id, Symbol s);
+    void correct_position(int& line, int& index);
 
 private:
     Ui::Editor *ui;
@@ -73,6 +75,9 @@ private:
     int line = 0, index = 0;
     Highlighter *highlighter;
     Colors list_colors;
+
+    // <editorid, cursor>
+    QMap<int, RemoteCursor*> remote_cursors;
 
     QFontComboBox *comboFont;
     QComboBox *comboSize;

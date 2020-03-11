@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QColor>
+#include <QMap>
 
 class Colors {
 private:

@@ -42,6 +42,7 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
     message["operation_type"] = INSERT;
     message["symbol"] = s.toJson();
 
+    qDebug() << "LOCAL insert";
     qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
 }
@@ -239,6 +240,21 @@ void CRDT::localChange(int line, int index, QFont font, QColor color) {
     client->sendJson(message);
 }
 
+void CRDT::cursorPositionChanged(int line, int index) {
+//    qDebug() << "curosr position changed" << line << index;
+    Symbol s = _symbols[line][index];
+//    qDebug() << "symbol AFTER: " << QChar(s.getValue());
+
+    // broadcast
+    QJsonObject message;
+    message["type"] = QStringLiteral("operation");
+    message["editorId"] = _siteId;
+    message["operation_type"] = CURSOR;
+    message["symbol"] = s.toJson();
+
+    client->sendJson(message);
+}
+
 int CRDT::getSize()
 {
     return size;
@@ -405,7 +421,7 @@ void CRDT::handleRemotePaste(const QJsonArray& symbols){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
-    qDebug() << "REMOTE INSERT" << s.getValue(); // << QString(1, s.getValue());
+//    qDebug() << "REMOTE INSERT" << QString(s.getValue()); // << QString(1, s.getValue());
     int line, index;
     if (_symbols.size() != 0) {
         findInsertPosition(s, line, index);
@@ -419,7 +435,7 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 
     this->size++;
 
-    qDebug() << "remote insert" << s.getValue() << line << index;
+    qDebug() << "REMOTE insert" << QString(s.getValue()) << line << index;
     // insert in editor
 //    if (line==_symbols.size()-1 && index>0)
 //        index-=1;
@@ -432,15 +448,15 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {
-    qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
-    qDebug()<<" Trying to isnert "<< s.getValue()<<" to (line,index): ("<<line<<","<<index<<")";
+//    qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
+//    qDebug()<<" Trying to isnert "<< s.getValue()<<" to (line,index): ("<<line<<","<<index<<")";
 
     if (s.getValue() == '\n')  {// split line into two, before and after the '\n'
             QVector<Symbol> lineBefore;
-            qDebug()<<"Line: "<<line<< " index: "<<index;
+//            qDebug()<<"Line: "<<line<< " index: "<<index;
             std::copy(_symbols[line].begin(), _symbols[line].begin() + index, std::back_inserter(lineBefore));
             QVector<Symbol> lineAfter;
-             qDebug()<<"Line: "<<line<< " index: "<<index;
+//             qDebug()<<"Line: "<<line<< " index: "<<index;
             std::copy(_symbols[line].begin() + index, _symbols[line].end(), std::back_inserter(lineAfter));
 
             lineBefore.push_back(s); // include '\n' in line before
@@ -593,4 +609,8 @@ Symbol CRDT::getSymbol(int line,int index) {
     Symbol s = _symbols[line][index];
     qDebug()<<"symbol= "<<s.getValue();
     return s;
+}
+
+void CRDT::getPositionFromSymbol(const Symbol& s, int& line, int& index) {
+    findPosition(s, line, index);
 }

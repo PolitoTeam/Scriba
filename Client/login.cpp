@@ -28,9 +28,9 @@ Login::Login(QWidget *parent,Client* client) :
     connect(ui->lineEditPassword, &QLineEdit::returnPressed, this, &Login::try_to_log);
 
     // TODO: remove this line, used for DEBUG, allowing automatic login
-    ui->lineEditUsername->setText("enrico@gmail.com");
-    ui->lineEditPassword->setText("Admin11.");
-    try_to_log();
+//    ui->lineEditUsername->setText("enrico@gmail.com");
+//    ui->lineEditPassword->setText("Admin11.");
+//    try_to_log();
 }
 
 Login::~Login()

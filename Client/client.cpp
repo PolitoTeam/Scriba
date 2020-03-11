@@ -323,10 +323,18 @@ void Client::jsonReceived(const QJsonObject &docObj)
             qDebug() << "PASTE";
             emit remotePaste(symbols);
             }
-        else{
+        else if (operation_type == ALIGN) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s = Symbol::fromJson(symbol);
             emit remoteAlignChange(s);
+        } else if (operation_type == CURSOR) {
+            QJsonObject symbol = docObj["symbol"].toObject();
+            Symbol s = Symbol::fromJson(symbol);
+            qDebug() << s.to_string();
+
+            int editor_id = docObj["editorId"].toInt();
+//            qDebug() << "CURSOR" << editor_id;
+            emit remoteCursor(editor_id, s);
         }
     }
     else if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0) {
