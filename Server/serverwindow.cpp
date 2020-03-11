@@ -30,7 +30,7 @@ void ServerWindow::toggleStartServer()
             return;
         }
 
-        if (!m_Server->listen(QHostAddress::Any, 1500)) {
+        if (!m_Server->listen(QHostAddress::LocalHost, 1500)) {
             QMessageBox::critical(this, tr("Error"), tr("Unable to start the server"), QMessageBox::Close);
             return;
         }

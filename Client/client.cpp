@@ -14,33 +14,67 @@
 #include "client.h"
 #include "CRDT.h"
 #include "symbol.h"
+#include <QSslConfiguration>
 
 Client::Client(QObject *parent)
     : QObject(parent)
-    , m_clientSocket(new QTcpSocket(this))
+    , m_clientSocket(new QSslSocket(this))
     , m_loggedIn(false)
 {
+
+
     // Forward the connected and disconnected signals
-    connect(m_clientSocket, &QTcpSocket::connected, this, &Client::connected);
-    connect(m_clientSocket, &QTcpSocket::disconnected, this, &Client::disconnected);
+    connect(m_clientSocket, &QSslSocket::connected, this, &Client::connected);
+    connect(m_clientSocket, &QSslSocket::disconnected, this, &Client::disconnected);
+    connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
 
     connect(this,&Client::connected,this, []()->void{qDebug()<<"New client Connected";});
     // connect readyRead() to the slot that will take care of reading the data in
-    connect(m_clientSocket, &QTcpSocket::readyRead, this, &Client::onReadyRead);
+    connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead);
 
-    // Forward the error signal, QOverload is necessary as error() is overloaded, see the Qt docs
-    connect(m_clientSocket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this, &Client::error);
 
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
-    connect(m_clientSocket, &QTcpSocket::disconnected, this, [this]()->void{m_loggedIn = false;});
+    connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{qDebug()<<"Disconnected"; this->m_loggedIn = false;});
+    connect(m_clientSocket, &QSslSocket::encrypted, this, [](){qDebug()<<"encrypted!";});
+    connect(m_clientSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&Client::sslErrors);
+
+
+
+   /* QFile certFile("/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/certificates/server.pem");
+    certFile.open(QIODevice::ReadOnly);
+    QSslCertificate cert = QSslCertificate(certFile.readAll());
+    certFile.close();
+    */
+
+    // TO UNCOMMENT
+    /*
+
+    QSslConfiguration::defaultConfiguration().setCaCertificates(QSslConfiguration::systemCaCertificates());
+    m_clientSocket->addCaCertificates(QSslConfiguration::systemCaCertificates());
+    qDebug()<<"CA certificates: ";
+    for (QSslCertificate x: m_clientSocket->sslConfiguration().caCertificates()){
+
+        qDebug()<<"\n Common Name: "<<x.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<x.subjectInfo(QSslCertificate::CommonName);
+    }
+
+    */
+    m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyNone); //da cambiare con VerifyPeer...c'è qualche problema col certificato
+
 
     profile=new QPixmap(":/images/anonymous");
 }
 
+void Client::sslErrors(const QList<QSslError> &errors)
+    {
+        foreach (const QSslError &error, errors)
+            qDebug() <<"ERROR :"<< error.errorString();
+    }
+
 void Client::login(const QString &username, const QString &password)
 {
-    connectToServer(QHostAddress::Any, 1500); //porta da stabilire
-    if (m_clientSocket->waitForConnected()) {
+    connectToServer(QHostAddress::LocalHost, 1500); //porta da stabilire
+   //if (m_clientSocket->waitForEncrypted()) {
+        qDebug()<<"mandato login";
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -52,14 +86,16 @@ void Client::login(const QString &username, const QString &password)
         //aggiungere cifratura oppure passare a QSSLsocket
         message["password"] = password;
         // send the JSON using QDataStream
+        qDebug()<<QJsonDocument(message).toJson(QJsonDocument::Compact);
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+        qDebug()<<"mandato msg login";
+  //  }
 }
 
 void Client::signup(const QString &username, const QString &password)
 {
-    connectToServer(QHostAddress::Any, 1500); //porta da stabilire
-    if (m_clientSocket->waitForConnected()) {
+    connectToServer(QHostAddress::LocalHost, 1500); //porta da stabilire
+   // if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -73,11 +109,11 @@ void Client::signup(const QString &username, const QString &password)
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 
-    }
+   // }
 }
 
 void Client::getFiles(){
-    if (m_clientSocket->waitForConnected()) {
+   // if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -89,11 +125,11 @@ void Client::getFiles(){
         //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+    //}
 }
 
 void Client::getFilenameFromLink(const QString& sharedLink) {
-    if (m_clientSocket->waitForConnected()) {
+   // if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -105,12 +141,12 @@ void Client::getFilenameFromLink(const QString& sharedLink) {
         //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+    //}
 }
 
 void Client::updateNickname(const QString &nickname)
 {
-    if (m_clientSocket->waitForConnected()) {
+    //if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -125,11 +161,11 @@ void Client::updateNickname(const QString &nickname)
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 
         this->nickname = nickname;
-    }
+   // }
 }
 
 void  Client::updatePassword(const QString &oldpassword,const QString &newpassword){
-    if (m_clientSocket->waitForConnected()) {
+   // if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -143,7 +179,7 @@ void  Client::updatePassword(const QString &oldpassword,const QString &newpasswo
         //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+    //}
 }
 
 void Client::checkOldPassword(const QString &old_password)
@@ -459,7 +495,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 
 void Client::createNewFile(QString filename)
 {
-    if (m_clientSocket->waitForConnected()) {
+   // if (m_clientSocket->waitForEncrypted()) {
         QDataStream clientStream(m_clientSocket);
         clientStream.setVersion(QDataStream::Qt_5_7);
 
@@ -470,12 +506,27 @@ void Client::createNewFile(QString filename)
 
         qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+    //}
 }
 
 void Client::connectToServer(const QHostAddress &address, quint16 port)
 {
-    m_clientSocket->connectToHost(address, port);
+    QHostAddress localhost = QHostAddress::LocalHost;
+    qDebug()<<"coNNECTING TO: "<<localhost;
+    m_clientSocket->connectToHost(localhost,port);
+    if (m_clientSocket->waitForConnected()){
+        qDebug()<<"start handshake";
+         m_clientSocket->startClientEncryption();
+         qDebug()<<"end handshake";
+    }
+    // wait 1 minute
+    if (m_clientSocket->waitForEncrypted(60000)) {
+            qDebug()<<"Authentication Suceeded";
+        }
+        else {
+            qDebug("Unable to connect to server");
+            exit(0);
+        }
 }
 
 void Client::onReadyRead()
@@ -536,7 +587,7 @@ void Client::setProfileImage(const QString& filename)
 
 void Client::sendProfileImage()
 {
-    if (m_clientSocket->waitForConnected()) {
+   // if (m_clientSocket->waitForEncrypted()) {
         QDataStream clientStream(m_clientSocket);
         clientStream.setVersion(QDataStream::Qt_5_7);
 
@@ -545,12 +596,12 @@ void Client::sendProfileImage()
         buffer.open(QIODevice::WriteOnly);
         profile->save(&buffer, "PNG");
         clientStream << bArray;
-    }
+   // }
 }
 
 void Client::sendProfileImage(const QString& name,QPixmap* image )
 {
-    if (m_clientSocket->waitForConnected()) {
+   // if (m_clientSocket->waitForEncrypted()) {
         QDataStream clientStream(m_clientSocket);
         clientStream.setVersion(QDataStream::Qt_5_7);
         QJsonObject message;
@@ -563,7 +614,7 @@ void Client::sendProfileImage(const QString& name,QPixmap* image )
         buffer.open(QIODevice::WriteOnly);
         image->save(&buffer, "PNG");
         clientStream << bArray;
-    }
+   // }
 }
 
 void Client::overrideProfileImage(const QPixmap& pixmap)
@@ -586,7 +637,7 @@ void Client::sendJson(const QJsonObject& message)
 }
 
 void Client::openFile(const QString& filename){
-    if (m_clientSocket->waitForConnected()) {
+  //  if (m_clientSocket->waitForEncrypted()) {
         QDataStream clientStream(m_clientSocket);
         clientStream.setVersion(QDataStream::Qt_5_7);
 
@@ -596,11 +647,11 @@ void Client::openFile(const QString& filename){
 
         qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+  //  }
 }
 
 void Client::closeFile(){
-    if (m_clientSocket->waitForConnected()) {
+  //  if (m_clientSocket->waitForEncrypted()) {
         QDataStream clientStream(m_clientSocket);
         clientStream.setVersion(QDataStream::Qt_5_7);
 
@@ -611,7 +662,7 @@ void Client::closeFile(){
 
         qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    }
+   // }
 }
 
 QString Client::getSharedLink()

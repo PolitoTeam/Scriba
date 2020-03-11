@@ -2,7 +2,7 @@
 #define SERVERWORKER_H
 
 #include <QObject>
-#include <QTcpSocket>
+#include <QSslSocket>
 #include <QReadWriteLock>
 class QJsonObject;
 class ServerWorker : public QObject
@@ -11,7 +11,7 @@ class ServerWorker : public QObject
     Q_DISABLE_COPY(ServerWorker)
 public:
     explicit ServerWorker(QObject *parent = nullptr);
-    virtual bool setSocketDescriptor(qintptr socketDescriptor);
+    virtual bool setSocketDescriptor(qintptr socketDescriptor,QSslKey key,QSslCertificate cert);
     void sendJson(const QJsonObject &json);
     void sendProfileImage();
     QString getNickname();
@@ -26,6 +26,7 @@ public:
 
 public slots:
     void disconnectFromClient();
+    void sslErrors(const QList<QSslError> &errors);
 
 private slots:
     void receiveJson();
@@ -37,7 +38,7 @@ signals:
     void logMessage(const QString &msg);
 
 private:
-    QTcpSocket *m_serverSocket;
+    QSslSocket *m_serverSocket;
     QString username;
     QString nickname;
     QString shared_link;

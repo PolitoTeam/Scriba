@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QSslSocket>
 #include "symbol.h"
 
 class QHostAddress;
@@ -46,6 +47,7 @@ public slots:
     void checkOldPassword(const QString &old_password);
     void disconnectFromHost();
     void openFile(const QString& filename);
+    void sslErrors(const QList<QSslError> &errors);
 
 
 private slots:
@@ -84,7 +86,7 @@ signals:
     void addCRDTterminator();
 
 private:
-    QTcpSocket *m_clientSocket;
+    QSslSocket *m_clientSocket;
     bool m_loggedIn;
     QString username;   //valutare se puntatore o no!
     QString nickname;

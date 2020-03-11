@@ -4,6 +4,8 @@
 #include <QTcpServer>
 #include <QVector>
 #include <QMap>
+#include <QSslKey>
+#include <QSslCertificate>
 #include "database.h"
 class QThread;
 class ServerWorker;
@@ -27,6 +29,8 @@ protected:
     void incomingConnection(qintptr socketDescriptor) override;
 
 private:
+    QSslKey key;
+    QSslCertificate cert;
     const int m_idealThreadCount;
     QVector<QThread *> m_availableThreads;
     QVector<int> m_threadsLoad;

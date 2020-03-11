@@ -1,4 +1,4 @@
-#ifndef CRDT_H
+ #ifndef CRDT_H
 #define CRDT_H
 
 #include <QJsonObject>

@@ -8,6 +8,8 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTimer>
+#include <QSslSocket>
+#include <QSslConfiguration>
 
 Server::Server(QObject *parent,Database* db)
     : QTcpServer(parent)
@@ -38,6 +40,22 @@ Server::Server(QObject *parent,Database* db)
         dir_documents.mkpath(".");
     }
 
+
+    //TO CHANGE WITH YOUR LOCAL DIRECTORY
+
+    QFile keyFile("/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/certificates/client.key");
+    keyFile.open(QIODevice::ReadOnly);
+    key = QSslKey(keyFile.readAll(), QSsl::Rsa);
+    keyFile.close();
+
+    QFile certFile("/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/certificates/client.pem");
+    certFile.open(QIODevice::ReadOnly);
+    cert = QSslCertificate(certFile.readAll());
+    certFile.close();
+
+    qDebug()<<'\n Common Name: '<<cert.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<cert.subjectInfo(QSslCertificate::CommonName);
+
+
 //    DEBUG
 //    QVector<QPair<QString, QString>> a;
 //    db->getFiles("b@b", a);
@@ -61,10 +79,11 @@ void Server::incomingConnection(qintptr socketDescriptor)
 {
     ServerWorker *worker = new ServerWorker;
     //Sets the socket descriptor this server should use when listening for incoming connections to socketDescriptor. Returns true if the socket is set successfully; otherwise returns false.
-    if (!worker->setSocketDescriptor(socketDescriptor)) {
+    if (!worker->setSocketDescriptor(socketDescriptor,key,cert)) {
         worker->deleteLater();
         return;
     }
+
     int threadIdx = m_availableThreads.size();
     if (threadIdx < m_idealThreadCount) { //we can add a new thread
         m_availableThreads.append(new QThread(this));
@@ -127,7 +146,7 @@ void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-//    qDebug() << json;
+    qDebug() << "RECEIVED: "<<json;
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
     else

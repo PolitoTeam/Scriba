@@ -12,17 +12,46 @@
 
 ServerWorker::ServerWorker(QObject *parent)
     : QObject(parent)
-    , m_serverSocket(new QTcpSocket(this))
+    , m_serverSocket(new QSslSocket(this))
 {
-    connect(m_serverSocket, &QTcpSocket::readyRead, this, &ServerWorker::receiveJson);
-    connect(m_serverSocket, &QTcpSocket::disconnected, this, &ServerWorker::disconnectedFromClient);
-    connect(m_serverSocket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), this, &ServerWorker::error);
+    connect(m_serverSocket, &QSslSocket::readyRead, this, &ServerWorker::receiveJson);
+    connect(m_serverSocket, &QSslSocket::disconnected, this, &ServerWorker::disconnectedFromClient);
+    connect(m_serverSocket, &QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
+    connect(m_serverSocket, &QSslSocket::encrypted, [](){qDebug()<<"Encrypted   done!";});
+    connect(m_serverSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&ServerWorker::sslErrors);
+}
+
+void ServerWorker::sslErrors(const QList<QSslError> &errors)
+{
+    foreach (const QSslError &error, errors)
+        qDebug() <<"ERROR :"<< error.errorString();
 }
 
 
-bool ServerWorker::setSocketDescriptor(qintptr socketDescriptor)
+
+bool ServerWorker::setSocketDescriptor(qintptr socketDescriptor,QSslKey key,QSslCertificate cert)
 {
-    return m_serverSocket->setSocketDescriptor(socketDescriptor);
+    qDebug() << "New Connection! ";
+
+    if (m_serverSocket->setSocketDescriptor(socketDescriptor)) {
+             qDebug() << "Socket Descriptor Set! ";
+
+             if (m_serverSocket->waitForConnected()){
+
+                 qDebug()<<"key"<<key;
+                 qDebug()<<"cert"<<cert;
+                 m_serverSocket->setPrivateKey(key);
+                 m_serverSocket->setLocalCertificate(cert);
+
+                 m_serverSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
+                 m_serverSocket->startServerEncryption();
+             }
+             return true;
+    } else {
+             qDebug() << "Socket Descriptor Not Set! ";
+             return false;
+    }
+
 }
 
 void ServerWorker::sendJson(const QJsonObject &json)
@@ -93,7 +122,7 @@ void ServerWorker::receiveJson()
     QByteArray jsonData;
     QDataStream socketStream(m_serverSocket);
 
-//    qDebug()<<"Thread: "<<QThread::currentThreadId()<<endl;
+    // qDebug()<<"Thread: "<<QThread::currentThreadId()<<endl;
     socketStream.setVersion(QDataStream::Qt_5_7);
     for (;;) {
         socketStream.startTransaction();
@@ -142,6 +171,7 @@ void ServerWorker::receiveJson()
                 qDebug().nospace() << "Overriding image " << image_path;
             }
         } else {
+            qDebug()<<"break";
             break;
         }
     }
