@@ -34,6 +34,7 @@ SOURCES += \
     main.cpp \
     home.cpp \
     modify.cpp \
+    myqtextedit.cpp \
     remotecursor.cpp \
     signup.cpp
 
@@ -47,6 +48,7 @@ HEADERS += \
     editor.h \
     home.h \
     modify.h \
+    myqtextedit.h \
     remotecursor.h \
     signup.h \
     symbol.h

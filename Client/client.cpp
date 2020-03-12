@@ -333,7 +333,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             qDebug() << s.to_string();
 
             int editor_id = docObj["editorId"].toInt();
-//            qDebug() << "CURSOR" << editor_id;
+            qDebug() << "CURSOR" << editor_id;
             emit remoteCursor(editor_id, s);
         }
     }

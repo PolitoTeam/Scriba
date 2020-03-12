@@ -24,7 +24,7 @@ public:
     void localInsert(int line, int index, ushort value, QFont font, QColor color);
     void localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align);
     void localErase(int line, int index);
-
+    int getSiteID();
     void localChangeAlignment(int line,SymbolFormat::Alignment align);
     void localChange(int line, int index, QFont font, QColor color);
     int getSize();

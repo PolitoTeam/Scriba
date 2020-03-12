@@ -26,7 +26,7 @@ public:
             if (colors_map.value(x)==false){
                 colors_map[x]=true;
                 QColor color(x);
-                color.setAlpha(256);
+                color.setAlpha(255);
                 return color;
             }
 

@@ -6,12 +6,12 @@ Highlighter::Highlighter(QTextDocument *document,CRDT* crdt)
 
 }
 
-void Highlighter::addClient(QString username,QColor color){
+void Highlighter::addClient(int editor_id,QColor color){
 
-    if (this->users.contains(username))
+    if (this->users.contains(editor_id))
         return;
-    qDebug()<<"Insert: "<<username<<" with color: "<<color;
-    users.insert(username,color);
+    qDebug()<<"Insert: "<<editor_id<<" with color: "<<color;
+    users.insert(editor_id,color);
 }
 
 void Highlighter::highlightBlock(const QString &text){
@@ -23,13 +23,20 @@ void Highlighter::highlightBlock(const QString &text){
             qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
             Symbol s = this->crdt->getSymbol(line,index);
             qDebug()<<"Highilithing value: "<<s.getValue();
-            QString username = s.getUsername();
+            int editor_id = s.getUsername();
             QTextCharFormat format = s.getQTextCharFormat();
 
-            QColor color = users.value(username);
+            QColor color = users.value(editor_id);
 
             format.setBackground(QBrush(color,Qt::SolidPattern));
             setFormat(index,1,format);
             }
+}
+
+QColor Highlighter::getColor(int editor_id){
+    if (users.contains(editor_id))
+        return users[editor_id];
+    //da gestire
+    return QColor('white');
 }
 

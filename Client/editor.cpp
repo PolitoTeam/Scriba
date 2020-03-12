@@ -29,6 +29,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     client(client)
 {
     ui->setupUi(this);
+
    // this->setCentralWidget(ui->textEdit);
 //    QTextDocument *document = ui->textEdit->document(); //cursore
 //    QTextCursor cursor(document);
@@ -56,7 +57,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 
     crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
     highlighter = new Highlighter(0,crdt);
-    connect(this->client,&Client::loggedIn,this->highlighter,[this]{this->highlighter->addClient(this->client->getUsername(),QColor(124,252,0,127));});
+    connect(this->client,&Client::loggedIn,this->highlighter,[this]{this->highlighter->addClient(this->crdt->getSiteID(),QColor(124,252,0,127));});
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
@@ -151,7 +152,11 @@ Editor::Editor(QWidget *parent,Client* client) :
 //    connect(actionTextColor, &QAction::triggered, this, &Editor::on_formatChange);
 //      connect(this, &Editor::formatChange, this, &Editor::on_formatChange);
 
+
+
 }
+
+
 
 int Editor::fromStringToIntegerHash(QString str) {
     auto hash = QCryptographicHash::hash(str.toLatin1(),QCryptographicHash::Md5);
@@ -330,14 +335,19 @@ void Editor::textAlign(QAction *a)
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
     qDebug() << "[total text size" << ui->textEdit->toPlainText().size() << "crdt size" << crdt->getSize();
     qDebug() << "added" << charsAdded << "removed" << charsRemoved;
-    qDebug() << "line" << this->line << "index" << this->index << remote_cursors.size() << "]";
+    qDebug() << "line" << this->line << "index" << this->index << ui->textEdit->remote_cursors.size() << "]";
 
     // REMOTE OPERATION: insert/delete received from remote client
     // nothing to update
     // "charsRemoved == 0" and "charsAdded == 0" are conditions added to handle QTextDocument::contentsChange bug QTBUG-3495
-    if ((charsAdded > 0 && charsRemoved == 0 && ui->textEdit->toPlainText().size() - remote_cursors.size() <= crdt->getSize())
-            || (charsRemoved > 0 && charsAdded == 0 && ui->textEdit->toPlainText().size() - remote_cursors.size() >= crdt->getSize())) {
+   /* if ((charsAdded > 0 && charsRemoved == 0 && ui->textEdit->toPlainText().size() - ui->textEdit->remote_cursors.size() <= crdt->getSize())
+            || (charsRemoved > 0 && charsAdded == 0 && ui->textEdit->toPlainText().size() - ui->textEdit->remote_cursors.size() >= crdt->getSize())) {
         qDebug() << "rem";
+        return;
+    } */
+
+    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
+            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
         return;
     }
 
@@ -355,13 +365,13 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             //single character
             int line = cursor.blockNumber();
             int index = cursor.positionInBlock();
-            correct_position(line, index);
+            //correct_position(line, index);
             qDebug() << "Added " << added.at(0) << "in position (" << line << "," << index << ")";
 
             // to retrieve the format it is necessary to be on the RIGHT of the target char
             cursor.movePosition(QTextCursor::Right);
             QFont font = cursor.charFormat().font();
-
+            ui->textEdit->update();
             crdt->localInsert(line, index, added.at(0).unicode(), font, cursor.charFormat().foreground().color());
         } else{
             QFont fontPrec;
@@ -558,7 +568,7 @@ void Editor::updateText(const QString& text){
 void Editor::addUsers(const QList<QPair<QString,QString>> users){
 
     for (int i=0;i<users.count();i++){
-        highlighter->addClient(users.at(i).first,list_colors.getColor()); // for now all red
+        highlighter->addClient(fromStringToIntegerHash(users.at(i).first),list_colors.getColor()); // for now all red
         this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first));
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
@@ -590,14 +600,14 @@ void Editor::saveCursorPosition()
 
     // use positon of symbol AFTER cursor as reference
     qDebug() << "cursor position before" << this->line << this->index;
-    correct_position(this->line, this->index);
+    //correct_position(this->line, this->index);
     crdt->cursorPositionChanged(this->line, this->index);
 
     // select format icon of the first char before the remote cursor
     int pos = cursor.position();
     while (pos >= 0) {
         bool not_found = true;
-        for (RemoteCursor *c : remote_cursors.values()) {
+        for (RemoteCursor *c : ui->textEdit->remote_cursors.values()) {
 //            qDebug() << "pos" <<  c->getPosition() << pos;
             if (c->getPosition() == pos)
                 not_found = false;
@@ -768,25 +778,26 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     qDebug() << QChar(s.getValue());
     crdt->getPositionFromSymbol(s, line, index);
     qDebug() << "LINE/INDEX" << line << index;
-    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+   // disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+   // disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
-    if (!remote_cursors.contains(editor_id)) {
+    if (!ui->textEdit->remote_cursors.contains(editor_id)) {
         // TODO: get the color instead of using red
-        RemoteCursor *remote_cursor = new RemoteCursor(ui->textEdit->textCursor(), block, index, "red");
-        remote_cursors.insert(editor_id, remote_cursor);
+        RemoteCursor *remote_cursor = new RemoteCursor(ui->textEdit->textCursor(), block, index, highlighter->getColor(editor_id));
+        ui->textEdit->remote_cursors.insert(editor_id, remote_cursor);
     } else {
-        RemoteCursor *remote_cursor = remote_cursors.value(editor_id);
+        RemoteCursor *remote_cursor = ui->textEdit->remote_cursors.value(editor_id);
         remote_cursor->moveTo(block, index);
     }
 
-    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+    //connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    //connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 }
 
+/*
 void Editor::correct_position(int& line, int& index) {
-    for (RemoteCursor *cursor : this->remote_cursors) {
+    for (RemoteCursor *cursor : ui->textEdit->remote_cursors) {
         int cline, cindex;
         cursor->getPosition(cline, cindex);
         // TODO: less or less/equal? <= seems to work
@@ -794,3 +805,4 @@ void Editor::correct_position(int& line, int& index) {
             index--;
     }
 }
+*/

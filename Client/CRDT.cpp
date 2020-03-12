@@ -27,7 +27,7 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
 
     // generate symbol
     Symbol s(value, newPos, ++_counter, font, color);
-    s.setUsername(this->client->getUsername());
+    s.setUsername(this->_siteId);
 
     if (value=='\0')
         s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
@@ -613,4 +613,8 @@ Symbol CRDT::getSymbol(int line,int index) {
 
 void CRDT::getPositionFromSymbol(const Symbol& s, int& line, int& index) {
     findPosition(s, line, index);
+}
+
+int CRDT::getSiteID(){
+    return _siteId;
 }

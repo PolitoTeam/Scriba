@@ -18,7 +18,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QTextEdit" name="textEdit"/>
+       <widget class="MyQTextEdit" name="textEdit"/>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -371,6 +371,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>MyQTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header location="global">myqtextedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="client.qrc"/>
  </resources>

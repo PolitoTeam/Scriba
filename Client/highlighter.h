@@ -11,12 +11,13 @@ class Highlighter: public QSyntaxHighlighter
      Q_OBJECT
 public:
    Highlighter(QTextDocument *document=0,CRDT* crdt=0);
-   void addClient(QString username,QColor color);
+   void addClient(int editor_id,QColor color);
+   QColor getColor(int editor_id);
 
 
 private:
    void highlightBlock(const QString &text) override;
-   QMap<QString,QColor> users;
+   QMap<int,QColor> users;
    CRDT *crdt;
 
 };
