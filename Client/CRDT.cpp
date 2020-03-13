@@ -1,7 +1,7 @@
 #include "CRDT.h"
 #include <QFont>
 
-CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
+CRDT::CRDT(Client *client) : client(client) {
     connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
     connect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
     connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
@@ -14,6 +14,7 @@ CRDT::CRDT(int site, Client *client) : _siteId(site), client(client) {
 }
 
 int CRDT::getId() { return _siteId; }
+void CRDT::setId(int site){this->_siteId = site;}
 
 void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor color) {
     if (line < 0 || index < 0)

@@ -10,6 +10,7 @@
 #include <QTextBlock>
 #include <QCryptographicHash>
 #include <QtWidgets>
+#include <typeinfo>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printer)
@@ -55,9 +56,10 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
     connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
 
-    crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
+    crdt = new CRDT(client);
     highlighter = new Highlighter(0,crdt);
     connect(this->client,&Client::loggedIn,this->highlighter,[this]{this->highlighter->addClient(this->crdt->getSiteID(),QColor(124,252,0,127));});
+    connect(this->client,&Client::loggedIn,this,[this]{this->crdt->setId(fromStringToIntegerHash(this->client->getUsername()));});
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
@@ -159,8 +161,11 @@ Editor::Editor(QWidget *parent,Client* client) :
 
 
 int Editor::fromStringToIntegerHash(QString str) {
+    qDebug()<<"Hash of: "<<str;
     auto hash = QCryptographicHash::hash(str.toLatin1(),QCryptographicHash::Md5);
     QDataStream data(hash);
+    qDebug()<< "String to hash: "<<hash;
+    qDebug()<< " type of hash: "<<typeid(hash).name();
     int intHash;
     data >> intHash;
     return intHash;
@@ -220,7 +225,8 @@ void Editor::exit()
     this->clear();
     // create new CRDT with connections
     delete crdt;
-    crdt = new CRDT(fromStringToIntegerHash(client->getUsername()), client);
+    crdt = new CRDT(client);
+    crdt->setId(fromStringToIntegerHash(client->getUsername()));
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
@@ -784,6 +790,7 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
     if (!ui->textEdit->remote_cursors.contains(editor_id)) {
         // TODO: get the color instead of using red
+        qDebug()<<"add new cursor: "<<editor_id;
         RemoteCursor *remote_cursor = new RemoteCursor(ui->textEdit->textCursor(), block, index, highlighter->getColor(editor_id));
         ui->textEdit->remote_cursors.insert(editor_id, remote_cursor);
     } else {

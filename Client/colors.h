@@ -11,6 +11,9 @@ private:
 public:
      Colors(){
          for (QString x: QColor::colorNames()){
+
+             if (x == 'white' || x=='black')
+                 continue;
              colors_map.insert(x,false);
          }
          colors_map.insert(QString('green'),true);

@@ -19,8 +19,9 @@ class CRDT : public QObject
     Q_DISABLE_COPY(CRDT)
 
 public:
-    CRDT(int site, Client *client);
+    CRDT(Client *client);
     int getId();
+    void setId(int site);
     void localInsert(int line, int index, ushort value, QFont font, QColor color);
     void localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align);
     void localErase(int line, int index);
