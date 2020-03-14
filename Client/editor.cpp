@@ -222,6 +222,9 @@ void Editor::exit()
 
     // clean the editor: disconnect...
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
+    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+
     this->clear();
     // create new CRDT with connections
     delete crdt;
@@ -234,6 +237,8 @@ void Editor::exit()
     connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
     // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 
     emit changeWidget(HOME);
 }
