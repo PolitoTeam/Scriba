@@ -357,9 +357,12 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         qDebug() << "rem";
         return;
     } */
-
-    if ((charsAdded > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
-            || (charsRemoved > 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
+    qDebug()<<"text edit size: "<<ui->textEdit->toPlainText().size();
+    qDebug()<<"text edit: "<<ui->textEdit->toPlainText();
+    qDebug()<<"crdt size: "<<crdt->getSize();
+    if (((charsAdded-charsRemoved) > 0 && ui->textEdit->toPlainText().size() <= crdt->getSize())
+            || ((charsRemoved -charsAdded)> 0 && ui->textEdit->toPlainText().size() >= crdt->getSize())) {
+        qDebug()<<"!!!!!!!!!!--";
         return;
     }
 
@@ -377,7 +380,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             //single character
             int line = cursor.blockNumber();
             int index = cursor.positionInBlock();
-            //correct_position(line, index);
+
             qDebug() << "Added " << added.at(0) << "in position (" << line << "," << index << ")";
 
             // to retrieve the format it is necessary to be on the RIGHT of the target char
@@ -439,6 +442,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             }
         }
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
+        qDebug()<<"----DEL";
         // undo to retrieve the content deleted
         disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
@@ -632,7 +636,7 @@ void Editor::saveCursorPosition()
     }
     if (pos<0)
         cursor.setPosition(0);
-    cursor.setPosition(pos);
+
     ui->textEdit->setCurrentCharFormat(cursor.charFormat());
 }
 
