@@ -49,7 +49,7 @@ public slots:
     void disconnectFromHost();
     void openFile(const QString& filename);
     void sslErrors(const QList<QSslError> &errors);
-
+    void on_disconnected();
 
 private slots:
     void onReadyRead();

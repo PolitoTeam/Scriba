@@ -80,7 +80,7 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
     case QAbstractSocket::RemoteHostClosedError:
     case QAbstractSocket::ProxyConnectionClosedError:
         QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
-        stackedWidget->setCurrentWidget(login);
+        on_changeWidget(LOGIN);
         break;
     case QAbstractSocket::ConnectionRefusedError:
         QMessageBox::critical(this, tr("Error"), tr("The host refused the connection"));

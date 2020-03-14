@@ -15,6 +15,7 @@
 #include "CRDT.h"
 #include "symbol.h"
 #include <QSslConfiguration>
+#include <QMessageBox>
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -34,7 +35,7 @@ Client::Client(QObject *parent)
 
 
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
-    connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{qDebug()<<"Disconnected"; this->m_loggedIn = false;});
+    connect(m_clientSocket, &QSslSocket::disconnected, this, &Client::on_disconnected);
     connect(m_clientSocket, &QSslSocket::encrypted, this, [](){qDebug()<<"encrypted!";});
     connect(m_clientSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&Client::sslErrors);
 
@@ -533,7 +534,7 @@ void Client::connectToServer(const QHostAddress &address, quint16 port)
         }
         else {
             qDebug("Unable to connect to server");
-            exit(0);
+            emit error(QAbstractSocket::HostNotFoundError);
         }
 }
 
@@ -690,3 +691,8 @@ int Client::getColor()
     return cursor_color_rgb;
 }
 
+void Client::on_disconnected() {
+    qDebug()<<"Disconnected";
+    this->m_loggedIn = false;
+    emit error(QAbstractSocket::ProxyConnectionClosedError);
+}
