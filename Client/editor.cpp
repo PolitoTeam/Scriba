@@ -108,17 +108,17 @@ Editor::Editor(QWidget *parent,Client* client) :
 #endif
 
     // add alignment icons
-    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":images/textleft.png"));
+    const QIcon leftIcon = QIcon::fromTheme("format-justify-left", QIcon(":/images/textleft.png"));
     actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
     actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
     actionAlignLeft->setCheckable(true);
     actionAlignLeft->setPriority(QAction::LowPriority);
-    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":images/textcenter.png"));
+    const QIcon centerIcon = QIcon::fromTheme("format-justify-center", QIcon(":/images/textcenter.png"));
     actionAlignCenter = new QAction(centerIcon, tr("C&enter"), this);
     actionAlignCenter->setShortcut(Qt::CTRL + Qt::Key_E);
     actionAlignCenter->setCheckable(true);
     actionAlignCenter->setPriority(QAction::LowPriority);
-    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":images/textright.png"));
+    const QIcon rightIcon = QIcon::fromTheme("format-justify-right", QIcon(":/images/textright.png"));
     actionAlignRight = new QAction(rightIcon, tr("&Right"), this);
     actionAlignRight->setShortcut(Qt::CTRL + Qt::Key_R);
     actionAlignRight->setCheckable(true);
@@ -134,10 +134,11 @@ Editor::Editor(QWidget *parent,Client* client) :
     alignGroup->addAction(actionAlignRight);
     ui->toolBar->addSeparator();
     ui->toolBar->addActions(alignGroup->actions());
+    ui->toolBar->addSeparator();
 
     //show assigned text
-    const QIcon assigned = QIcon::fromTheme("format-justify-right", QIcon(":images/textright.png"));
-    actionShowAssigned = new QAction(assigned, tr("C&enter"), this);
+    const QIcon assigned = QIcon::fromTheme("cursor", QIcon(":/images/cursor.png"));
+    actionShowAssigned = new QAction(assigned, tr("cursor"), this);
     actionShowAssigned->setCheckable(true);
     actionShowAssigned->setChecked(false);
     ui->toolBar->addAction(actionShowAssigned);

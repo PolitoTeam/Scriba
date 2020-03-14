@@ -19,5 +19,10 @@
         <file>images/italic.png</file>
         <file>images/underline.png</file>
         <file>images/anonymous.jpg</file>
+        <file>images/share.png</file>
+        <file>images/textcenter.png</file>
+        <file>images/textleft.png</file>
+        <file>images/textright.png</file>
+        <file>images/cursor.png</file>
     </qresource>
 </RCC>

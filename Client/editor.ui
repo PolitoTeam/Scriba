@@ -359,8 +359,8 @@
   </action>
   <action name="actionSharedLink">
    <property name="icon">
-    <iconset>
-     <normaloff>images/share.png</normaloff>images/share.png</iconset>
+    <iconset resource="client.qrc">
+     <normaloff>:/images/share.png</normaloff>:/images/share.png</iconset>
    </property>
    <property name="text">
     <string>SharedLink</string>
