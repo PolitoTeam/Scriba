@@ -622,22 +622,24 @@ void Editor::saveCursorPosition()
     crdt->cursorPositionChanged(this->line, this->index);
 
     // select format icon of the first char before the remote cursor
-    int pos = cursor.position();
-    while (pos >= 0) {
-        bool not_found = true;
-        for (RemoteCursor *c : ui->textEdit->remote_cursors.values()) {
-//            qDebug() << "pos" <<  c->getPosition() << pos;
-            if (c->getPosition() == pos)
-                not_found = false;
-        }
-        if (not_found)
-            break;
-        pos--;
-    }
-    if (pos<0)
-        cursor.setPosition(0);
 
-    ui->textEdit->setCurrentCharFormat(cursor.charFormat());
+//    int pos = cursor.position();
+//    while (pos >= 0) {
+//        bool not_found = true;
+//        for (RemoteCursor *c : ui->textEdit->remote_cursors.values()) {
+////            qDebug() << "pos" <<  c->getPosition() << pos;
+//            if (c->getPosition() == pos)
+//                not_found = false;
+//        }
+//        if (not_found)
+//            break;
+//        pos--;
+//    }
+//    if (pos<0)
+//        cursor.setPosition(0);
+//    cursor.setPosition(pos);
+//    ui->textEdit->setCurrentCharFormat(cursor.charFormat());
+
 }
 
 void Editor::showEvent(QShowEvent *)
