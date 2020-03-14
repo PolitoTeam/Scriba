@@ -55,3 +55,6 @@ else:unix: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/linux -lsodium
 
 INCLUDEPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
 DEPENDPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
+
+RESOURCES += \
+    server.qrc

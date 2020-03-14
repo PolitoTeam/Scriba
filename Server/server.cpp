@@ -43,12 +43,12 @@ Server::Server(QObject *parent,Database* db)
 
     //TO CHANGE WITH YOUR LOCAL DIRECTORY
 
-    QFile keyFile("/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/certificates/client.key");
+    QFile keyFile(":/resources/certificates/client.key");
     keyFile.open(QIODevice::ReadOnly);
     key = QSslKey(keyFile.readAll(), QSsl::Rsa);
     keyFile.close();
 
-    QFile certFile("/Users/giuseppe.pastore/Documents/Programmazione di sistema/Progetto/SharedEditor/SharedEditor/certificates/client.pem");
+    QFile certFile(":/resources/certificates/client.pem");
     certFile.open(QIODevice::ReadOnly);
     cert = QSslCertificate(certFile.readAll());
     certFile.close();

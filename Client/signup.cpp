@@ -235,7 +235,7 @@ void Signup::enableAllButtons()
 void Signup::on_pushButtonUpload_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open Image"), "/Users/giuseppe.pastore/Desktop", tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
+        tr("Open Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
     qDebug()<<"Selected image: "<<fileName;
     if (!fileName.isEmpty() && !fileName.isNull()){
         profile->load(fileName);

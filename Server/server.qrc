@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/resources">
+        <file>certificates/client.key</file>
+        <file>certificates/client.pem</file>
+    </qresource>
+</RCC>
