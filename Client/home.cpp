@@ -40,7 +40,7 @@ void Home::on_pushButtonLogOut_clicked()
 void Home::on_pushButtonNewFile_clicked()
 {
     bool ok;
-    QString text = QInputDialog::getText(this, tr("Open File"),
+    QString text = QInputDialog::getText(this, tr("New File"),
                                          tr("File name:"), QLineEdit::Normal,
                                          tr(""), &ok);
 
@@ -124,7 +124,7 @@ void Home::showActiveFiles(){
     }
 
     bool ok;
-    QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
+    QString item = QInputDialog::getItem(this, tr("Open File"),
                                                 tr("Files:"), items, 0, false, &ok);
     if (ok && !item.isEmpty()) {
         qDebug()<<"File scelto: "<<item<<endl;
