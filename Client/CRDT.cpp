@@ -124,6 +124,10 @@ void CRDT::localChangeAlignment(int line,SymbolFormat::Alignment align){
     client->sendJson(message);
 }
 
+SymbolFormat::Alignment CRDT::getAlignmentLine(int line){
+    return _symbols[line][_symbols[line].size()-1].getAlignment();
+}
+
 QVector<Identifier> CRDT::findPosBefore(int line, int index) {
     int newLine = line;
     int newIndex = index;
@@ -628,4 +632,8 @@ void CRDT::getPositionFromSymbol(const Symbol& s, int& line, int& index) {
 
 int CRDT::getSiteID(){
     return _siteId;
+}
+
+int  CRDT::lineSize(int line){
+    return _symbols[line].size();
 }

@@ -33,6 +33,8 @@ public:
     Symbol getSymbol(int line,int index);
     void cursorPositionChanged(int line, int index);
     void getPositionFromSymbol(const Symbol& s, int& line, int& index);
+    SymbolFormat::Alignment getAlignmentLine(int line);
+    int  lineSize(int line);
 
 private slots:
     void handleRemoteInsert(const Symbol& s);

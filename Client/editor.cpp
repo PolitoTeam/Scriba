@@ -272,8 +272,21 @@ void Editor::paste()
 void Editor::undo()
 {
      this->undoFlag=true;
-     ui->textEdit->undo();
-     qDebug()<<"UNDO";
+     ui->textEdit->undo();  //the change due to the insert/delete are automatically managed by on_contents_change
+     // update alignment icon
+     alignmentChanged(ui->textEdit->alignment());
+     int line = this->line;
+     if (index ==0 && this->crdt->lineSize(line)>1){
+         line-=1;
+         if (line<0)
+             line=0;
+         qDebug()<<"UNDO: local change alignment: "<<line<<" "<<this->crdt->getAlignmentLine(line);
+         this->crdt->localChangeAlignment(line,this->crdt->getAlignmentLine(line));
+     }
+     else{
+          this->crdt->localChangeAlignment(line,alignmentConversion(getCurrentAlignment()));
+     }
+
 
 
 }
@@ -281,6 +294,21 @@ void Editor::undo()
 void Editor::redo()
 {
     ui->textEdit->redo();
+    // update alignment icon
+    alignmentChanged(ui->textEdit->alignment());
+    int line = this->line;
+    if (index ==0 && this->crdt->lineSize(line)>1){
+        line-=1;
+        if (line<0)
+            line=0;
+        qDebug()<<"REDO: local change alignment: "<<line<<" "<<this->crdt->getAlignmentLine(line);
+        this->crdt->localChangeAlignment(line,this->crdt->getAlignmentLine(line));
+    }
+    else{
+         this->crdt->localChangeAlignment(line,alignmentConversion(getCurrentAlignment()));
+    }
+
+
 }
 
 void Editor::selectFont()
@@ -348,6 +376,18 @@ void Editor::textAlign(QAction *a)
     }
 }
 
+SymbolFormat::Alignment Editor::alignmentConversion(Qt::Alignment a){
+    if (a == Qt::AlignLeft)
+        return SymbolFormat::Alignment::ALIGN_LEFT;
+
+    else if (a == Qt::AlignCenter)
+        return SymbolFormat::Alignment::ALIGN_CENTER;
+
+    else if (a == Qt::AlignRight)
+       return SymbolFormat::Alignment::ALIGN_RIGHT;
+
+}
+
 /****************************************************
     LOCAL OPERATION: update textedit THEN crdt
     REMOTE OPERATION: update crdt THEN textedit
@@ -373,6 +413,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         qDebug()<<"!!!!!!!!!!--";
         return;
     }
+
 
     // LOCAL OPERATION: insert/deleted performed in this editor
     // update CRDT structure
