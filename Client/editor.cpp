@@ -347,7 +347,7 @@ void Editor::textAlign(QAction *a)
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {    
     qDebug() << "[total text size" << ui->textEdit->toPlainText().size() << "crdt size" << crdt->getSize();
     qDebug() << "added" << charsAdded << "removed" << charsRemoved;
-    qDebug() << "line" << this->line << "index" << this->index << ui->textEdit->remote_cursors.size() << "]";
+    qDebug() << "line" << this->line << "index" << this->index<< "]";
 
     // REMOTE OPERATION: insert/delete received from remote client
     // nothing to update
@@ -441,11 +441,13 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     } else if (charsRemoved > 0  && charsRemoved - charsAdded > 0) {
         // undo to retrieve the content deleted
         disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+        disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
         ui->textEdit->undo();
         QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
         ui->textEdit->redo();
         connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-
+        connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+        saveCursorPosition();
         // remove multiple chars
         for (int i = 0; i < removed.length(); i++) {
             qDebug() << "Removed " << removed.at(i) << "in position (" << this->line << "," << this->index << ")";
@@ -628,6 +630,8 @@ void Editor::saveCursorPosition()
             break;
         pos--;
     }
+    if (pos<0)
+        cursor.setPosition(0);
     cursor.setPosition(pos);
     ui->textEdit->setCurrentCharFormat(cursor.charFormat());
 }

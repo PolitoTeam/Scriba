@@ -12,7 +12,7 @@ void MyQTextEdit::paintEvent(QPaintEvent *e)
 {
 
       QPainter p(viewport());
-      qDebug()<<"------------------PAINTEVENT------------------";
+     // qDebug()<<"------------------PAINTEVENT------------------";
 /*
       QAbstractTextDocumentLayout::Selection selection;
       selection.cursor = textCursor();
@@ -25,7 +25,7 @@ void MyQTextEdit::paintEvent(QPaintEvent *e)
       document()->documentLayout()->draw(&p,ctx);
 
 */
-      qDebug()<< "Num cursor: "<<remote_cursors.size();
+     // qDebug()<< "Num cursor: "<<remote_cursors.size();
       for (RemoteCursor *cursor :remote_cursors) {
           QColor c  = cursor->getColor();
          QPen pen;
