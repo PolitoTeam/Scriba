@@ -55,7 +55,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(client, &Client::addCRDTterminator, this, &Editor::on_addCRDTterminator);
     connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
     connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
-
+    undoFlag=false;
     crdt = new CRDT(client);
     highlighter = new Highlighter(0,crdt);
     connect(this->client,&Client::loggedIn,this,[this]{
@@ -271,7 +271,11 @@ void Editor::paste()
 
 void Editor::undo()
 {
+     this->undoFlag=true;
      ui->textEdit->undo();
+     qDebug()<<"UNDO";
+
+
 }
 
 void Editor::redo()
@@ -450,9 +454,19 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         // undo to retrieve the content deleted
         disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+        QString removed;
+        if (undoFlag==true){
+            qDebug()<<"redo - undo";
+            ui->textEdit->redo();
+            removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
+            ui->textEdit->undo();
+            undoFlag=false;
+        }else{
+
         ui->textEdit->undo();
-        QString removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
+        removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
         ui->textEdit->redo();
+        }
         connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
         saveCursorPosition();
@@ -833,6 +847,7 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     //connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     //connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 }
+
 
 /*
 void Editor::correct_position(int& line, int& index) {

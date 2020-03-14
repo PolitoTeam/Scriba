@@ -474,6 +474,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         }
     }
 
+
     /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
         // we extract the text field containing the chat text
         const QJsonValue textVal = docObj.value(QLatin1String("text"));

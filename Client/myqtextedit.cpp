@@ -27,7 +27,7 @@ void MyQTextEdit::paintEvent(QPaintEvent *e)
 */
      // qDebug()<< "Num cursor: "<<remote_cursors.size();
       for (RemoteCursor *cursor :remote_cursors) {
-          QColor c  = cursor->getColor();
+         QColor c  = cursor->getColor();
          QPen pen;
          QBrush pincel(c);
          pen.setColor(c);

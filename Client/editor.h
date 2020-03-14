@@ -24,6 +24,7 @@ public:
     ~Editor();
     void clear();
     Qt::Alignment getCurrentAlignment();
+    bool undoFlag;
 
 //    void setCRDT(CRDT *crdt);
 
@@ -76,6 +77,7 @@ private:
     int line = 0, index = 0;
     Highlighter *highlighter;
     Colors list_colors;
+
 
 
 
