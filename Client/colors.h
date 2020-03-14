@@ -29,7 +29,7 @@ public:
             if (colors_map.value(x)==false){
                 colors_map[x]=true;
                 QColor color(x);
-                color.setAlpha(255);
+                color.setAlphaF(1.0);
                 return color;
             }
 
