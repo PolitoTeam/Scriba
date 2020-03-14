@@ -22,7 +22,7 @@ public:
     CRDT(Client *client);
     int getId();
     void setId(int site);
-    void localInsert(int line, int index, ushort value, QFont font, QColor color);
+    void localInsert(int line, int index, ushort value, QFont font, QColor color,Qt::Alignment align);
     void localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align);
     void localErase(int line, int index);
     int getSiteID();

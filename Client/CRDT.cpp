@@ -16,7 +16,7 @@ CRDT::CRDT(Client *client) : client(client) {
 int CRDT::getId() { return _siteId; }
 void CRDT::setId(int site){this->_siteId = site;}
 
-void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor color) {
+void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor color,Qt::Alignment align) {
     if (line < 0 || index < 0)
         throw std::runtime_error("Error: index out of bound.\n");
 
@@ -30,8 +30,16 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
     Symbol s(value, newPos, ++_counter, font, color);
     s.setUsername(this->_siteId);
 
-    if (value=='\0')
-        s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
+    if (s.getValue()=='\0' || s.getValue()=='\n'){
+
+         qDebug()<<"ALIGNMENT: "<<align;
+        if (align==Qt::AlignLeft)
+           s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
+        else if (align==Qt::AlignHCenter)
+           s.setAlignment(SymbolFormat::Alignment::ALIGN_CENTER);
+        else if (align==Qt::AlignRight)
+           s.setAlignment(SymbolFormat::Alignment::ALIGN_RIGHT);
+    }
 
     insertChar(s, line, index);
     this->size++;
@@ -65,6 +73,7 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, 
 
 
         if (s.getValue()=='\0' || s.getValue()=='\n'){
+             qDebug()<<"ALIGNMENT: "<<align;
             if (align==(Qt::AlignLeft|Qt::AlignLeading))
                s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
             else if (align==Qt::AlignHCenter)
@@ -361,6 +370,7 @@ QString CRDT::to_string(){
 void CRDT::handleRemoteAlignChange(const Symbol& s) {
     int line,index;
     SymbolFormat::Alignment align = s.getAlignment();
+    qDebug()<<" GET ALIGNMENT: "<<align;
     bool res;
     if (!(res=findPosition(s,line,index))){
         qDebug()<<"---RES: "<<res;

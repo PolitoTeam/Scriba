@@ -384,7 +384,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             cursor.movePosition(QTextCursor::Right);
             QFont font = cursor.charFormat().font();
             ui->textEdit->update();
-            crdt->localInsert(line, index, added.at(0).unicode(), font, cursor.charFormat().foreground().color());
+            crdt->localInsert(line, index, added.at(0).unicode(), font, cursor.charFormat().foreground().color(),getCurrentAlignment());
         } else{
             QFont fontPrec;
             QColor colorPrec;
@@ -459,7 +459,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 void Editor::on_changeAlignment(int align,int line, int index)
 {
 
-    qDebug() << "ON_CHANGE_ALIGNMENT";
+    qDebug() << "ON_CHANGE_ALIGNMENT: "<<align;
     QTextCursor cursor = ui->textEdit->textCursor();
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
     cursor.setPosition(block.position() + index);
@@ -734,6 +734,15 @@ void Editor::alignmentChanged(Qt::Alignment a)
         actionAlignRight->setChecked(true);
 }
 
+Qt::Alignment Editor::getCurrentAlignment(){
+    if (actionAlignLeft->isChecked())
+            return Qt::AlignLeft;
+    else if(actionAlignCenter->isChecked())
+        return Qt::AlignCenter;
+    else if (actionAlignRight->isChecked())
+        return Qt::AlignRight;
+}
+
 void Editor::textFamily(const QString &f)
 {
     ui->textEdit->setFontFamily(f);
@@ -786,7 +795,7 @@ void Editor::on_formatChange() {
 void Editor::on_addCRDTterminator() {
     QFont font;
     QColor color;
-    this->crdt->localInsert(0, 0, '\0', font, color);
+    this->crdt->localInsert(0, 0, '\0', font, color,getCurrentAlignment());
 }
 
 void Editor::on_remoteCursor(int editor_id, Symbol s) {

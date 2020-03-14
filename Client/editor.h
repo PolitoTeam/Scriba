@@ -23,6 +23,7 @@ public:
     void setClient(Client* client);
     ~Editor();
     void clear();
+    Qt::Alignment getCurrentAlignment();
 
 //    void setCRDT(CRDT *crdt);
 
