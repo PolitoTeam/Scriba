@@ -276,20 +276,25 @@ void Editor::undo()
      // update alignment icon
      alignmentChanged(ui->textEdit->alignment());
      int line = this->line;
+     int index = this->index;
+
+
      if (index ==0 && this->crdt->lineSize(line)>1){
          line-=1;
          if (line<0)
              line=0;
-         qDebug()<<"UNDO: local change alignment: "<<line<<" "<<this->crdt->getAlignmentLine(line);
-         this->crdt->localChangeAlignment(line,this->crdt->getAlignmentLine(line));
      }
-     else{
-          this->crdt->localChangeAlignment(line,alignmentConversion(getCurrentAlignment()));
-     }
+    QTextBlockFormat a = ui->textEdit->document()->findBlockByLineNumber(line).blockFormat();
+    Qt::Alignment align = a.alignment();
+    qDebug()<<"ALIGNMENT: "<<align;
+
+     this->crdt->localChangeAlignment(line,alignmentConversion(align));
 
 
 
 }
+
+
 
 void Editor::redo()
 {
@@ -297,16 +302,19 @@ void Editor::redo()
     // update alignment icon
     alignmentChanged(ui->textEdit->alignment());
     int line = this->line;
+    int index = this->index;
+
+
     if (index ==0 && this->crdt->lineSize(line)>1){
         line-=1;
         if (line<0)
             line=0;
-        qDebug()<<"REDO: local change alignment: "<<line<<" "<<this->crdt->getAlignmentLine(line);
-        this->crdt->localChangeAlignment(line,this->crdt->getAlignmentLine(line));
     }
-    else{
-         this->crdt->localChangeAlignment(line,alignmentConversion(getCurrentAlignment()));
-    }
+   QTextBlockFormat a = ui->textEdit->document()->findBlockByLineNumber(line).blockFormat();
+   Qt::Alignment align = a.alignment();
+   qDebug()<<"ALIGNMENT: "<<align;
+
+    this->crdt->localChangeAlignment(line,alignmentConversion(align));
 
 
 }
@@ -377,10 +385,10 @@ void Editor::textAlign(QAction *a)
 }
 
 SymbolFormat::Alignment Editor::alignmentConversion(Qt::Alignment a){
-    if (a == Qt::AlignLeft)
+    if (a == (Qt::AlignLeft|Qt::AlignLeading))
         return SymbolFormat::Alignment::ALIGN_LEFT;
 
-    else if (a == Qt::AlignCenter)
+    else if (a == Qt::AlignCenter || a == Qt::AlignHCenter)
         return SymbolFormat::Alignment::ALIGN_CENTER;
 
     else if (a == Qt::AlignRight)
