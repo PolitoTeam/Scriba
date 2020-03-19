@@ -29,6 +29,7 @@ public:
 
 //    void setCRDT(CRDT *crdt);
 
+
 signals:
     void changeWidget(int);
 //    void formatChange();

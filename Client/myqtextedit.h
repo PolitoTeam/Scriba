@@ -13,6 +13,7 @@ class MyQTextEdit : public QTextEdit
 public:
     explicit MyQTextEdit(QWidget *parent = nullptr);
     QMap<int, RemoteCursor*> remote_cursors;
+    void keyPressEvent(QKeyEvent *e) override;
 private:
     QTextCursor cursor;
     // <editorid, cursor>
@@ -21,6 +22,7 @@ private:
 protected:
     void paintEvent(QPaintEvent* event);
 signals:
+    void undo();
 
 public slots:
 

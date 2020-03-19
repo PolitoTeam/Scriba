@@ -40,7 +40,22 @@ void MyQTextEdit::paintEvent(QPaintEvent *e)
 
       this->QTextEdit::paintEvent(e);
 
+}
 
+
+void MyQTextEdit::keyPressEvent(QKeyEvent *e)
+{
+    if(e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier))
+    {
+
+        if(this->document()->isUndoAvailable()){
+
+             emit undo();
+        }
+    }
+    else{
+     QTextEdit::keyPressEvent(e);
+    }
 
 
 }

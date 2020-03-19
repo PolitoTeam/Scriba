@@ -101,7 +101,8 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->textEdit->document(), &QTextDocument::redoAvailable, ui->actionRedo, &QAction::setEnabled);
     ui->actionUndo->setEnabled(ui->textEdit->document()->isUndoAvailable());
     ui->actionRedo->setEnabled(ui->textEdit->document()->isRedoAvailable());
-
+    connect(ui->textEdit,&MyQTextEdit::undo,[](){qDebug()<<"Received UNDO";});
+    connect(ui->textEdit,&MyQTextEdit::undo,this, &Editor::undo);
     // copy/paste/cut config
 #ifndef QT_NO_CLIPBOARD
     ui->actionCut->setEnabled(false);
@@ -271,8 +272,9 @@ void Editor::paste()
 
 void Editor::undo()
 {
+    qDebug()<<"undo()";
      this->undoFlag=true;
-     ui->textEdit->undo();  //the change due to the insert/delete are automatically managed by on_contents_change
+     ui->textEdit->document()->undo();  //the change due to the insert/delete are automatically managed by on_contents_change
      // update alignment icon
      alignmentChanged(ui->textEdit->alignment());
      int line = this->line;
@@ -290,9 +292,8 @@ void Editor::undo()
 
      this->crdt->localChangeAlignment(line,alignmentConversion(align));
 
-
-
 }
+
 
 
 
@@ -909,3 +910,6 @@ void Editor::correct_position(int& line, int& index) {
     }
 }
 */
+
+
+
