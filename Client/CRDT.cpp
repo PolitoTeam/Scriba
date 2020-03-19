@@ -16,6 +16,12 @@ CRDT::CRDT(Client *client) : client(client) {
 int CRDT::getId() { return _siteId; }
 void CRDT::setId(int site){this->_siteId = site;}
 
+QTextCharFormat CRDT::getSymbolFormat(int line,int index){
+    qDebug()<<"qui";
+
+    return _symbols[line][index].getQTextCharFormat();
+}
+
 void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor color,Qt::Alignment align) {
     if (line < 0 || index < 0)
         throw std::runtime_error("Error: index out of bound.\n");

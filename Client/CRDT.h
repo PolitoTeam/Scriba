@@ -34,6 +34,7 @@ public:
     void cursorPositionChanged(int line, int index);
     void getPositionFromSymbol(const Symbol& s, int& line, int& index);
     SymbolFormat::Alignment getAlignmentLine(int line);
+    QTextCharFormat getSymbolFormat(int line,int index);
     int  lineSize(int line);
 
 private slots:

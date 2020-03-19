@@ -97,6 +97,7 @@ private:
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
     void on_formatChange();
+    void on_formatChange(QTextCursor cursor);
     void on_showAssigned();
 };
 

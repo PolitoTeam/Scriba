@@ -56,6 +56,7 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
     else{
      QTextEdit::keyPressEvent(e);
     }
+    qDebug()<<"KEY: "<<e->key();
 
 
 }
