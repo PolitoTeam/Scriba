@@ -507,15 +507,15 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         QString removed;
         if (undoFlag==true){
             qDebug()<<"redo - undo";
-            ui->textEdit->redo();
+            ui->textEdit->document()->redo();
             removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
-            ui->textEdit->undo();
+            ui->textEdit->document()->undo();
             undoFlag=false;
         }else{
 
-        ui->textEdit->undo();
+        ui->textEdit->document()->undo();
         removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
-        ui->textEdit->redo();
+        ui->textEdit->document()->redo();
         }
         connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
