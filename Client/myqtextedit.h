@@ -24,6 +24,7 @@ protected:
 signals:
     void undo();
     void redo();
+    void resetDefaultAlignment(bool a);
 
 public slots:
 

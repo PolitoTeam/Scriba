@@ -59,6 +59,11 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
              emit redo();
         }
     }
+    //delete
+    else if (e->key()==16777219 && this->document()->isEmpty()){
+        qDebug()<<"empty";
+        emit resetDefaultAlignment(true);
+    }
     else{
      QTextEdit::keyPressEvent(e);
     }

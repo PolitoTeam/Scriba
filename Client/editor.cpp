@@ -144,6 +144,9 @@ Editor::Editor(QWidget *parent,Client* client) :
     ui->toolBar->addSeparator();
     ui->toolBar->addActions(alignGroup->actions());
     ui->toolBar->addSeparator();
+    connect(ui->textEdit,&MyQTextEdit::resetDefaultAlignment,actionAlignLeft,&QAction::trigger);
+   // connect(ui->textEdit,&MyQTextEdit::resetDefaultAlignment,actionAlignLeft,&QAction::trigger);
+
 
     //show assigned text
     const QIcon assigned = QIcon::fromTheme("cursor", QIcon(":/images/cursor.png"));
@@ -152,7 +155,6 @@ Editor::Editor(QWidget *parent,Client* client) :
     actionShowAssigned->setChecked(false);
     ui->toolBar->addAction(actionShowAssigned);
     connect(actionShowAssigned,&QAction::triggered,this,&Editor::on_showAssigned);
-
 
 
     //
