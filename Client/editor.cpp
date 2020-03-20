@@ -770,7 +770,9 @@ void Editor::addUsers(const QList<QPair<QString,QString>> users){
         int user = fromStringToIntegerHash(users.at(i).first);
         qDebug()<<" --------Username: "<<user<<" Color: "<<color;
         highlighter->addClient(user,color); // for now all red
-        this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first));
+        QListWidgetItem* item = new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first);
+        item->setBackground( color );
+        this->ui->listWidget->addItem(item);
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
 }
