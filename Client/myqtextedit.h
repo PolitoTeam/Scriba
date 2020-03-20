@@ -20,9 +20,10 @@ private:
 
 
 protected:
-    void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
 signals:
     void undo();
+    void redo();
 
 public slots:
 

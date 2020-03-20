@@ -103,6 +103,10 @@ Editor::Editor(QWidget *parent,Client* client) :
     ui->actionRedo->setEnabled(ui->textEdit->document()->isRedoAvailable());
     connect(ui->textEdit,&MyQTextEdit::undo,[](){qDebug()<<"Received UNDO";});
     connect(ui->textEdit,&MyQTextEdit::undo,this, &Editor::undo);
+
+    connect(ui->textEdit,&MyQTextEdit::redo,[](){qDebug()<<"Received REDO";});
+    connect(ui->textEdit,&MyQTextEdit::redo,this, &Editor::redo);
+
     // copy/paste/cut config
 #ifndef QT_NO_CLIPBOARD
     ui->actionCut->setEnabled(false);
@@ -291,6 +295,7 @@ void Editor::undo()
     qDebug()<<"ALIGNMENT: "<<align;
 
      this->crdt->localChangeAlignment(line,alignmentConversion(align));
+    this->undoFlag=false;
 
 }
 
@@ -299,7 +304,9 @@ void Editor::undo()
 
 void Editor::redo()
 {
-    ui->textEdit->redo();
+    qDebug()<<"redo";
+    this->redoFlag=true;
+    ui->textEdit->document()->redo();
     // update alignment icon
     alignmentChanged(ui->textEdit->alignment());
     int line = this->line;
@@ -316,8 +323,7 @@ void Editor::redo()
    qDebug()<<"ALIGNMENT: "<<align;
 
     this->crdt->localChangeAlignment(line,alignmentConversion(align));
-
-
+    this->redoFlag=false;
 }
 
 void Editor::selectFont()
@@ -505,12 +511,12 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
         disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
         QString removed;
-        if (undoFlag==true){
+        if (this->undoFlag==true){
             qDebug()<<"redo - undo";
             ui->textEdit->document()->redo();
             removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
             ui->textEdit->document()->undo();
-            undoFlag=false;
+           // this->undoFlag=false; COMMENTED BECAUSE MOVED TO UNDO()
         }else{
 
         ui->textEdit->document()->undo();
@@ -525,7 +531,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             qDebug() << "Removed " << removed.at(i) << "in position (" << this->line << "," << this->index << ")";
             crdt->localErase(line, index);
         }
-    } else if (charsRemoved==charsAdded && this->undoFlag==true){
+    } else if (charsRemoved==charsAdded && (this->undoFlag==true || this->redoFlag==true)){
         //format change
         qDebug()<<"format change";
         // save cursor position
@@ -556,7 +562,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
         }
         qDebug()<<"After the while true loop: "<<cursor.selectedText();
-        this->undoFlag=false;
+       // this->undoFlag=false; COMMENTED BECAUSE MOVED TO UNDO()
         on_formatChange(cursor);
 
     }

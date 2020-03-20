@@ -53,6 +53,12 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
              emit undo();
         }
     }
+    else if (e->key() == Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)){
+        if(this->document()->isRedoAvailable()){
+
+             emit redo();
+        }
+    }
     else{
      QTextEdit::keyPressEvent(e);
     }
