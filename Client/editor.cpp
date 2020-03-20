@@ -592,7 +592,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             QTextCharFormat formatSL = this->crdt->getSymbolFormat(line_m,index_m);
 
             //non fa il confronto bene
-            if (formatSL.font()==formatDoc.font()){
+            if (formatSL.font()==formatDoc.font() && formatSL.foreground()==formatDoc.foreground()){
                // qDebug()<<"formatSL == formatDOC";
 
                 break;
