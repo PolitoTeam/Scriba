@@ -540,7 +540,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             index_m = cursor.positionInBlock();
 
             if (cursor.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor)==false){
-                qDebug()<<"ciclo break perchè movePosition failed";
+                //qDebug()<<"ciclo break perchè movePosition failed";
                 break;
             }
 
@@ -549,8 +549,8 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             QTextCharFormat formatSL = this->crdt->getSymbolFormat(line_m,index_m);
 
             //non fa il confronto bene
-            if (formatSL==formatDoc){
-                qDebug()<<"formatSL == formatDOC";
+            if (formatSL.font()==formatDoc.font()){
+               // qDebug()<<"formatSL == formatDOC";
                 break;
             }
 
