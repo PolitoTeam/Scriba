@@ -281,6 +281,7 @@ void Editor::undo()
      ui->textEdit->document()->undo();  //the change due to the insert/delete are automatically managed by on_contents_change
      // update alignment icon
      alignmentChanged(ui->textEdit->alignment());
+     /*
      int line = this->line;
      int index = this->index;
 
@@ -296,6 +297,7 @@ void Editor::undo()
 
      this->crdt->localChangeAlignment(line,alignmentConversion(align));
    // this->undoFlag=false;
+   */
 
 }
 
@@ -309,6 +311,7 @@ void Editor::redo()
     ui->textEdit->document()->redo();
     // update alignment icon
     alignmentChanged(ui->textEdit->alignment());
+    /*
     int line = this->line;
     int index = this->index;
 
@@ -324,6 +327,7 @@ void Editor::redo()
 
     this->crdt->localChangeAlignment(line,alignmentConversion(align));
    // this->redoFlag=false;
+   */
 }
 
 void Editor::selectFont()
@@ -392,13 +396,14 @@ void Editor::textAlign(QAction *a)
 }
 
 SymbolFormat::Alignment Editor::alignmentConversion(Qt::Alignment a){
+    qDebug()<<"ALIGNMENTTTTT "<<a;
     if (a == (Qt::AlignLeft|Qt::AlignLeading))
         return SymbolFormat::Alignment::ALIGN_LEFT;
 
     else if (a == Qt::AlignCenter || a == Qt::AlignHCenter)
         return SymbolFormat::Alignment::ALIGN_CENTER;
 
-    else if (a == Qt::AlignRight)
+    else if (a == Qt::AlignRight || a==Qt::AlignTrailing|Qt::AlignAbsolute)
        return SymbolFormat::Alignment::ALIGN_RIGHT;
 
 }
@@ -534,19 +539,21 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             crdt->localErase(line, index);
         }
     } else if (charsRemoved==charsAdded && (this->undoFlag==true || this->redoFlag==true)){
-        //format change
+        //format/alignment change by redo/undo
         qDebug()<<"format change";
         // save cursor position
         QTextCursor cursor = ui->textEdit->textCursor();
         cursor.setPosition(position);
         int line_m;
         int index_m;
+        bool formatChange=false;
         //per ogni carattere nel documento lo confronto con quello nella struttura dati
         while(true){
 
             line_m = cursor.blockNumber();
             index_m = cursor.positionInBlock();
 
+            //non sono sicuro di cosa succeda all'ultimo carattere
             if (cursor.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor)==false){
                 //qDebug()<<"ciclo break perchè movePosition failed";
                 break;
@@ -559,13 +566,30 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             //non fa il confronto bene
             if (formatSL.font()==formatDoc.font()){
                // qDebug()<<"formatSL == formatDOC";
+
                 break;
             }
+            if (formatChange==false)
+                formatChange=true;
+        }
+
+        if (formatChange==true){
+            qDebug()<<"After the while true loop: "<<cursor.selectedText();
+            on_formatChange(cursor);
+        }
+        else{
+            //change alignment
+            //TO DO: multiple lines alignment chnaged
+            cursor.setPosition(position);
+            line_m = cursor.blockNumber();
+            index_m = cursor.positionInBlock();
+            QTextBlockFormat a = cursor.blockFormat();
+            Qt::Alignment align = a.alignment();
+            this->crdt->localChangeAlignment(line_m,alignmentConversion(align));
 
         }
-        qDebug()<<"After the while true loop: "<<cursor.selectedText();
         this->undoFlag=false;
-        on_formatChange(cursor);
+        this->redoFlag=false;
 
     }
 
