@@ -396,15 +396,41 @@ void Editor::textAlign(QAction *a)
 }
 
 SymbolFormat::Alignment Editor::alignmentConversion(Qt::Alignment a){
-    qDebug()<<"ALIGNMENTTTTT "<<a;
-    if (a == (Qt::AlignLeft|Qt::AlignLeading))
+    qDebug()<<"Alignment->SymboLlFormat"<<a;
+    if (a == (Qt::AlignLeft|Qt::AlignLeading) || a == (Qt::AlignLeading|Qt::AlignAbsolute)){
+        qDebug()<<"Converted: SymbolFormat::Alignment::ALIGN_LEFT";
         return SymbolFormat::Alignment::ALIGN_LEFT;
+    }
 
-    else if (a == Qt::AlignCenter || a == Qt::AlignHCenter)
+    else if (a == Qt::AlignCenter || a == Qt::AlignHCenter){
+        qDebug()<<"Converted: SymbolFormat::Alignment::ALIGN_CENTER";
         return SymbolFormat::Alignment::ALIGN_CENTER;
+    }
 
-    else if (a == Qt::AlignRight || a==Qt::AlignTrailing|Qt::AlignAbsolute)
+    else if (a == Qt::AlignRight || a==Qt::AlignTrailing|Qt::AlignAbsolute){
+        qDebug()<<"Converted: SymbolFormat::Alignment::ALIGN_RIGHT";
        return SymbolFormat::Alignment::ALIGN_RIGHT;
+    }
+
+}
+
+Qt::Alignment Editor::alignmentConversion(SymbolFormat::Alignment a){
+    qDebug()<<"SymbolFormast -> Alignment "<<a;
+
+    if (a == SymbolFormat::Alignment::ALIGN_LEFT){
+            qDebug()<<"converted: Qt::AlignLeft|Qt::AlignLeading";
+          return (Qt::AlignLeft|Qt::AlignLeading);
+    }
+
+    if (a== SymbolFormat::Alignment::ALIGN_CENTER){
+          qDebug()<<"converted: Qt::AlignHCenter";
+            return Qt::AlignHCenter;
+    }
+
+    if (a== SymbolFormat::Alignment::ALIGN_RIGHT){
+          qDebug()<<"converted: Qt::AlignTrailing|Qt::AlignAbsolute";
+        return Qt::AlignTrailing|Qt::AlignAbsolute;
+    }
 
 }
 
@@ -586,6 +612,23 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             QTextBlockFormat a = cursor.blockFormat();
             Qt::Alignment align = a.alignment();
             this->crdt->localChangeAlignment(line_m,alignmentConversion(align));
+            Qt::Alignment align_SL;
+            while (true){
+               //non sono sicuro di cosa succeda all'ultimo carattere
+                if (cursor.movePosition(QTextCursor::NextBlock,QTextCursor::MoveAnchor)==false){
+                    //qDebug()<<"ciclo break perchè movePosition failed";
+                    break;
+                }
+                a = cursor.blockFormat();
+                align =a.alignment();
+                line_m = cursor.blockNumber();
+                index_m = cursor.positionInBlock();
+                align_SL = alignmentConversion(this->crdt->getAlignmentLine(line_m));
+                if (align==align_SL)
+                    break;
+                this->crdt->localChangeAlignment(line_m,alignmentConversion(align));
+
+            }
 
         }
         this->undoFlag=false;

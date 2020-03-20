@@ -27,6 +27,7 @@ public:
     bool undoFlag;
     bool redoFlag;
     SymbolFormat::Alignment alignmentConversion(Qt::Alignment a);
+    Qt::Alignment alignmentConversion(SymbolFormat::Alignment a);
 
 //    void setCRDT(CRDT *crdt);
 
