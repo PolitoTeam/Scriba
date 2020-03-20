@@ -79,7 +79,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     comboFont = new QFontComboBox(ui->toolBar);
     ui->toolBar->addWidget(comboFont);
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
-    //comboFont->setCurrentFont(QFont("American Typewriter"));
+    comboFont->setCurrentFont(QFont("American Typewriter"));
     //this->textFamily("American Typewriter");
 
     // 2. size

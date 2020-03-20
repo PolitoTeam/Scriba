@@ -5,7 +5,7 @@
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent)
 {
-    this->setFontFamily("American Typewriter");
+    this->setFont(QFont("American Typewriter"));
 }
 
 void MyQTextEdit::paintEvent(QPaintEvent *e)
