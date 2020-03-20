@@ -295,7 +295,7 @@ void Editor::undo()
     qDebug()<<"ALIGNMENT: "<<align;
 
      this->crdt->localChangeAlignment(line,alignmentConversion(align));
-    this->undoFlag=false;
+   // this->undoFlag=false;
 
 }
 
@@ -323,7 +323,7 @@ void Editor::redo()
    qDebug()<<"ALIGNMENT: "<<align;
 
     this->crdt->localChangeAlignment(line,alignmentConversion(align));
-    this->redoFlag=false;
+   // this->redoFlag=false;
 }
 
 void Editor::selectFont()
@@ -434,6 +434,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     // update CRDT structure
     // "charsAdded - charsRemoved" and "charsRemoved - charsAdded" are conditions added to handle QTextDocument::contentsChange bug QTBUG-3495
     if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
+        this->undoFlag=false;
         QString added = ui->textEdit->toPlainText().mid(position, charsAdded - charsRemoved);
         if (added.at(0) == '\0')
             return;
@@ -453,6 +454,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             ui->textEdit->update();
             crdt->localInsert(line, index, added.at(0).unicode(), font, cursor.charFormat().foreground().color(),getCurrentAlignment());
         } else{
+            this->undoFlag=false;
             QFont fontPrec;
             QColor colorPrec;
             QString partial;
@@ -516,7 +518,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             ui->textEdit->document()->redo();
             removed = ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
             ui->textEdit->document()->undo();
-           // this->undoFlag=false; COMMENTED BECAUSE MOVED TO UNDO()
+            this->undoFlag=false;
         }else{
 
         ui->textEdit->document()->undo();
@@ -562,10 +564,11 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
         }
         qDebug()<<"After the while true loop: "<<cursor.selectedText();
-       // this->undoFlag=false; COMMENTED BECAUSE MOVED TO UNDO()
+        this->undoFlag=false;
         on_formatChange(cursor);
 
     }
+
 }
 
 void Editor::on_changeAlignment(int align,int line, int index)
