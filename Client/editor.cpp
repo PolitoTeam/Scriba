@@ -79,6 +79,8 @@ Editor::Editor(QWidget *parent,Client* client) :
     comboFont = new QFontComboBox(ui->toolBar);
     ui->toolBar->addWidget(comboFont);
     connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &Editor::textFamily);
+    //comboFont->setCurrentFont(QFont("American Typewriter"));
+    //this->textFamily("American Typewriter");
 
     // 2. size
     comboSize = new QComboBox(ui->toolBar);
@@ -796,10 +798,13 @@ void Editor::saveCursorPosition()
     // update alignment icon
     alignmentChanged(ui->textEdit->alignment());
 
+    //update font
+
     // save cursor position
     QTextCursor cursor = ui->textEdit->textCursor();
     this->line = cursor.blockNumber();
     this->index = cursor.positionInBlock();
+    fontChanged(cursor.charFormat().font());
 
     // use positon of symbol AFTER cursor as reference
     qDebug() << "cursor position before" << this->line << this->index;
@@ -901,6 +906,7 @@ void Editor::clipboardDataChanged()
 
 void Editor::fontChanged(const QFont &f)
 {
+    qDebug()<<"font:"<<f;
     comboFont->setCurrentIndex(comboFont->findText(QFontInfo(f).family()));
     comboSize->setCurrentIndex(comboSize->findText(QString::number(f.pointSize())));
     ui->actionBold->setChecked(f.bold());
@@ -936,6 +942,7 @@ Qt::Alignment Editor::getCurrentAlignment(){
 
 void Editor::textFamily(const QString &f)
 {
+    qDebug()<<"Text Family: "<<f;
     ui->textEdit->setFontFamily(f);
     on_formatChange();
 }
