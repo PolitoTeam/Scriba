@@ -60,8 +60,8 @@ Client::Client(QObject *parent)
     }
 
     */
-    m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyNone); //da cambiare con VerifyPeer...c'è qualche problema col certificato
-
+    m_clientSocket->addCaCertificates(":/resources/certificates/rootCA.crt");
+    m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyPeer);
 
     profile=new QPixmap(":/images/anonymous");
 }

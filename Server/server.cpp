@@ -43,12 +43,12 @@ Server::Server(QObject *parent,Database* db)
 
     //TO CHANGE WITH YOUR LOCAL DIRECTORY
 
-    QFile keyFile(":/resources/certificates/client.key");
+    QFile keyFile(":/resources/certificates/server.key");
     keyFile.open(QIODevice::ReadOnly);
     key = QSslKey(keyFile.readAll(), QSsl::Rsa);
     keyFile.close();
 
-    QFile certFile(":/resources/certificates/client.pem");
+    QFile certFile(":/resources/certificates/server.crt");
     certFile.open(QIODevice::ReadOnly);
     cert = QSslCertificate(certFile.readAll());
     certFile.close();
