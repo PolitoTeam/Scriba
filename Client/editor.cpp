@@ -58,12 +58,14 @@ Editor::Editor(QWidget *parent,Client* client) :
     undoFlag=false;
     crdt = new CRDT(client);
     highlighter = new Highlighter(0,crdt);
+
     connect(this->client,&Client::loggedIn,this,[this]{
         int site_id = fromStringToIntegerHash(this->client->getUsername());
         this->crdt->setId(site_id);
         this->highlighter->addClient(site_id,QColor(124,252,0,127));
-
     });
+
+
     connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
@@ -159,6 +161,8 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(actionShowAssigned,&QAction::triggered,this,&Editor::on_showAssigned);
 
 
+
+
     //
 //    connect(ui->actionFont, &QAction::triggered, this, &Editor::on_formatChange);
 //    connect(ui->actionBold, &QAction::triggered, this, &Editor::on_formatChange);
@@ -242,8 +246,10 @@ void Editor::exit()
     this->clear();
     // create new CRDT with connections
     delete crdt;
+
     crdt = new CRDT(client);
     crdt->setId(fromStringToIntegerHash(client->getUsername()));
+
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
     connect(crdt, &CRDT::erase, this, &Editor::on_erase);
@@ -255,6 +261,19 @@ void Editor::exit()
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 
     emit changeWidget(HOME);
+}
+
+void Editor::peerYou()
+{
+    QListWidgetItem* item = new QListWidgetItem();
+    item->setIcon(QIcon(*this->client->getProfile()));
+    item->setText(this->client->getNickname() + " (You)");
+    item->setData(Qt::UserRole,this->client->getUsername());
+    //item->setTextAlignment(Qt::AlignHCenter);
+    item->setBackground( QColor(124,252,0,127) );
+    item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
+    item->setWhatsThis(this->client->getUsername());
+    this->ui->listWidget->addItem(item);
 }
 
 void Editor::copy()
@@ -776,7 +795,7 @@ void Editor::addUsers(const QList<QPair<QString,QString>> users){
         item->setIcon(QIcon(*client->getProfile()));
         item->setText(users.at(i).second);
         item->setData(Qt::UserRole,users.at(i).first);
-        item->setTextAlignment(Qt::AlignHCenter);
+        //item->setTextAlignment(Qt::AlignHCenter);
         item->setBackground( color );
         item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
         item->setWhatsThis(users.at(i).first);

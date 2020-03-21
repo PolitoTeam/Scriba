@@ -63,6 +63,7 @@ void AppMainWindow::on_changeWidget(int widget) {
     // editor is not included in stackedwidget, because stackedwidget doesn't support qmainwindow
     if (widget == EDITOR ) {
         this->hide();
+        editor->peerYou(); //setta You nella listWidget con l'ultimo nickname
         editor->show();
     }
     else

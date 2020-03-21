@@ -28,6 +28,7 @@ public:
     bool redoFlag;
     SymbolFormat::Alignment alignmentConversion(Qt::Alignment a);
     Qt::Alignment alignmentConversion(SymbolFormat::Alignment a);
+    void peerYou();
 
 //    void setCRDT(CRDT *crdt);
 
@@ -39,6 +40,7 @@ signals:
 private slots:
     void printPdf();
     void exit();
+
     void copy();
     void cut();
     void paste();
