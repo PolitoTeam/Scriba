@@ -104,6 +104,7 @@ private:
     void on_formatChange();
     void on_formatChange(QTextCursor cursor);
     void on_showAssigned();
+    void closeEvent (QCloseEvent *event);
 };
 
 #endif // EDITOR_H

@@ -479,34 +479,9 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongSharedLink(reasonVal.toString());
         }
     }
-
-
-    /*else if (typeVal.toString().compare(QLatin1String("message"), Qt::CaseInsensitive) == 0) { //It's a chat message
-        // we extract the text field containing the chat text
-        const QJsonValue textVal = docObj.value(QLatin1String("text"));
-        // we extract the sender field containing the username of the sender
-        const QJsonValue senderVal = docObj.value(QLatin1String("sender"));
-        if (textVal.isNull() || !textVal.isString())
-            return; // the text field was invalid so we ignore
-        if (senderVal.isNull() || !senderVal.isString())
-            return; // the sender field was invalid so we ignore
-        // we notify a new message was received via the messageReceived signal
-        emit messageReceived(senderVal.toString(), textVal.toString());
-    } else if (typeVal.toString().compare(QLatin1String("newuser"), Qt::CaseInsensitive) == 0) { // A user joined the chat
-        // we extract the username of the new user
-        const QJsonValue usernameVal = docObj.value(QLatin1String("username"));
-        if (usernameVal.isNull() || !usernameVal.isString())
-            return; // the username was invalid so we ignore
-        // we notify of the new user via the userJoined signal
-        emit userJoined(usernameVal.toString());
-    } else if (typeVal.toString().compare(QLatin1String("userdisconnected"), Qt::CaseInsensitive) == 0) { // A user left the chat
-         // we extract the username of the new user
-        const QJsonValue usernameVal = docObj.value(QLatin1String("username"));
-        if (usernameVal.isNull() || !usernameVal.isString())
-            return; // the username was invalid so we ignore
-        // we notify of the user disconnection the userLeft signal
-        emit userLeft(usernameVal.toString());
-    }*/
+    else if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0) {
+        emit error(QAbstractSocket::ProxyConnectionClosedError);
+    }
 }
 
 void Client::createNewFile(QString filename)
@@ -839,5 +814,4 @@ int Client::getColor()
 void Client::on_disconnected() {
     qDebug()<<"Disconnected";
     this->m_loggedIn = false;
-    emit error(QAbstractSocket::ProxyConnectionClosedError);
 }

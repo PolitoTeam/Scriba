@@ -36,11 +36,8 @@ private:
     QVector<int> m_threadsLoad;
     QVector<ServerWorker *> m_clients;
     Database* db;
-    QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
-//    QVector<QJsonObject> symbols_list;
-    QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
-
-//    QMap<QString, QVector<QJsonObject>> symbols_list;
+    QMap<QString,QList<ServerWorker*>*>* mapFileWorkers; // <filename, list_of_workers>
+    QMap<QString,QMap<QString, QJsonObject>*> symbols_list; // <filename, map_of_symbols>
 
 private slots:
     void broadcast(const QJsonObject &message, ServerWorker *exclude);
@@ -71,6 +68,7 @@ private:
     void sendJson(ServerWorker *destination, const QJsonObject &message);
     void sendByteArray(ServerWorker *sender,const QByteArray &toSend);
     void sendProfileImage(ServerWorker *destination);
+    void saveFile();
 
 signals:
     void logMessage(const QString &msg);

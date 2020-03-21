@@ -2,6 +2,7 @@
 #define SERVERWINDOW_H
 
 #include <QWidget>
+#include <QCloseEvent>
 
 namespace Ui {
 class ServerWindow;
@@ -18,6 +19,9 @@ public:
 private:
     Ui::ServerWindow *ui;
     Server *m_Server;
+
+    void closeEvent(QCloseEvent *event);
+
 private slots:
     void toggleStartServer();
 };
