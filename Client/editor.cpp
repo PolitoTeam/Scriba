@@ -784,21 +784,21 @@ void Editor::updateText(const QString& text){
     this->ui->textEdit->setText(text);
 }
 
-void Editor::addUsers(const QList<QPair<QString,QString>> users){
+void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 
     for (int i=0;i<users.count();i++){
         QColor color = list_colors.getColor();
-        int user = fromStringToIntegerHash(users.at(i).first);
+        int user = fromStringToIntegerHash(users.at(i).first.first);
         qDebug()<<" --------Username: "<<user<<" Color: "<<color;
         highlighter->addClient(user,color);
         QListWidgetItem* item = new QListWidgetItem();
-        item->setIcon(QIcon(*client->getProfile()));
-        item->setText(users.at(i).second);
-        item->setData(Qt::UserRole,users.at(i).first);
+        item->setIcon(QIcon(users.at(i).second));
+        item->setText(users.at(i).first.second);
+        item->setData(Qt::UserRole,users.at(i).first.first);
         //item->setTextAlignment(Qt::AlignHCenter);
         item->setBackground( color );
         item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
-        item->setWhatsThis(users.at(i).first);
+        item->setWhatsThis(users.at(i).first.first);
         this->ui->listWidget->addItem(item);
 
 

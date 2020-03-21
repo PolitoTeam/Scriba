@@ -16,6 +16,7 @@
 #include "symbol.h"
 #include <QSslConfiguration>
 #include <QMessageBox>
+#include <QtEndian>
 
 Client::Client(QObject *parent)
     : QObject(parent)
@@ -373,7 +374,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
             emit wrongNewFile(reasonVal.toString());
         }
-    }
+    }/*
     else if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0) {
             const QJsonValue resultVal = docObj.value(QLatin1String("success"));
             if (resultVal.isNull() || !resultVal.isBool())
@@ -433,6 +434,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 emit wrongListFiles(reasonVal.toString());
             }
         }
+
     else if (typeVal.toString().compare(QLatin1String("connection"), Qt::CaseInsensitive) == 0) {
             const QJsonValue file = docObj.value(QLatin1String("filename"));
             qDebug()<<"connection "<<file.toString();
@@ -448,6 +450,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             }
 
         }
+        */
     else if (typeVal.toString().compare(QLatin1String("disconnection"), Qt::CaseInsensitive) == 0) {
             const QJsonValue file = docObj.value(QLatin1String("filename"));
             if (file.isNull() || !file.isString())
@@ -567,8 +570,8 @@ void Client::onReadyRead()
                 if (jsonDoc.isObject()) // and is a JSON object
                     jsonReceived(jsonDoc.object()); // parse the JSON
             } else { // profile image received
-                qDebug() << "Profile image received";
-                profile->loadFromData(jsonData);
+
+                byteArrayReceived(jsonData);
             }
             // loop and try to read more JSONs if they are available
         } else {
@@ -577,6 +580,143 @@ void Client::onReadyRead()
             break;
         }
     }
+}
+void Client::byteArrayReceived(const QByteArray &doc){
+
+    quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(doc.left(4).data()));
+    //quint32 size = reinterpret_cast<quint32>(doc.left(4));
+
+    qDebug()<<"Byte Array, size json: "<<size;
+
+    QByteArray json = doc.mid(4,size);
+    QByteArray image_array = doc.mid(4+size,-1);
+    qDebug()<<"after image_array";
+
+    QJsonParseError parseError;
+    // we try to create a json document with the data we received
+    const QJsonDocument jsonDoc = QJsonDocument::fromJson(json, &parseError);
+    qDebug()<<"Parse error: "<<parseError.error;
+    if (parseError.error == QJsonParseError::NoError) {
+
+        // if the data was indeed valid JSON
+        if (jsonDoc.isObject()) {// and is a JSON object
+            // actions depend on the type of message
+            QJsonObject docObj = jsonDoc.object();
+            const QJsonValue typeVal = docObj.value(QLatin1String("type"));
+            if (typeVal.isNull() || !typeVal.isString())
+                return; // a message with no type was received so we just ignore it
+
+            if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0) {
+                        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+                        if (resultVal.isNull() || !resultVal.isBool())
+                            return;
+                        const bool success = resultVal.toBool();
+                        if (success) {
+                            const QJsonValue cont = docObj.value(QLatin1String("content"));
+                            if (cont.isNull() || !cont.isArray())
+                                return;
+                            const QJsonArray symbols = cont.toArray();
+                            // read the symbols in the file and parse them into the editor
+            //                foreach (const QJsonValue & symbol, symbols) {
+            //                    Symbol s = Symbol::fromJson(symbol.toObject());
+            //                    qDebug() << "SYMBOL" << s.getValue();
+            //                    emit remoteInsert(s);
+            //                }
+                            // REVERSE ORDER to have '\0' as first char
+                            for (int i = symbols.size() - 1; i >= 0; i--) {
+                                Symbol s = Symbol::fromJson(symbols[i].toObject());
+                                qDebug() << "SYMBOL" << s.getValue();
+                                emit remoteInsert(s);
+                                if (s.getValue()=='\n' || s.getValue()=='\0')
+                                    emit remoteAlignChange(s);
+
+                            }
+
+                            const QJsonValue name = docObj.value(QLatin1String("filename"));
+                            if (name.isNull() || !name.isString())
+                                return;
+                            this->openfile=name.toString();
+
+                            const QJsonValue shared_link = docObj.value(QLatin1String("shared_link"));
+                            if (shared_link.isNull() || !shared_link.isString())
+                                return;
+                            this->sharedLink = shared_link.toString();
+
+                            const QJsonValue color= docObj.value(QLatin1String("color"));
+                            if (color.isNull() || !color.isDouble())
+                                return;
+                            this->cursor_color_rgb = color.toInt();
+
+                            const QJsonValue array= docObj.value(QLatin1String("users"));
+                            if (array.isNull() || !array.isArray())
+                                return;
+                            const QJsonArray array_users=array.toArray();
+                            QList<QPair<QPair<QString,QString>,QPixmap>> connected;
+
+
+                            foreach (const QJsonValue& v, array_users){
+                                quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
+                                qDebug()<<"Img size: "<<img_size;
+                                QByteArray img = image_array.mid(4,img_size);
+                                image_array=image_array.mid(img_size+4);
+
+                                qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
+                                QPixmap p;
+                                p.loadFromData(img);
+                                connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()),p));
+                            }
+            //                emit contentReceived(cont.toString()); TODO: remove comment
+                              qDebug()<<"emitted usersConnectedReceived";
+                              emit usersConnectedReceived(connected);
+                              emit correctOpenedFile();
+
+
+                        } else {
+                            this->openfile.clear();
+                            const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+                            emit wrongListFiles(reasonVal.toString());
+                        }
+                    }
+            else if (typeVal.toString().compare(QLatin1String("connection"), Qt::CaseInsensitive) == 0) {
+                const QJsonValue file = docObj.value(QLatin1String("filename"));
+                qDebug()<<"connection "<<file.toString();
+                if (file.isNull() || !file.isString())
+                    return;
+                const QJsonValue name = docObj.value(QLatin1String("username"));
+                if (name.isNull() || !name.isString())
+                    return;
+                if (!file.toString().compare(this->openfile)){
+                    QList<QPair<QPair<QString,QString>,QPixmap>> connected;
+                    quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
+                    qDebug()<<"Img size: "<<img_size;
+                    if (img_size==0){
+                        connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(docObj.value("username").toString(),docObj.value("nickname").toString()),QPixmap(":/images/anonymous")));
+                    }
+                    else{
+                        QByteArray img = image_array.mid(4);
+                        QPixmap p;
+                        p.loadFromData(img);
+                        connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(docObj.value("username").toString(),docObj.value("nickname").toString()),p));
+                    }
+
+                    emit usersConnectedReceived(connected);
+                }
+
+
+        }
+
+    }
+        else {
+            qDebug()<<"Not object";
+        }
+
+    }else{
+         qDebug() << "Profile image received";
+         profile->loadFromData(doc);
+
+    }
+
+
 }
 
 QString Client::getNickname(){

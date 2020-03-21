@@ -61,7 +61,7 @@ private slots:
     void on_changeAlignment(int align,int line, int index);
     void on_erase(int line, int index);
     void on_change(int line, int index, const Symbol& s);
-    void addUsers(const QList<QPair<QString,QString>> users);
+    void addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users);
     void updateText(const QString& text);
     void removeUser(const QString& username,const QString& nickname);
     void saveCursorPosition();

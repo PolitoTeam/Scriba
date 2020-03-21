@@ -13,6 +13,8 @@ public:
     explicit ServerWorker(QObject *parent = nullptr);
     virtual bool setSocketDescriptor(qintptr socketDescriptor,QSslKey key,QSslCertificate cert);
     void sendJson(const QJsonObject &json);
+    void sendByteArray(const QByteArray &byteArray);
+    void sendProfileImages(QVector<QByteArray> &v);
     void sendProfileImage();
     QString getNickname();
     QString getUsername();

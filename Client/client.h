@@ -80,7 +80,7 @@ signals:
     void correctOpenedFile();
     void wrongNewFile(const QString& reason);
     void wrongListFiles(const QString& reason);
-    void usersConnectedReceived(QList<QPair<QString,QString>>);
+    void usersConnectedReceived(QList<QPair<QPair<QString,QString>,QPixmap>>);
     void contentReceived(const QString text);
     void userDisconnected(const QString& username, const QString& nickname);
     void wrongSharedLink(const QString& filename);
@@ -99,6 +99,7 @@ private:
     int cursor_color_rgb;
 
     void jsonReceived(const QJsonObject &doc);
+    void byteArrayReceived(const QByteArray &doc);
 };
 
 #endif // CLIENT_H

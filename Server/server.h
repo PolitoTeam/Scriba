@@ -44,6 +44,7 @@ private:
 
 private slots:
     void broadcast(const QJsonObject &message, ServerWorker *exclude);
+    void broadcastByteArray(const QJsonObject &message_broadcast,const QByteArray &bArray,ServerWorker *sender);
     void jsonReceived(ServerWorker *sender, const QJsonObject &doc);
     void userDisconnected(ServerWorker *sender, int threadIdx);
 //    void userError(ServerWorker *sender);
@@ -61,12 +62,14 @@ private:
     QJsonObject getFiles(const QJsonObject &doc);
     QJsonObject getFilenameFromSharedLink(const QJsonObject &doc);
     QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
-    QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender);
+    QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender, QVector<QByteArray>& v);
     QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
+    QByteArray createByteArrayJsonImage(QJsonObject &message,QVector<QByteArray> &v);
     static QString fromJsonArraytoString(const QJsonArray& data);
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);
+    void sendByteArray(ServerWorker *sender,const QByteArray &toSend);
     void sendProfileImage(ServerWorker *destination);
 
 signals:

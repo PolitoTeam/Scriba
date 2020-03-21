@@ -63,6 +63,14 @@ void ServerWorker::sendJson(const QJsonObject &json)
     socketStream << jsonData;
 }
 
+void ServerWorker::sendByteArray(const QByteArray &byteArray){
+    QDataStream socketStream(m_serverSocket);
+    socketStream.setVersion(QDataStream::Qt_5_7);
+    socketStream << byteArray;
+}
+
+
+
 void ServerWorker::sendProfileImage()
 {
     QDataStream socketStream(m_serverSocket);

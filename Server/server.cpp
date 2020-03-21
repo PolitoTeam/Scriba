@@ -113,11 +113,41 @@ void Server::incomingConnection(qintptr socketDescriptor)
     qDebug() << "New client Connected";
 }
 
+QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteArray> &v){
+    QByteArray byte_array = QJsonDocument(message).toJson();
+    quint32 size_json = byte_array.size();
+
+    QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
+
+    ba.append(byte_array);
+    qDebug()<<"v.size(): "<<v.size();
+
+    for (QByteArray a: v){
+        quint32 size_img = a.size();
+        qDebug()<<"Img size: "<<size_img;
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        p.append(a);
+        ba.append(p);
+    }
+
+
+    return ba;
+
+}
+
 void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
 {
     Q_ASSERT(destination);
     QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendJson, destination, message));
 }
+
+void Server::sendByteArray(ServerWorker *destination,const QByteArray &toSend){
+    Q_ASSERT(destination);
+     QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendByteArray, destination, toSend));
+}
+
+
+
 
 void Server::sendProfileImage(ServerWorker *destination)
 {
@@ -143,6 +173,46 @@ void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
         sendJson(worker, message);
     }
 }
+
+void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bArray,ServerWorker *exclude){
+    QByteArray byte_array = QJsonDocument(message).toJson();
+    quint32 size_json = byte_array.size();
+
+    QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
+
+    ba.append(byte_array);
+
+   if (bArray.size()!=0){
+        quint32 size_img = bArray.size();
+        qDebug()<<"Img size: "<<size_img;
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        p.append(bArray);
+        ba.append(p);
+    }
+   else {
+       quint32 size_img = 0;
+       qDebug()<<"Img size: "<<size_img;
+       QByteArray p((const char *)&size_img, sizeof(size_img));
+       ba.append(p);
+
+   }
+
+   QString filename = exclude->getFilename();
+   QList<ServerWorker*>* active_clients = mapFileWorkers->value(filename);
+   qDebug() << "BROADCAST from: "<<exclude->getUsername();
+   for (ServerWorker *worker : *active_clients) {
+       Q_ASSERT(worker);
+       if (worker == exclude)
+           continue;
+       qDebug() << "BROADCAST to: "<<worker->getUsername();
+       sendByteArray(worker, ba);
+   }
+
+
+}
+
+
+
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
@@ -457,9 +527,11 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
     if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
         // send symbols in file to client
-        QJsonObject message = this->sendFile(docObj,sender);
-        qDebug()<<"FILE TO OPEN: "<< message;
-        this->sendJson(sender,message);
+        QVector<QByteArray> v;
+        QJsonObject message = this->sendFile(docObj,sender,v);
+        QByteArray toSend = this->createByteArrayJsonImage(message,v);
+
+        this->sendByteArray(sender,toSend);
 
         // store symbols in server memory
         foreach (const QJsonValue & symbol, message["content"].toArray()) {
@@ -803,7 +875,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     return message;
 }
 
-QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
+QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVector<QByteArray> &v){
     QJsonObject message;
     message["type"] = QStringLiteral("file_to_open");
 
@@ -848,6 +920,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     //per ora manda il contenuto del file insieme alla lista di chi è connesso;
     //d agestire il caso in cui le connessioni cambiano mentre o dopo il messaggio è inviato
 
+    QString image_path;
 
     for (int i = 0; i <list->count(); i++){
         // use initializer list to construct QJsonObject
@@ -859,6 +932,21 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
         });
 
         array_users.push_back(QJsonValue(data));
+
+
+
+        image_path = QDir::currentPath() + IMAGES_PATH + "/" + QJsonValue(list->at(i)->getUsername()).toString() + ".png";
+
+        QFileInfo file(image_path);
+        if (file.exists()) {
+            qDebug()<<"added image";
+            QPixmap p(image_path);
+            QByteArray bArray;
+            QBuffer buffer(&bArray);
+            buffer.open(QIODevice::WriteOnly);
+            p.save(&buffer, "PNG");
+            v.append(bArray);
+        }
     }
 
     // read symbols from file...
@@ -901,7 +989,20 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     message_broadcast["username"]= sender->getUsername();
     message_broadcast["nickname"]= sender->getNickname();
 
-    this->broadcast(message_broadcast,sender);
+    image_path = QDir::currentPath() + IMAGES_PATH + "/" + sender->getUsername() + ".png";
+
+    QFileInfo fileImage(image_path);
+    QByteArray bArray;
+    if (fileImage.exists()) {
+        qDebug()<<"added image";
+        QPixmap p(image_path);
+        QByteArray bArray;
+        QBuffer buffer(&bArray);
+        buffer.open(QIODevice::WriteOnly);
+        p.save(&buffer, "PNG");
+       }
+
+    this->broadcastByteArray(message_broadcast,bArray,sender);
 
     auto d = QJsonDocument(message);
 //    qDebug()<< d.toJson().constData()<<endl;
