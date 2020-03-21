@@ -65,6 +65,7 @@ private:
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
     void sendJson(ServerWorker *destination, const QJsonObject &message);
     void sendProfileImage(ServerWorker *destination);
+    void saveFile();
 
 signals:
     void logMessage(const QString &msg);

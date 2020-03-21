@@ -61,9 +61,10 @@ Server::Server(QObject *parent,Database* db)
 //    db->getFiles("b@b", a);
 
     // testing the timer TODO: use slot to save all files
-//    QTimer *timer = new QTimer(this);
+    QTimer *timer = new QTimer(this);
 //    connect(timer, &QTimer::timeout, [=]() { qDebug()<<"Timer!"<<endl;});
-//    timer->start(1000 * SAVE_INTERVAL_SEC);
+    connect(timer, &QTimer::timeout, this, &Server::saveFile);
+    timer->start(1000 * SAVE_INTERVAL_SEC);
 }
 
 Server::~Server()
@@ -441,24 +442,24 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         broadcast(docObj, sender);
 
         // TODO: store on disk -> CHANGE to save every X minutes
-        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
-        qDebug() << "filename " << sender->getFilename();
-//        if (QFile::exists(filePath))
-//        {
-//            QFile::remove(filePath);
+//        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
+//        qDebug() << "filename " << sender->getFilename();
+////        if (QFile::exists(filePath))
+////        {
+////            QFile::remove(filePath);
+////        }
+////        qDebug() << filePath;
+//        QFile file(filePath);
+//        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
+//        QJsonArray symbols_json;
+//        for (QJsonObject symbol : symbols_list.value(sender->getFilename())->values()) {
+//            symbols_json.append(symbol);
 //        }
-//        qDebug() << filePath;
-        QFile file(filePath);
-        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
-        QJsonArray symbols_json;
-        for (QJsonObject symbol : symbols_list.value(sender->getFilename())->values()) {
-            symbols_json.append(symbol);
-        }
 
-//        qDebug() << symbols_json;
-//        file.write(QJsonDocument(symbols_json).toBinaryData());
-        file.write(QJsonDocument(symbols_json).toJson());
-        file.close();
+////        qDebug() << symbols_json;
+////        file.write(QJsonDocument(symbols_json).toBinaryData());
+//        file.write(QJsonDocument(symbols_json).toJson());
+//        file.close();
     }
 
     if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
@@ -879,8 +880,8 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender){
     f.close();
     // ...and check for errors in the format
 //    QJsonParseError parseError;
-//    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
-    QJsonDocument document = QJsonDocument::fromJson(json_data);
+    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
+//    QJsonDocument document = QJsonDocument::fromJson(json_data);
 
 //    if (parseError.error != QJsonParseError::NoError) {
 //        message["success"] = false;
@@ -1000,4 +1001,21 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
     doc.setArray(data);
     QString str(doc.toJson());
     return str;
+}
+
+void Server::saveFile() {
+    for (QString filename : symbols_list.keys()) {
+        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
+
+        QFile file(filePath);
+        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
+        QJsonArray symbols_json;
+        for (QJsonObject symbol : symbols_list.value(filename)->values()) {
+            symbols_json.append(symbol);
+        }
+
+        file.write(QJsonDocument(symbols_json).toBinaryData());
+//        file.write(QJsonDocument(symbols_json).toJson());
+        file.close();
+    }
 }
