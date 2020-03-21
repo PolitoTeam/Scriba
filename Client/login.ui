@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>606</width>
+    <width>693</width>
     <height>499</height>
    </rect>
   </property>
@@ -49,6 +49,12 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>300</width>
+         <height>160</height>
+        </size>
        </property>
        <property name="title">
         <string>Login</string>

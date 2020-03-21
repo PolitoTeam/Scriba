@@ -325,6 +325,16 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty username");
         return message;
     }
+
+    for (ServerWorker *client : m_clients) {
+        qDebug() << client->getUsername();
+        if (client->getUsername() == username) {
+            message["success"] = false;
+            message["reason"] = QStringLiteral("Already connected from another device");
+            return message;
+        }
+    }
+
     const QJsonValue pass = doc.value(QLatin1String("password"));
     if (pass.isNull() || !pass.isString()){
         message["success"] = false;
