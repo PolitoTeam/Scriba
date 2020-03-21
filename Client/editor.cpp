@@ -771,11 +771,17 @@ void Editor::addUsers(const QList<QPair<QString,QString>> users){
         QColor color = list_colors.getColor();
         int user = fromStringToIntegerHash(users.at(i).first);
         qDebug()<<" --------Username: "<<user<<" Color: "<<color;
-        highlighter->addClient(user,color); // for now all red
-        QListWidgetItem* item = new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first);
+        highlighter->addClient(user,color);
+        QListWidgetItem* item = new QListWidgetItem();
+        item->setIcon(QIcon(*client->getProfile()));
+        item->setText(users.at(i).second);
+        item->setData(Qt::UserRole,users.at(i).first);
+        item->setTextAlignment(Qt::AlignHCenter);
         item->setBackground( color );
         item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
+        item->setWhatsThis(users.at(i).first);
         this->ui->listWidget->addItem(item);
+
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
 }
@@ -786,12 +792,19 @@ void Editor::clear(){
     list_colors.clear();
 }
 
-void Editor::removeUser(const QString& name){
+void Editor::removeUser(const QString& username, const QString& nickname){
    qDebug()<<"Here remove"<<endl;
-   QListWidgetItem* item = this->ui->listWidget->findItems(name,Qt::MatchFixedString).first();
-   qDebug()<<"ITEM TO REMOVE: "<<item->text();
-   this->ui->listWidget->removeItemWidget(item);
-   delete item;
+   QList<QListWidgetItem*> items = this->ui->listWidget->findItems(nickname,Qt::MatchFixedString);
+
+   for (QListWidgetItem* item: items){
+       if (item->data(Qt::UserRole).toString()==username){
+           qDebug()<<"ITEM TO REMOVE: "<<item->text();
+           this->ui->listWidget->removeItemWidget(item);
+           delete item;
+           break;
+       }
+   }
+
 }
 
 void Editor::saveCursorPosition()

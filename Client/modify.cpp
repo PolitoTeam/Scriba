@@ -183,8 +183,10 @@ void Modify::on_pushSaveNickname_clicked()
         msgbox.setText("Are you sure?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         msgbox.setDefaultButton(QMessageBox::Save);
-        if(msgbox.exec()==QMessageBox::Save)
+        if(msgbox.exec()==QMessageBox::Save){
+            qDebug()<<"client->updateNickname";
            client->updateNickname(nickname);
+        }
     }
 }
 

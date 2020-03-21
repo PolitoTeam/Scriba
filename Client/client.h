@@ -82,7 +82,7 @@ signals:
     void wrongListFiles(const QString& reason);
     void usersConnectedReceived(QList<QPair<QString,QString>>);
     void contentReceived(const QString text);
-    void userDisconnected(const QString& username);
+    void userDisconnected(const QString& username, const QString& nickname);
     void wrongSharedLink(const QString& filename);
     void addCRDTterminator();
     void remoteCursor(int editor_id, Symbol s);

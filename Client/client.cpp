@@ -455,8 +455,11 @@ void Client::jsonReceived(const QJsonObject &docObj)
             const QJsonValue name = docObj.value(QLatin1String("user"));
             if (name.isNull() || !name.isString())
                 return;
+            const QJsonValue nickname = docObj.value(QLatin1String("nickname"));
+            if (nickname.isNull() || !nickname.isString())
+                return;
             if (!file.toString().compare(this->openfile)){
-                emit userDisconnected(name.toString());
+                emit userDisconnected(name.toString(),nickname.toString());
             }
 
         }
@@ -669,6 +672,7 @@ void Client::closeFile(){
         message["type"] = QStringLiteral("close");
         message["filename"] = this->openfile;
         message["username"]=this->username;
+        message["nickname"]=this->nickname;
 
         qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);

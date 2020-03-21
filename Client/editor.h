@@ -61,7 +61,7 @@ private slots:
     void on_change(int line, int index, const Symbol& s);
     void addUsers(const QList<QPair<QString,QString>> users);
     void updateText(const QString& text);
-    void removeUser(const QString& name);
+    void removeUser(const QString& username,const QString& nickname);
     void saveCursorPosition();
     void on_currentCharFormatChanged(const QTextCharFormat &format);
 
@@ -81,6 +81,7 @@ private:
     int line = 0, index = 0;
     Highlighter *highlighter;
     Colors list_colors;
+    QMap<QString,int> username_row; //map username - row in the list widget (peers)
 
 
 

@@ -371,7 +371,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         return;
 
     if (typeVal.toString().compare(QLatin1String("nickname"), Qt::CaseInsensitive) == 0){
-        QJsonObject message=this->updateNick(docObj);
+        QJsonObject message=this->updateNick(sender,docObj);
         this->sendJson(sender,message);
     }
     if (typeVal.toString().compare(QLatin1String("password"), Qt::CaseInsensitive) == 0){
@@ -480,7 +480,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
 }
 
-QJsonObject Server::updateNick(const QJsonObject &doc){
+QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc){
     const QJsonValue user = doc.value(QLatin1String("username"));
     QJsonObject message;
     message["type"] = QStringLiteral("nickname");
@@ -508,6 +508,7 @@ QJsonObject Server::updateNick(const QJsonObject &doc){
         message["reason"] = QStringLiteral("Empty nickname");
         return message;
     }
+    sender->setNickname(nickname);
 //    qDebug()<<"nickname: "<<nickname;
     DatabaseError result = this->db->updateNickname(username,nickname);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
@@ -939,6 +940,20 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         return message;
     }
 
+    const QJsonValue nick = doc.value(QLatin1String("nickname"));
+
+    if (nick.isNull() || !nick.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong nickname format");
+        return message;
+    }
+    const QString nickname = nick.toString().simplified();
+    if (nickname.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty nickname");
+        return message;
+    }
+
     // remove client from list of clients using current file
     if (mapFileWorkers->contains(filename)){
         mapFileWorkers->value(filename)->removeOne(sender);
@@ -961,6 +976,7 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         message_broadcast["type"] = QStringLiteral("disconnection");
         message_broadcast["filename"]=filename;
         message_broadcast["user"]=username;
+        message_broadcast["nickname"]=nickname;
         this->broadcast(message_broadcast,sender);
     }
 

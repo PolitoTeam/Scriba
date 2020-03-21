@@ -55,7 +55,7 @@ private:
     void jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &doc);
     QJsonObject signup(ServerWorker *sender,const QJsonObject &doc);
     QJsonObject login(ServerWorker *sender,const QJsonObject &doc);
-    QJsonObject updateNick(const QJsonObject &doc);
+    QJsonObject updateNick(ServerWorker *sender,const QJsonObject &doc);
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
     QJsonObject getFiles(const QJsonObject &doc);
