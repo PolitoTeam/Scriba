@@ -774,6 +774,7 @@ void Editor::addUsers(const QList<QPair<QString,QString>> users){
         highlighter->addClient(user,color); // for now all red
         QListWidgetItem* item = new QListWidgetItem(QIcon(*client->getProfile()),users.at(i).first);
         item->setBackground( color );
+        item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
         this->ui->listWidget->addItem(item);
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
