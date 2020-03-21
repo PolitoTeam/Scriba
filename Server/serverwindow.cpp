@@ -39,3 +39,8 @@ void ServerWindow::toggleStartServer()
         ui->label_status->setText("Running");
     }
 }
+
+void ServerWindow::closeEvent (QCloseEvent *)
+{
+    this->m_Server->stopServer();
+}

@@ -114,6 +114,9 @@ void ServerWorker::clearNickname()
 
 void ServerWorker::disconnectFromClient()
 {
+    QJsonObject message;
+    message["type"] = QStringLiteral("close");
+    this->sendJson(message);
     m_serverSocket->disconnectFromHost();
 }
 
