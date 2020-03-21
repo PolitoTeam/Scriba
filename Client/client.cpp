@@ -479,7 +479,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongSharedLink(reasonVal.toString());
         }
     }
-    else if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0) {
+    else if (typeVal.toString().compare(QLatin1String("server_stopped"), Qt::CaseInsensitive) == 0) {
         emit error(QAbstractSocket::ProxyConnectionClosedError);
     }
 }

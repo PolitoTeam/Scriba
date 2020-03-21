@@ -123,7 +123,7 @@ void ServerWorker::clearNickname()
 void ServerWorker::disconnectFromClient()
 {
     QJsonObject message;
-    message["type"] = QStringLiteral("close");
+    message["type"] = QStringLiteral("server_stopped");
     this->sendJson(message);
     m_serverSocket->disconnectFromHost();
 }
