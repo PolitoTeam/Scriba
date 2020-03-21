@@ -263,6 +263,11 @@ void Editor::exit()
     emit changeWidget(HOME);
 }
 
+void Editor::closeEvent (QCloseEvent *)
+{
+    client->closeFile();
+}
+
 void Editor::peerYou()
 {
     QListWidgetItem* item = new QListWidgetItem();
