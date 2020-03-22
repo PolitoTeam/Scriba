@@ -18,6 +18,11 @@
     <layout class="QGridLayout" name="gridLayout">
      <item row="3" column="1" rowspan="2">
       <widget class="QPushButton" name="pushButtonNewAccount">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(0, 131, 206);</string>
+       </property>
        <property name="text">
         <string>New account</string>
        </property>
@@ -68,7 +73,7 @@
           <item>
            <widget class="QLabel" name="labelUsername">
             <property name="text">
-             <string>Username</string>
+             <string>Email</string>
             </property>
            </widget>
           </item>
@@ -115,6 +120,11 @@ font-style:italic;</string>
      </item>
      <item row="3" column="2" rowspan="2" colspan="2">
       <widget class="QPushButton" name="pushButtonLogin">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(0, 131, 206);</string>
+       </property>
        <property name="text">
         <string>Login</string>
        </property>
