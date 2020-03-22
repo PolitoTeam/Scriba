@@ -25,4 +25,7 @@
         <file>images/textright.png</file>
         <file>images/cursor.png</file>
     </qresource>
+    <qresource prefix="/resources">
+        <file>certificates/rootCA.crt</file>
+    </qresource>
 </RCC>

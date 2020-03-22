@@ -94,14 +94,16 @@
           <item>
            <widget class="QPushButton" name="pushButtonResetPhoto">
             <property name="text">
-             <string>Reset</string>
+             <string>Cancel</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonSavephoto">
             <property name="styleSheet">
-             <string notr="true">background-color:rgb(33, 255, 6);</string>
+             <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(24, 139, 208);</string>
             </property>
             <property name="text">
              <string>Save photo</string>
@@ -149,7 +151,7 @@ font-style:italic;</string>
             <item>
              <widget class="QPushButton" name="pushButtonResetNickname">
               <property name="text">
-               <string>Reset</string>
+               <string>Cancel</string>
               </property>
               <property name="autoDefault">
                <bool>true</bool>
@@ -161,8 +163,15 @@ font-style:italic;</string>
             </item>
             <item>
              <widget class="QPushButton" name="pushSaveNickname">
+              <property name="font">
+               <font>
+                <family>Ubuntu</family>
+               </font>
+              </property>
               <property name="styleSheet">
-               <string notr="true">background-color:rgb(33, 255, 6);</string>
+               <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(24, 139, 208);</string>
               </property>
               <property name="text">
                <string>Save nickname</string>
@@ -254,7 +263,9 @@ font-style:italic;</string>
             <item>
              <widget class="QPushButton" name="pushButtonSavePassword">
               <property name="styleSheet">
-               <string notr="true">background-color:rgb(33, 255, 6);</string>
+               <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(24, 139, 208);</string>
               </property>
               <property name="text">
                <string>Save password</string>

@@ -100,7 +100,7 @@
             <item>
              <widget class="QLabel" name="labelUsername">
               <property name="text">
-               <string>Username</string>
+               <string>Email</string>
               </property>
              </widget>
             </item>
@@ -253,7 +253,7 @@ font-style:italic;</string>
      <item row="3" column="2" rowspan="2">
       <widget class="QPushButton" name="pushButtonBackLogin">
        <property name="text">
-        <string>Login</string>
+        <string>Cancel</string>
        </property>
       </widget>
      </item>
