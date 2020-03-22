@@ -185,14 +185,14 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
    if (bArray.size()!=0){
         quint32 size_img = bArray.size();
-        qDebug()<<"Img size: "<<size_img;
+        qDebug()<<"Img size connection: "<<size_img;
         QByteArray p((const char *)&size_img, sizeof(size_img));
         p.append(bArray);
         ba.append(p);
     }
    else {
        quint32 size_img = 0;
-       qDebug()<<"Img size: "<<size_img;
+       qDebug()<<"Img size connection else: "<<size_img;
        QByteArray p((const char *)&size_img, sizeof(size_img));
        ba.append(p);
 
@@ -1005,14 +1005,17 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
     QFileInfo fileImage(image_path);
     QByteArray bArray;
     if (fileImage.exists()) {
-        qDebug()<<"added image";
+        qDebug()<<"added image to broadcast "<<image_path;
         QPixmap p(image_path);
-        QByteArray bArray;
+        qDebug()<< "Image size pixmpa: "<<p.size();
         QBuffer buffer(&bArray);
         buffer.open(QIODevice::WriteOnly);
         p.save(&buffer, "PNG");
        }
-
+    else{
+        qDebug()<<"File not exist: "<<image_path;
+    }
+    qDebug()<<"bArray size: "<<bArray.size();
     this->broadcastByteArray(message_broadcast,bArray,sender);
 
     auto d = QJsonDocument(message);
