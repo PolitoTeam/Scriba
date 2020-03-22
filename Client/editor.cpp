@@ -62,7 +62,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(this->client,&Client::loggedIn,this,[this]{
         int site_id = fromStringToIntegerHash(this->client->getUsername());
         this->crdt->setId(site_id);
-        this->highlighter->addClient(site_id,QColor(124,252,0,127));
+        this->highlighter->addLocal(site_id);
     });
 
 
@@ -792,16 +792,16 @@ void Editor::updateText(const QString& text){
 void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 
     for (int i=0;i<users.count();i++){
-        QColor color = list_colors.getColor();
+       // QColor color = list_colors.getColor();
         int user = fromStringToIntegerHash(users.at(i).first.first);
-        qDebug()<<" --------Username: "<<user<<" Color: "<<color;
-        highlighter->addClient(user,color);
+      //  qDebug()<<" --------Username: "<<user<<" Color: "<<color;
+        highlighter->addClient(user);
         QListWidgetItem* item = new QListWidgetItem();
         item->setIcon(QIcon(users.at(i).second));
         item->setText(users.at(i).first.second);
         item->setData(Qt::UserRole,users.at(i).first.first);
         //item->setTextAlignment(Qt::AlignHCenter);
-        item->setBackground( color );
+        item->setBackground( highlighter->getColor(user));
         item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
         item->setWhatsThis(users.at(i).first.first);
         this->ui->listWidget->addItem(item);
@@ -813,7 +813,7 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 void Editor::clear(){
     ui->listWidget->clear();
     ui->textEdit->clear();
-    list_colors.clear();
+
 }
 
 void Editor::removeUser(const QString& username, const QString& nickname){
@@ -823,6 +823,7 @@ void Editor::removeUser(const QString& username, const QString& nickname){
    for (QListWidgetItem* item: items){
        if (item->data(Qt::UserRole).toString()==username){
            qDebug()<<"ITEM TO REMOVE: "<<item->text();
+           highlighter->freeColor(fromStringToIntegerHash(username));
            this->ui->listWidget->removeItemWidget(item);
            delete item;
            break;

@@ -8,7 +8,6 @@
 #include "highlighter.h"
 #include <QTextCursor>
 #include <QtWidgets>
-#include "colors.h"
 
 namespace Ui {
 class Editor;
@@ -82,7 +81,6 @@ private:
     CRDT *crdt;
     int line = 0, index = 0;
     Highlighter *highlighter;
-    Colors list_colors;
     QMap<QString,int> username_row; //map username - row in the list widget (peers)
 
 

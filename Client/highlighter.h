@@ -5,20 +5,24 @@
 #include <QSyntaxHighlighter>
 #include "CRDT.h"
 #include "symbol.h"
+#include "colors.h"
 
 class Highlighter: public QSyntaxHighlighter
 {
      Q_OBJECT
 public:
    Highlighter(QTextDocument *document=0,CRDT* crdt=0);
-   void addClient(int editor_id,QColor color);
+   void addClient(int editor_id);
+   void addLocal(int editor_id);
    QColor getColor(int editor_id);
+   void freeColor(int editor_id);
 
 
 private:
    void highlightBlock(const QString &text) override;
-   QMap<int,QColor> users;
+   QMap<int,int> users;
    CRDT *crdt;
+   Colors list_colors;
 
 };
 

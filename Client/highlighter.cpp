@@ -2,16 +2,23 @@
 
 Highlighter::Highlighter(QTextDocument *document,CRDT* crdt)
     : QSyntaxHighlighter(document),crdt(crdt){
-
-
+     list_colors = Colors();
 }
 
-void Highlighter::addClient(int editor_id,QColor color){
+void Highlighter::addClient(int editor_id){
 
     if (this->users.contains(editor_id))
         return;
-    qDebug()<<"Insert: "<<editor_id<<" with color: "<<color;
-    users.insert(editor_id,color);
+
+    int i = list_colors.getIndex();
+    qDebug()<<i;
+    users.insert(editor_id,i);
+}
+
+void Highlighter::addLocal(int editor_id){
+    if (this->users.contains(editor_id))
+        return;
+    users.insert(editor_id,-1);
 }
 
 void Highlighter::highlightBlock(const QString &text){
@@ -22,11 +29,11 @@ void Highlighter::highlightBlock(const QString &text){
     for (int index = 0; index < text.length(); index++) {
             qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
             Symbol s = this->crdt->getSymbol(line,index);
-            qDebug()<<"Highilithing value: "<<s.getValue();
+
             int editor_id = s.getUsername();
             QTextCharFormat format = s.getQTextCharFormat();
 
-            QColor color = users.value(editor_id);
+            QColor color = list_colors.getColor(users.value(editor_id));
 
             format.setBackground(QBrush(color,Qt::SolidPattern));
             setFormat(index,1,format);
@@ -35,8 +42,14 @@ void Highlighter::highlightBlock(const QString &text){
 
 QColor Highlighter::getColor(int editor_id){
     if (users.contains(editor_id))
-        return users[editor_id];
+        return list_colors.getColor(users[editor_id]);
     //da gestire
     return QColor('white');
+}
+
+void Highlighter::freeColor(int editor_id){
+     list_colors.freeColor(users.value(editor_id));
+     users.remove(editor_id); //return 0 if editor_id not in the map
+
 }
 
