@@ -53,7 +53,7 @@
         <item>
          <widget class="QPushButton" name="pushButtonNewFile">
           <property name="text">
-           <string>New file</string>
+           <string>New File</string>
           </property>
           <property name="autoDefault">
            <bool>true</bool>
@@ -66,7 +66,20 @@
         <item>
          <widget class="QPushButton" name="pushButtonOpenFile">
           <property name="text">
-           <string>Open file</string>
+           <string>Your Files</string>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonOpenShared">
+          <property name="text">
+           <string>Shared With You</string>
           </property>
           <property name="autoDefault">
            <bool>true</bool>
@@ -79,7 +92,7 @@
         <item>
          <widget class="QPushButton" name="pushButtonSharedLink">
           <property name="text">
-           <string>Shared link</string>
+           <string>Shared Link</string>
           </property>
           <property name="autoDefault">
            <bool>true</bool>

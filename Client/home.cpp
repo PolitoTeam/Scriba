@@ -117,18 +117,19 @@ void Home::on_pushButtonOpenFile_clicked()
 void Home::showActiveFiles(){
     QStringList items;
     QList<QPair<QString,QString>> map_files = client->getActiveFiles();
-    QList<QPair<QString, QString>>::iterator i;
-    for (i = map_files.begin(); i != map_files.end(); ++i){
-        //gestire poi meglio le due informazioni per la visualizzazione: nome del file e owner
-        items<<QString(i->first + "," + i->second);
+
+    for (auto i = map_files.begin(); i != map_files.end(); ++i){
+        items << QString(i->first);
     }
+    items.sort();
 
     bool ok;
     QString item = QInputDialog::getItem(this, tr("Open File"),
-                                                tr("Files:"), items, 0, false, &ok);
+                                         tr("Files:"), items, 0, false, &ok);
     if (ok && !item.isEmpty()) {
-        qDebug()<<"File scelto: "<<item<<endl;
-        emit fileChosen(item);
+        QString choice = item + "," + client->getUsername();
+        qDebug() << "File chosen:" << choice << endl;
+        emit fileChosen(choice);
     }
 }
 
