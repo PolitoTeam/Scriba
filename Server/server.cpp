@@ -1090,7 +1090,7 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         delete mapFileWorkers->value(filename);
         mapFileWorkers->remove(filename);
         // empty symbol list
-        symbols_list.value(sender->getFilename())->clear();
+        symbols_list.remove(sender->getFilename());
     }
     else{ QJsonObject message_broadcast;
         message_broadcast["type"] = QStringLiteral("disconnection");
