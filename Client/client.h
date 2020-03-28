@@ -26,7 +26,7 @@ public:
     void sendProfileImage(const QString& name,QPixmap* pixmap);
     void overrideProfileImage(const QPixmap& pixmap);
 
-    void getFiles();
+    void getFiles(bool shared);
     void getFilenameFromLink(const QString& sharedLink);
     QList<QPair<QString,QString>> getActiveFiles();
 

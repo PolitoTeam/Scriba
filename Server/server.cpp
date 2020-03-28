@@ -465,7 +465,12 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
     }
 
     if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0){
-        QJsonObject message = this->getFiles(docObj);
+        QJsonObject message = this->getFiles(docObj, false);
+        this->sendJson(sender,message);
+    }
+
+    if (typeVal.toString().compare(QLatin1String("list_shared_files"), Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->getFiles(docObj, true);
         this->sendJson(sender,message);
     }
 
@@ -558,7 +563,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         this->sendJson(sender,message);
     }
     if (typeVal.toString().compare(QLatin1String("filename_from_sharedLink"), Qt::CaseInsensitive) == 0){
-        QJsonObject message = this->getFilenameFromSharedLink(docObj);
+        QJsonObject message = this->getFilenameFromSharedLink(docObj, sender->getUsername());
         this->sendJson(sender,message);
     }
 }
@@ -728,7 +733,7 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 }
 
 
-QJsonObject Server::getFiles(const QJsonObject &doc){
+QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
     const QJsonValue user = doc.value(QLatin1String("username"));
     QJsonObject message;
     message["type"] = QStringLiteral("list_files");
@@ -746,7 +751,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     }
 
     QVector<QPair<QString, QString>> files;
-    DatabaseError result = this->db->getFiles(username, files);
+    DatabaseError result = this->db->getFiles(username, files, shared);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error.");
@@ -779,7 +784,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc){
     return message;
 }
 
-QJsonObject Server::getFilenameFromSharedLink(const QJsonObject &doc){
+QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc, const QString& user){
     QJsonObject message;
     message["type"] = QStringLiteral("filename_from_sharedLink");
 
@@ -797,7 +802,7 @@ QJsonObject Server::getFilenameFromSharedLink(const QJsonObject &doc){
     }
 
     QString filename;
-    DatabaseError result = this->db->getFilenameFromSharedLink(sharedLink, filename);
+    DatabaseError result = this->db->getFilenameFromSharedLink(sharedLink, filename, user);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
         message["reason"] = QStringLiteral("Database error.");

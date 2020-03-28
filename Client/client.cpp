@@ -115,7 +115,7 @@ void Client::signup(const QString &username, const QString &password)
    // }
 }
 
-void Client::getFiles(){
+void Client::getFiles(bool shared){
    // if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
@@ -123,7 +123,11 @@ void Client::getFiles(){
         clientStream.setVersion(QDataStream::Qt_5_7);
         // Create the JSON we want to send
         QJsonObject message;
-        message["type"] = QStringLiteral("list_files");
+        if (shared) {
+            message["type"] = QStringLiteral("list_shared_files");
+        } else {
+            message["type"] = QStringLiteral("list_files");
+        }
         message["username"] = this->username;
         //aggiungere cifratura oppure passare a QSSLsocket
         // send the JSON using QDataStream

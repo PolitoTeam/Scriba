@@ -56,8 +56,8 @@ private:
     QJsonObject updateNick(ServerWorker *sender,const QJsonObject &doc);
     QJsonObject updatePass(const QJsonObject &doc);
     QJsonObject checkOldPass(const QJsonObject &doc);
-    QJsonObject getFiles(const QJsonObject &doc);
-    QJsonObject getFilenameFromSharedLink(const QJsonObject &doc);
+    QJsonObject getFiles(const QJsonObject &doc, bool shared);
+    QJsonObject getFilenameFromSharedLink(const QJsonObject& doc, const QString& user);
     QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
     QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender, QVector<QByteArray>& v);
     QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);

@@ -95,7 +95,7 @@ void Home::on_pushButtonOpenFile_clicked()
 {
 
     //manda richiesta al server di ricevere la lista di file
-    client->getFiles();
+    client->getFiles(false);
     //disabilitare tutto?
 
     //2- apri una dialogbox per permettere all'utente di selezionare quale file
@@ -133,3 +133,8 @@ void Home::showActiveFiles(){
     }
 }
 
+
+void Home::on_pushButtonOpenShared_clicked()
+{
+    client->getFiles(true);
+}

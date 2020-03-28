@@ -194,52 +194,68 @@ DatabaseError Database::checkOldPassword(const QString &username, const QString 
     return err;
 }
 
-DatabaseError Database::getFiles(const QString &username, QVector<QPair<QString,QString>> &files){
+DatabaseError Database::getFiles(const QString &username,
+                                 QVector<QPair<QString,QString>> &files,
+                                 bool shared){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    // TODO: handle shared links (private ones)
-    //    qry.prepare("SELECT Name, Owner FROM FILE, FILE_USER WHERE FILE.Link=FILE_USER.Link and User=:Username and First_access=false");
-
-
-
-    // add own files (DISTINCT because every file can have 2 entries, corresponding to the public and private shared link)
-    qry.prepare("SELECT DISTINCT Name FROM FILE WHERE Owner=:username");
+    if (!shared) {
+        // select own files (DISTINCT because every file can have 2 entries,
+        // corresponding to the public and private shared link)
+        qry.prepare("SELECT DISTINCT Name FROM FILE WHERE Owner=:username");
+    } else {
+        // select shared files (no distinction between public and private ones)
+        qry.prepare("SELECT Name, Owner "
+                    "FROM FILE, FILE_USER "
+                    "WHERE FILE.Link = FILE_USER.Link "
+                        "AND User = :username");
+    }
     qry.bindValue(":username", username);
+
     if (!qry.exec()) {
         err = QUERY_ERROR;
     } else {
-        while (qry.next()) {
-            files.push_back(QPair<QString, QString>(qry.value(0).toString(), username));
-        }
-
-        // add files--> public ones: the files that are public and that the user has already accessed: it means that PUBLIC=true and the fileis in the FILE_USER table
-        qry.prepare("SELECT Name, Owner "
-                    "FROM FILE, FILE_USER "
-                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE");
-        qry.bindValue(":username", username);
-        if (!qry.exec())
-            err = QUERY_ERROR;
-        else {
+        if (!shared) {
             while (qry.next()) {
-                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
+                files.push_back(QPair<QString, QString>(qry.value(0).toString(),
+                                                        username));
+            }
+        } else {
+            while (qry.next()) {
+                files.push_back(QPair<QString, QString>(qry.value(0).toString(),
+                                                        qry.value(1).toString())
+                                );
             }
         }
 
-        // add files--> private ones: the files that are privat and that the user has already accessed: it means that PUBLIC=false and the file is in the FILE_USER table with FIRST_ACESS=FALSE
-        qry.prepare("SELECT Name, Owner "
-                    "FROM FILE, FILE_USER "
-                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = FALSE and First_access = FALSE");
-        qry.bindValue(":username", username);
-        if (!qry.exec())
-            err = QUERY_ERROR;
-        else {
-            while (qry.next()) {
-                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
-            }
-        }
+//        // add files--> public ones: the files that are public and that the user has already accessed: it means that PUBLIC=true and the fileis in the FILE_USER table
+//        qry.prepare("SELECT Name, Owner "
+//                    "FROM FILE, FILE_USER "
+//                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE");
+//        qry.bindValue(":username", username);
+//        if (!qry.exec())
+//            err = QUERY_ERROR;
+//        else {
+//            while (qry.next()) {
+//                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
+//            }
+//        }
+
+//        // add files--> private ones: the files that are privat and that the user has already accessed: it means that PUBLIC=false and the file is in the FILE_USER table with FIRST_ACESS=FALSE
+//        qry.prepare("SELECT Name, Owner "
+//                    "FROM FILE, FILE_USER "
+//                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = FALSE and First_access = FALSE");
+//        qry.bindValue(":username", username);
+//        if (!qry.exec())
+//            err = QUERY_ERROR;
+//        else {
+//            while (qry.next()) {
+//                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
+//            }
+//        }
 
         if (files.isEmpty())
             err = NO_FILES_AVAILABLE;
@@ -322,13 +338,13 @@ DatabaseError Database::getSharedLink(const QString &author,const QString &filen
     db.close();
     return err;
 }
-DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink, QString& filename) {
+DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink, QString& filename, const QString& user) {
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Name, Owner FROM FILE WHERE Link=:link");
+    qry.prepare("SELECT Name, Owner FROM FILE WHERE Link=:link FOR UPDATE");
     qry.bindValue(":link", sharedLink);
     if (!qry.exec())
         err = QUERY_ERROR;
@@ -336,6 +352,16 @@ DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink, QSt
         err = NON_EXISTING_FILE;
     else {
         filename = qry.value(0).toString() + "," + qry.value(1).toString();
+
+        // add file to list of shared files of 'user'
+        QSqlQuery qry;
+        qry.prepare("INSERT IGNORE INTO FILE_USER (Link, User, First_access) "
+                    "VALUES (:link, :user, 1)");
+        qry.bindValue(":link", sharedLink);
+        qry.bindValue(":user", user);
+        if (!qry.exec()){
+            err = QUERY_ERROR;
+        }
     }
     db.close();
     return err;
