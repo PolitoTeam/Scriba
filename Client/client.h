@@ -16,7 +16,7 @@ class Client : public QObject
     Q_DISABLE_COPY(Client)
 
 public:
-    explicit Client(QObject *parent = nullptr);
+    explicit Client(QObject *parent=nullptr, QString addr=nullptr, quint16 port=0);
     QString getNickname();
     QString getUsername();
     void setNickname(const QString& nickname);
@@ -88,6 +88,8 @@ signals:
     void remoteCursor(int editor_id, Symbol s);
 
 private:
+    QString addr;
+    quint16 port;
     QSslSocket *m_clientSocket;
     bool m_loggedIn;
     QString username;   //valutare se puntatore o no!

@@ -3,11 +3,12 @@
 #include "server.h"
 #include <QMessageBox>
 
-ServerWindow::ServerWindow(QWidget *parent)
+ServerWindow::ServerWindow(QWidget *parent, quint16 port)
     : QWidget(parent)
     , ui(new Ui::ServerWindow)
-    , m_Server(new Server(this,new Database()))
+    , m_Server(new Server(this, new Database()))
 {
+    this->port = port;
     ui->setupUi(this);
     connect(ui->pushButton_startStop, &QPushButton::clicked, this, &ServerWindow::toggleStartServer);
 }
@@ -30,7 +31,7 @@ void ServerWindow::toggleStartServer()
             return;
         }
 
-        if (!m_Server->listen(QHostAddress::LocalHost, 1500)) {
+        if (!m_Server->listen(QHostAddress::LocalHost, port)) {
             QMessageBox::critical(this, tr("Error"), tr("Unable to start the server"), QMessageBox::Close);
             return;
         }

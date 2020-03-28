@@ -18,12 +18,13 @@
 #include <QMessageBox>
 #include <QtEndian>
 
-Client::Client(QObject *parent)
+Client::Client(QObject *parent, QString addr, quint16 port)
     : QObject(parent)
     , m_clientSocket(new QSslSocket(this))
     , m_loggedIn(false)
 {
-
+    this->addr = addr;
+    this->port = port;
 
     // Forward the connected and disconnected signals
     connect(m_clientSocket, &QSslSocket::connected, this, &Client::connected);
@@ -74,7 +75,7 @@ void Client::sslErrors(const QList<QSslError> &errors)
 
 void Client::login(const QString &username, const QString &password)
 {
-    connectToServer(QHostAddress::LocalHost, 1500); //porta da stabilire
+    connectToServer(QHostAddress(this->addr), this->port);
    //if (m_clientSocket->waitForEncrypted()) {
         qDebug()<<"mandato login";
         // create a QDataStream operating on the socket
@@ -96,7 +97,7 @@ void Client::login(const QString &username, const QString &password)
 
 void Client::signup(const QString &username, const QString &password)
 {
-    connectToServer(QHostAddress::LocalHost, 1500); //porta da stabilire
+    connectToServer(QHostAddress(this->addr), this->port);
    // if (m_clientSocket->waitForEncrypted()) {
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);

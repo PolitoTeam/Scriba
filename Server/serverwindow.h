@@ -13,12 +13,13 @@ class ServerWindow : public QWidget
     Q_OBJECT
     Q_DISABLE_COPY(ServerWindow)
 public:
-    explicit ServerWindow(QWidget *parent = nullptr);
+    explicit ServerWindow(QWidget *parent = nullptr, quint16 port = 0);
     ~ServerWindow();
 
 private:
     Ui::ServerWindow *ui;
     Server *m_Server;
+    quint16 port;
 
     void closeEvent(QCloseEvent *event);
 
