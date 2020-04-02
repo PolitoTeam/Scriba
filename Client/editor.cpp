@@ -42,7 +42,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->actionCopy, &QAction::triggered, this, &Editor::copy);
     connect(ui->actionCut, &QAction::triggered, this, &Editor::cut);
     connect(ui->actionPaste, &QAction::triggered, this, &Editor::paste);
-    connect(ui->actionUndo, &QAction::triggered, this, &Editor::undo);
+   // connect(ui->actionUndo, &QAction::triggered, this, &Editor::undo);
     connect(ui->actionRedo, &QAction::triggered, this, &Editor::redo);
     connect(ui->actionFont, &QAction::triggered, this, &Editor::selectFont);
     connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
@@ -407,56 +407,61 @@ void Editor::textAlign(QAction *a)
     int line_end = cursor.blockNumber();
     qDebug()<<"END POSITION: "<< line_end;
 
-    for (int i = line_start; i <= line_end; i++) {
-        if (a == actionAlignLeft){
-            ui->textEdit->setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
-            crdt->localChangeAlignment(i,SymbolFormat::Alignment::ALIGN_LEFT);
-        }
-        else if (a == actionAlignCenter){
-            ui->textEdit->setAlignment(Qt::AlignHCenter);
-            crdt->localChangeAlignment(i,SymbolFormat::Alignment::ALIGN_CENTER);
-        }
-        else if (a == actionAlignRight){
-            ui->textEdit->setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
-            crdt->localChangeAlignment(i,SymbolFormat::Alignment::ALIGN_RIGHT);
-        }
+    QTextBlockFormat n;
+    SymbolFormat::Alignment sf;
+    if (a==actionAlignLeft){
+        sf=SymbolFormat::Alignment::ALIGN_LEFT;
+        n.setAlignment(Qt::AlignLeft | Qt::AlignAbsolute);
     }
+    else if (a==actionAlignRight){
+        sf=SymbolFormat::Alignment::ALIGN_RIGHT;
+        n.setAlignment(Qt::AlignRight | Qt::AlignAbsolute);
+    }
+    else if (a == actionAlignCenter){
+        sf=SymbolFormat::Alignment::ALIGN_CENTER;
+        n.setAlignment(Qt::AlignHCenter);
+    }
+
+    for (int i = line_start; i <= line_end; i++)
+       crdt->localChangeAlignment(i,sf);
+
+    ui->textEdit->textCursor().mergeBlockFormat(n);
 }
 
 SymbolFormat::Alignment Editor::alignmentConversion(Qt::Alignment a){
-    qDebug()<<"Alignment->SymboLlFormat"<<a;
+
     if (a == (Qt::AlignLeft|Qt::AlignLeading) || a == (Qt::AlignLeading|Qt::AlignAbsolute)){
-        qDebug()<<"Converted: SymbolFormat::Alignment::ALIGN_LEFT";
+        qDebug()<<"Convertsion: "<<a<<" -> SymbolFormat::Alignment::ALIGN_LEFT";
         return SymbolFormat::Alignment::ALIGN_LEFT;
     }
 
     else if (a == Qt::AlignCenter || a == Qt::AlignHCenter){
-        qDebug()<<"Converted: SymbolFormat::Alignment::ALIGN_CENTER";
+        qDebug()<<"Convertsion: "<<a<<" -> SymbolFormat::Alignment::ALIGN_CENTER";
         return SymbolFormat::Alignment::ALIGN_CENTER;
     }
 
     else if (a == Qt::AlignRight || a==Qt::AlignTrailing|Qt::AlignAbsolute){
-        qDebug()<<"Converted: SymbolFormat::Alignment::ALIGN_RIGHT";
+        qDebug()<<"Convertsion: "<<a<<" -> SymbolFormat::Alignment::ALIGN_RIGHT";
        return SymbolFormat::Alignment::ALIGN_RIGHT;
     }
 
 }
 
 Qt::Alignment Editor::alignmentConversion(SymbolFormat::Alignment a){
-    qDebug()<<"SymbolFormast -> Alignment "<<a;
+
 
     if (a == SymbolFormat::Alignment::ALIGN_LEFT){
-            qDebug()<<"converted: Qt::AlignLeft|Qt::AlignLeading";
+            qDebug()<<"Conversion: "<<a<<" -> "<< "Qt::AlignLeft|Qt::AlignLeading";
           return (Qt::AlignLeft|Qt::AlignLeading);
     }
 
     if (a== SymbolFormat::Alignment::ALIGN_CENTER){
-          qDebug()<<"converted: Qt::AlignHCenter";
+          qDebug()<<"Conversion: "<<a<<" -> "<< "Qt::AlignHCenter";
             return Qt::AlignHCenter;
     }
 
     if (a== SymbolFormat::Alignment::ALIGN_RIGHT){
-          qDebug()<<"converted: Qt::AlignTrailing|Qt::AlignAbsolute";
+            qDebug()<<"Conversion: "<<a<<" -> "<< "Qt::AlignTrailing|Qt::AlignAbsolute";
         return Qt::AlignTrailing|Qt::AlignAbsolute;
     }
 
@@ -608,18 +613,19 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             index_m = cursor.positionInBlock();
 
             //non sono sicuro di cosa succeda all'ultimo carattere
-            if (cursor.movePosition(QTextCursor::Right,QTextCursor::KeepAnchor)==false){
-                //qDebug()<<"ciclo break perchè movePosition failed";
+            if (cursor.movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor)==false){
+                qDebug()<<"ciclo break perchè movePosition failed";
                 break;
             }
 
             QTextCharFormat formatDoc = cursor.charFormat();
 
+
             QTextCharFormat formatSL = this->crdt->getSymbolFormat(line_m,index_m);
 
-            //non fa il confronto bene
-            if (formatSL.font()==formatDoc.font() && formatSL.foreground()==formatDoc.foreground()){
-               // qDebug()<<"formatSL == formatDOC";
+
+            if (formatSL.font()==formatDoc.font() && formatSL.foreground().color()==formatDoc.foreground().color()){
+               //qDebug()<<"formatSL == formatDOC";
 
                 break;
             }
@@ -634,13 +640,15 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         else{
             //change alignment
             //TO DO: multiple lines alignment chnaged
-            cursor.setPosition(position);
             line_m = cursor.blockNumber();
             index_m = cursor.positionInBlock();
             QTextBlockFormat a = cursor.blockFormat();
             Qt::Alignment align = a.alignment();
+            qDebug()<<"First alignment from the editor: "<<alignmentConversion(align);
+            Qt::Alignment  align_SL = alignmentConversion(this->crdt->getAlignmentLine(line_m));
+            qDebug()<<"First alignment  present in the crdt: "<<align_SL;
             this->crdt->localChangeAlignment(line_m,alignmentConversion(align));
-            Qt::Alignment align_SL;
+
             while (true){
                //non sono sicuro di cosa succeda all'ultimo carattere
                 if (cursor.movePosition(QTextCursor::NextBlock,QTextCursor::MoveAnchor)==false){
@@ -649,16 +657,17 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
                 }
                 a = cursor.blockFormat();
                 align =a.alignment();
+                qDebug()<<"Alignment fromn the editor: "<<align;
                 line_m = cursor.blockNumber();
                 index_m = cursor.positionInBlock();
                 align_SL = alignmentConversion(this->crdt->getAlignmentLine(line_m));
-                if (align==align_SL)
-                    break;
+                qDebug()<<"Alignment from the CRDT: "<<align_SL;
                 this->crdt->localChangeAlignment(line_m,alignmentConversion(align));
 
             }
 
         }
+
         this->undoFlag=false;
         this->redoFlag=false;
 

@@ -17,7 +17,6 @@ int CRDT::getId() { return _siteId; }
 void CRDT::setId(int site){this->_siteId = site;}
 
 QTextCharFormat CRDT::getSymbolFormat(int line,int index){
-    qDebug()<<"qui";
 
     return _symbols[line][index].getQTextCharFormat();
 }

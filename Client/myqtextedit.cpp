@@ -49,7 +49,7 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
     {
 
         if(this->document()->isUndoAvailable()){
-
+            qDebug()<<"received undoo";
              emit undo();
         }
     }
