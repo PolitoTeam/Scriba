@@ -12,7 +12,7 @@ void MyQTextEdit::paintEvent(QPaintEvent *e)
 {
 
       QPainter p(viewport());
-     // qDebug()<<"------------------PAINTEVENT------------------";
+     // //qDebug()<<"------------------PAINTEVENT------------------";
 /*
       QAbstractTextDocumentLayout::Selection selection;
       selection.cursor = textCursor();
@@ -25,7 +25,7 @@ void MyQTextEdit::paintEvent(QPaintEvent *e)
       document()->documentLayout()->draw(&p,ctx);
 
 */
-     // qDebug()<< "Num cursor: "<<remote_cursors.size();
+     // //qDebug()<< "Num cursor: "<<remote_cursors.size();
       for (RemoteCursor *cursor :remote_cursors) {
          QColor c  = cursor->getColor();
          QPen pen;
@@ -49,7 +49,7 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
     {
 
         if(this->document()->isUndoAvailable()){
-            qDebug()<<"received undoo";
+            //qDebug()<<"received undoo";
              emit undo();
         }
     }
@@ -61,13 +61,13 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
     }
     //delete
     else if (e->key()==16777219 && this->document()->isEmpty()){
-        qDebug()<<"empty";
+        //qDebug()<<"empty";
         emit resetDefaultAlignment(true);
     }
     else{
      QTextEdit::keyPressEvent(e);
     }
-    qDebug()<<"KEY: "<<e->key();
+    //qDebug()<<"KEY: "<<e->key();
 
 
 }

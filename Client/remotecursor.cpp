@@ -19,17 +19,17 @@ RemoteCursor::~RemoteCursor() {
 }
 
 void RemoteCursor::moveTo(QTextBlock block, int index) {
-    qDebug() << "remote cursor" << index;
+    //qDebug() << "remote cursor" << index;
  //   int oldPosition = remoteCursor.position();
     // set position before remote cursor and delete it
-    // qDebug() << "deleting at" << oldPosition - 1;
+    // //qDebug() << "deleting at" << oldPosition - 1;
  //   this->remoteCursor.setPosition(oldPosition - 1);
  //   this->remoteCursor.deleteChar();
 
     // put in new position
     this->remoteCursor.setPosition(block.position() + index);
   //  this->remoteCursor.insertHtml(cursorHtml);
-    qDebug() << "new position" << this->remoteCursor.position();
+    //qDebug() << "new position" << this->remoteCursor.position();
 }
 
 // get absolute position

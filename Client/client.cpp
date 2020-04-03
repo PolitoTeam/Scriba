@@ -54,10 +54,10 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 
     QSslConfiguration::defaultConfiguration().setCaCertificates(QSslConfiguration::systemCaCertificates());
     m_clientSocket->addCaCertificates(QSslConfiguration::systemCaCertificates());
-    qDebug()<<"CA certificates: ";
+    //qDebug()<<"CA certificates: ";
     for (QSslCertificate x: m_clientSocket->sslConfiguration().caCertificates()){
 
-        qDebug()<<"\n Common Name: "<<x.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<x.subjectInfo(QSslCertificate::CommonName);
+        //qDebug()<<"\n Common Name: "<<x.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<x.subjectInfo(QSslCertificate::CommonName);
     }
 
     */
@@ -77,7 +77,7 @@ void Client::login(const QString &username, const QString &password)
 {
     connectToServer(QHostAddress(this->addr), this->port);
    //if (m_clientSocket->waitForEncrypted()) {
-        qDebug()<<"mandato login";
+        //qDebug()<<"mandato login";
         // create a QDataStream operating on the socket
         QDataStream clientStream(m_clientSocket);
         // set the version so that programs compiled with different versions of Qt can agree on how to serialise
@@ -89,9 +89,9 @@ void Client::login(const QString &username, const QString &password)
         //aggiungere cifratura oppure passare a QSSLsocket
         message["password"] = password;
         // send the JSON using QDataStream
-        qDebug()<<QJsonDocument(message).toJson(QJsonDocument::Compact);
+        //qDebug()<<QJsonDocument(message).toJson(QJsonDocument::Compact);
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-        qDebug()<<"mandato msg login";
+        //qDebug()<<"mandato msg login";
   //  }
 }
 
@@ -233,7 +233,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return; // a message with no type was received so we just ignore it
-    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
+    //qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
 
     if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0) { //It's a login message
         if (m_loggedIn)
@@ -303,31 +303,31 @@ void Client::jsonReceived(const QJsonObject &docObj)
     } else if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0) {
 
         int operation_type = docObj["operation_type"].toInt();
-//        qDebug() << "operation" << operation_type;
+//        //qDebug() << "operation" << operation_type;
         if (operation_type == INSERT) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s = Symbol::fromJson(symbol);
-            qDebug() << s.to_string();
-//            qDebug() << "INSERT";
+            //qDebug() << s.to_string();
+//            //qDebug() << "INSERT";
             emit remoteInsert(s);
         } else if (operation_type == DELETE){
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s = Symbol::fromJson(symbol);
-            qDebug() << s.to_string();
-//            qDebug() << "ERASE";
+            //qDebug() << s.to_string();
+//            //qDebug() << "ERASE";
             emit remoteErase(s);
         } else if (operation_type == CHANGE) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s = Symbol::fromJson(symbol);
-            qDebug() << s.to_string();
+            //qDebug() << s.to_string();
 
-            qDebug() << "CHANGE";
+            //qDebug() << "CHANGE";
             emit remoteChange(s);
         }
         else if (operation_type == PASTE) {
             QJsonArray symbols = docObj["symbols"].toArray();
 
-            qDebug() << "PASTE";
+            //qDebug() << "PASTE";
             emit remotePaste(symbols);
             }
         else if (operation_type == ALIGN) {
@@ -337,10 +337,10 @@ void Client::jsonReceived(const QJsonObject &docObj)
         } else if (operation_type == CURSOR) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s = Symbol::fromJson(symbol);
-            qDebug() << s.to_string();
+            //qDebug() << s.to_string();
 
             int editor_id = docObj["editorId"].toInt();
-            qDebug() << "CURSOR" << editor_id;
+            //qDebug() << "CURSOR" << editor_id;
             emit remoteCursor(editor_id, s);
         }
     }
@@ -357,7 +357,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 
             this->files.clear();
             foreach (const QJsonValue& v, array_files){
-//                qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
+//                //qDebug()<<"name: "<<v.toObject().value("name").toString()<<" owner: "<< v.toObject().value("owner").toString()<<endl;
                 this->files.push_back(QPair<QString, QString>(v.toObject().value("name").toString(),v.toObject().value("owner").toString()));
             }
 
@@ -393,13 +393,13 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 // read the symbols in the file and parse them into the editor
 //                foreach (const QJsonValue & symbol, symbols) {
 //                    Symbol s = Symbol::fromJson(symbol.toObject());
-//                    qDebug() << "SYMBOL" << s.getValue();
+//                    //qDebug() << "SYMBOL" << s.getValue();
 //                    emit remoteInsert(s);
 //                }
                 // REVERSE ORDER to have '\0' as first char
                 for (int i = symbols.size() - 1; i >= 0; i--) {
                     Symbol s = Symbol::fromJson(symbols[i].toObject());
-                    qDebug() << "SYMBOL" << s.getValue();
+                    //qDebug() << "SYMBOL" << s.getValue();
                     emit remoteInsert(s);
                     if (s.getValue()=='\n' || s.getValue()=='\0')
                         emit remoteAlignChange(s);
@@ -427,7 +427,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 const QJsonArray array_users=array.toArray();
                 QList<QPair<QString,QString>> connected;
                 foreach (const QJsonValue& v, array_users){
-                    qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
+                    //qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
                     connected.append(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()));
                 }
 //                emit contentReceived(cont.toString()); TODO: remove comment
@@ -442,7 +442,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 
     else if (typeVal.toString().compare(QLatin1String("connection"), Qt::CaseInsensitive) == 0) {
             const QJsonValue file = docObj.value(QLatin1String("filename"));
-            qDebug()<<"connection "<<file.toString();
+            //qDebug()<<"connection "<<file.toString();
             if (file.isNull() || !file.isString())
                 return;
             const QJsonValue name = docObj.value(QLatin1String("username"));
@@ -500,7 +500,7 @@ void Client::createNewFile(QString filename)
         message["filename"] = filename;
         message["author"] = this->username;
 
-        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        //qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
     //}
 }
@@ -508,16 +508,16 @@ void Client::createNewFile(QString filename)
 void Client::connectToServer(const QHostAddress &address, quint16 port)
 {
     QHostAddress localhost = QHostAddress::LocalHost;
-    qDebug()<<"coNNECTING TO: "<<localhost;
+    //qDebug()<<"coNNECTING TO: "<<localhost;
     m_clientSocket->connectToHost(localhost,port);
     if (m_clientSocket->waitForConnected()){
-        qDebug()<<"start handshake";
+        //qDebug()<<"start handshake";
          m_clientSocket->startClientEncryption();
-         qDebug()<<"end handshake";
+         //qDebug()<<"end handshake";
     }
     // wait 1 minute
     if (m_clientSocket->waitForEncrypted(60000)) {
-            qDebug()<<"Authentication Suceeded";
+            //qDebug()<<"Authentication Suceeded";
         }
         else {
             qDebug("Unable to connect to server");
@@ -566,16 +566,16 @@ void Client::byteArrayReceived(const QByteArray &doc){
     quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(doc.left(4).data()));
     //quint32 size = reinterpret_cast<quint32>(doc.left(4));
 
-    qDebug()<<"Byte Array, size json: "<<size;
+    //qDebug()<<"Byte Array, size json: "<<size;
 
     QByteArray json = doc.mid(4,size);
     QByteArray image_array = doc.mid(4+size,-1);
-    qDebug()<<"after image_array";
+    //qDebug()<<"after image_array";
 
     QJsonParseError parseError;
     // we try to create a json document with the data we received
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(json, &parseError);
-    qDebug()<<"Parse error: "<<parseError.error;
+    //qDebug()<<"Parse error: "<<parseError.error;
     if (parseError.error == QJsonParseError::NoError) {
 
         // if the data was indeed valid JSON
@@ -599,13 +599,13 @@ void Client::byteArrayReceived(const QByteArray &doc){
                             // read the symbols in the file and parse them into the editor
             //                foreach (const QJsonValue & symbol, symbols) {
             //                    Symbol s = Symbol::fromJson(symbol.toObject());
-            //                    qDebug() << "SYMBOL" << s.getValue();
+            //                    //qDebug() << "SYMBOL" << s.getValue();
             //                    emit remoteInsert(s);
             //                }
                             // REVERSE ORDER to have '\0' as first char
                             for (int i = symbols.size() - 1; i >= 0; i--) {
                                 Symbol s = Symbol::fromJson(symbols[i].toObject());
-                                qDebug() << "SYMBOL" << s.getValue();
+                                //qDebug() << "SYMBOL" << s.getValue();
                                 emit remoteInsert(s);
                                 if (s.getValue()=='\n' || s.getValue()=='\0')
                                     emit remoteAlignChange(s);
@@ -636,17 +636,17 @@ void Client::byteArrayReceived(const QByteArray &doc){
 
                             foreach (const QJsonValue& v, array_users){
                                 quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
-                                qDebug()<<"Img size: "<<img_size;
+                                //qDebug()<<"Img size: "<<img_size;
                                 QByteArray img = image_array.mid(4,img_size);
                                 image_array=image_array.mid(img_size+4);
 
-                                qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
+                                //qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
                                 QPixmap p;
                                 p.loadFromData(img);
                                 connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()),p));
                             }
             //                emit contentReceived(cont.toString()); TODO: remove comment
-                              qDebug()<<"emitted usersConnectedReceived";
+                              //qDebug()<<"emitted usersConnectedReceived";
                               emit usersConnectedReceived(connected);
                               emit correctOpenedFile();
 
@@ -659,7 +659,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
                     }
             else if (typeVal.toString().compare(QLatin1String("connection"), Qt::CaseInsensitive) == 0) {
                 const QJsonValue file = docObj.value(QLatin1String("filename"));
-                qDebug()<<"connection "<<file.toString();
+                //qDebug()<<"connection "<<file.toString();
                 if (file.isNull() || !file.isString())
                     return;
                 const QJsonValue name = docObj.value(QLatin1String("username"));
@@ -668,7 +668,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
                 if (!file.toString().compare(this->openfile)){
                     QList<QPair<QPair<QString,QString>,QPixmap>> connected;
                     quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
-                    qDebug()<<"Img size: "<<img_size;
+                    //qDebug()<<"Img size: "<<img_size;
                     if (img_size==0){
                         connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(docObj.value("username").toString(),docObj.value("nickname").toString()),QPixmap(":/images/anonymous")));
                     }
@@ -687,11 +687,11 @@ void Client::byteArrayReceived(const QByteArray &doc){
 
     }
         else {
-            qDebug()<<"Not object";
+            //qDebug()<<"Not object";
         }
 
     }else{
-         qDebug() << "Profile image received";
+         //qDebug() << "Profile image received";
          profile->loadFromData(doc);
 
     }
@@ -740,7 +740,7 @@ void Client::sendProfileImage(const QString& name,QPixmap* image )
         QJsonObject message;
         message["type"] = QStringLiteral("image_signup");
         message["image_name"] = name;
-        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        //qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
         QByteArray bArray;
         QBuffer buffer(&bArray);
@@ -778,7 +778,7 @@ void Client::openFile(const QString& filename){
         message["type"] = QStringLiteral("file_to_open");
         message["filename"] = filename;
 
-        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        //qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
   //  }
 }
@@ -794,7 +794,7 @@ void Client::closeFile(){
         message["username"]=this->username;
         message["nickname"]=this->nickname;
 
-        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        //qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
    // }
 }
@@ -817,6 +817,6 @@ int Client::getColor()
 }
 
 void Client::on_disconnected() {
-    qDebug()<<"Disconnected";
+    //qDebug()<<"Disconnected";
     this->m_loggedIn = false;
 }

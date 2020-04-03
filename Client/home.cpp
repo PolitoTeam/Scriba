@@ -84,7 +84,7 @@ void Home::on_pushButtonSharedLink_clicked()
                                                  tr("Paste link here:"), QLineEdit::Normal,
                                                  tr(""), &ok);
     if (ok && !text.isEmpty()) {
-        qDebug().nospace() << "Line read: " << text;
+        //qDebug().nospace() << "Line read: " << text;
         // TODO: same as open file
         client->getFilenameFromLink(text);
     }
@@ -128,7 +128,7 @@ void Home::showActiveFiles(){
                                          tr("Files:"), items, 0, false, &ok);
     if (ok && !item.isEmpty()) {
         QString choice = item + "," + client->getUsername();
-        qDebug() << "File chosen:" << choice << endl;
+        //qDebug() << "File chosen:" << choice << endl;
         emit fileChosen(choice);
     }
 }

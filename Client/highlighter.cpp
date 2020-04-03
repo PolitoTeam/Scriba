@@ -11,7 +11,7 @@ void Highlighter::addClient(int editor_id){
         return;
 
     int i = list_colors.getIndex();
-    qDebug()<<i;
+    //qDebug()<<i;
     users.insert(editor_id,i);
 }
 
@@ -22,12 +22,12 @@ void Highlighter::addLocal(int editor_id){
 }
 
 void Highlighter::highlightBlock(const QString &text){
-    qDebug()<<" in highlight block";
+    //qDebug()<<" in highlight block";
     // save cursor position
     int line = this->currentBlock().blockNumber();
-    qDebug()<<" Line: "<<line;
+    //qDebug()<<" Line: "<<line;
     for (int index = 0; index < text.length(); index++) {
-            qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
+            //qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
             Symbol s = this->crdt->getSymbol(line,index);
 
             int editor_id = s.getUsername();

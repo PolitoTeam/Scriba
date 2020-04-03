@@ -37,7 +37,7 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
 
     if (s.getValue()=='\0' || s.getValue()=='\n'){
 
-         qDebug()<<"ALIGNMENT: "<<align;
+         //qDebug()<<"ALIGNMENT: "<<align;
         if (align==Qt::AlignLeft)
            s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
         else if (align==Qt::AlignHCenter)
@@ -56,13 +56,13 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
     message["operation_type"] = INSERT;
     message["symbol"] = s.toJson();
 
-    qDebug() << "LOCAL insert";
-    qDebug().noquote() << to_string(); // very useful for debugging
+    //qDebug() << "LOCAL insert";
+    //qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
 }
 
 void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align) {
-    qDebug()<<"Trying to insert "<<partial <<" in ("<<line<<" , "<<index<<")";
+    //qDebug()<<"Trying to insert "<<partial <<" in ("<<line<<" , "<<index<<")";
     if (line < 0 || index < 0)
         throw std::runtime_error("Error: index out of bound.\n");
     QJsonArray symbols;
@@ -78,7 +78,7 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, 
         s.setUsername(this->_siteId);
 
         if (s.getValue()=='\0' || s.getValue()=='\n'){
-             qDebug()<<"ALIGNMENT: "<<align;
+             //qDebug()<<"ALIGNMENT: "<<align;
             if (align==(Qt::AlignLeft|Qt::AlignLeading))
                s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
             else if (align==Qt::AlignHCenter)
@@ -108,7 +108,7 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, 
     message["operation_type"] = PASTE;
     message["symbols"] = symbols;
 
-    qDebug().noquote() << to_string(); // very useful for debugging
+    //qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
 }
 
@@ -116,7 +116,7 @@ void CRDT::localChangeAlignment(int line,SymbolFormat::Alignment align){
 
     Symbol s = _symbols[line][_symbols[line].size()-1];
     s.setAlignment(align);
-    qDebug()<<" Alignment local: "<<align<<" Symbol: "<<s.getValue();
+    //qDebug()<<" Alignment local: "<<align<<" Symbol: "<<s.getValue();
 
     // broadcast
     QJsonObject message;
@@ -125,7 +125,7 @@ void CRDT::localChangeAlignment(int line,SymbolFormat::Alignment align){
     message["operation_type"] = ALIGN;
     message["symbol"] = s.toJson();
 
-    qDebug().noquote() << to_string(); // very useful for debugging
+    //qDebug().noquote() << to_string(); // very useful for debugging
     client->sendJson(message);
 }
 
@@ -238,7 +238,7 @@ void CRDT::localErase(int line, int index) {
     message["operation_type"] = DELETE;
     message["symbol"] = s.toJson();
 
-    qDebug().noquote() << to_string();
+    //qDebug().noquote() << to_string();
     client->sendJson(message);
 }
 
@@ -260,9 +260,9 @@ void CRDT::localChange(int line, int index, QFont font, QColor color) {
 }
 
 void CRDT::cursorPositionChanged(int line, int index) {
-    qDebug() << "curosr position changed" << line << index;
+    //qDebug() << "curosr position changed" << line << index;
     Symbol s = _symbols[line][index];
-    qDebug() << "symbol AFTER: " << QChar(s.getValue());
+    //qDebug() << "symbol AFTER: " << QChar(s.getValue());
 
     // broadcast
     QJsonObject message;
@@ -379,22 +379,22 @@ QString CRDT::to_string(){
 void CRDT::handleRemoteAlignChange(const Symbol& s) {
     int line,index;
     SymbolFormat::Alignment align = s.getAlignment();
-    qDebug()<<" GET ALIGNMENT: "<<align;
+    //qDebug()<<" GET ALIGNMENT: "<<align;
     bool res;
     if (!(res=findPosition(s,line,index))){
-        qDebug()<<"---RES: "<<res;
+        //qDebug()<<"---RES: "<<res;
         return;
     }
 
 
-    //    qDebug() << "remote insert" << s.getValue() << line << index;
+    //    //qDebug() << "remote insert" << s.getValue() << line << index;
     // insert in editor
     emit changeAlignment(align,line, index);
 
 }
 
 void CRDT::handleRemotePaste(const QJsonArray& symbols){
-    qDebug() << "REMOTE PASTE";
+    //qDebug() << "REMOTE PASTE";
     QString partial;
     int firstLine, firstIndex;
     QTextCharFormat newFormat;
@@ -421,7 +421,7 @@ void CRDT::handleRemotePaste(const QJsonArray& symbols){
 
             this->size++;
 
-            qDebug() << "remote insert" << s.getValue() << line << index;
+            //qDebug() << "remote insert" << s.getValue() << line << index;
             // insert in editor
         //    if (line==_symbols.size()-1 && index>0)
         //        index-=1;
@@ -441,7 +441,7 @@ void CRDT::handleRemotePaste(const QJsonArray& symbols){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
-//    qDebug() << "REMOTE INSERT" << QString(s.getValue()); // << QString(1, s.getValue());
+//    //qDebug() << "REMOTE INSERT" << QString(s.getValue()); // << QString(1, s.getValue());
     int line, index;
     if (_symbols.size() != 0) {
         findInsertPosition(s, line, index);
@@ -455,12 +455,12 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 
     this->size++;
 
-    qDebug() << "REMOTE insert" << QString(s.getValue()) << line << index;
+    //qDebug() << "REMOTE insert" << QString(s.getValue()) << line << index;
     // insert in editor
 //    if (line==_symbols.size()-1 && index>0)
 //        index-=1;
     if (s.getValue() == '\0') {
-        qDebug() << "RETURN";
+        //qDebug() << "RETURN";
         return;
     }
     // insert in text editor
@@ -468,15 +468,15 @@ void CRDT::handleRemoteInsert(const Symbol& s) {
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {
-//    qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
-//    qDebug()<<" Trying to isnert "<< s.getValue()<<" to (line,index): ("<<line<<","<<index<<")";
+//    //qDebug()<<"SIZE SYMBOLS: " << _symbols.size();
+//    //qDebug()<<" Trying to isnert "<< s.getValue()<<" to (line,index): ("<<line<<","<<index<<")";
 
     if (s.getValue() == '\n')  {// split line into two, before and after the '\n'
             QVector<Symbol> lineBefore;
-//            qDebug()<<"Line: "<<line<< " index: "<<index;
+//            //qDebug()<<"Line: "<<line<< " index: "<<index;
             std::copy(_symbols[line].begin(), _symbols[line].begin() + index, std::back_inserter(lineBefore));
             QVector<Symbol> lineAfter;
-//             qDebug()<<"Line: "<<line<< " index: "<<index;
+//             //qDebug()<<"Line: "<<line<< " index: "<<index;
             std::copy(_symbols[line].begin() + index, _symbols[line].end(), std::back_inserter(lineAfter));
 
             lineBefore.push_back(s); // include '\n' in line before
@@ -584,7 +584,7 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalL
 void CRDT::handleRemoteErase(const Symbol& s) {
     int line, index;
     bool res = findPosition(s, line, index);
-    qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
+    //qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
     if (!res){
 
         return;
@@ -603,7 +603,7 @@ void CRDT::handleRemoteErase(const Symbol& s) {
         }
         else
             _symbols[line].erase(_symbols[line].begin() + index);
-        qDebug() << "deleted";
+        //qDebug() << "deleted";
         this->size--;
         emit erase(line, index);
         return;
@@ -618,16 +618,16 @@ void CRDT::handleRemoteChange(const Symbol& s) {
 
     // update symbol
     _symbols[line][index] = s;
-    qDebug() << "updated";
+    //qDebug() << "updated";
 
     emit change(line, index, s);
 }
 
 Symbol CRDT::getSymbol(int line,int index) {
-    qDebug()<<"getSymbol "<<line<<" , "<<index;
+    //qDebug()<<"getSymbol "<<line<<" , "<<index;
 
     Symbol s = _symbols[line][index];
-    qDebug()<<"symbol= "<<s.getValue();
+    //qDebug()<<"symbol= "<<s.getValue();
     return s;
 }
 

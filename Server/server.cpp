@@ -19,7 +19,7 @@ Server::Server(QObject *parent,Database* db)
 {
     m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
     m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
-//    qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
+//    //qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
 
     mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
 
@@ -27,16 +27,16 @@ Server::Server(QObject *parent,Database* db)
     QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
     QDir dir_images(profile_images_path);
     if (!dir_images.exists()){
-        qDebug().nospace() << "Folder " << profile_images_path << " created";
+        //qDebug().nospace() << "Folder " << profile_images_path << " created";
         dir_images.mkpath(".");
     }
 
     // create folder to store documents
     QString user_documents_path = QDir::currentPath() + DOCUMENTS_PATH;
-//    qDebug() << "document path: " << user_documents_path;
+//    //qDebug() << "document path: " << user_documents_path;
     QDir dir_documents(user_documents_path);
     if (!dir_documents.exists()){
-        qDebug().nospace() << "Folder " << user_documents_path << " created";
+        //qDebug().nospace() << "Folder " << user_documents_path << " created";
         dir_documents.mkpath(".");
     }
 
@@ -53,7 +53,7 @@ Server::Server(QObject *parent,Database* db)
     cert = QSslCertificate(certFile.readAll());
     certFile.close();
 
-    qDebug()<<'\n Common Name: '<<cert.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<cert.subjectInfo(QSslCertificate::CommonName);
+    //qDebug()<<'\n Common Name: '<<cert.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<cert.subjectInfo(QSslCertificate::CommonName);
 
 
 //    DEBUG
@@ -95,7 +95,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
         threadIdx = std::distance(m_threadsLoad.cbegin(), std::min_element(m_threadsLoad.cbegin(), m_threadsLoad.cend()));
         ++m_threadsLoad[threadIdx];
     }
-//    qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
+//    //qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
     worker->moveToThread(m_availableThreads.at(threadIdx)); //asssegnazione client al thread scelto.
 
     connect(m_availableThreads.at(threadIdx), &QThread::finished,[=]() {  qDebug()<<"Thread: "<<threadIdx<<" terminato!"<<endl;});
@@ -111,7 +111,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
 
     connect(this, &Server::stopAllClients, worker, &ServerWorker::disconnectFromClient);
     m_clients.append(worker);
-    qDebug() << "New client Connected";
+    //qDebug() << "New client Connected";
 }
 
 QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteArray> &v){
@@ -121,11 +121,11 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteAr
     QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
 
     ba.append(byte_array);
-    qDebug()<<"v.size(): "<<v.size();
+    //qDebug()<<"v.size(): "<<v.size();
 
     for (QByteArray a: v){
         quint32 size_img = a.size();
-        qDebug()<<"Img size: "<<size_img;
+        //qDebug()<<"Img size: "<<size_img;
         QByteArray p((const char *)&size_img, sizeof(size_img));
         p.append(a);
         ba.append(p);
@@ -165,12 +165,12 @@ void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 {
     QString filename = exclude->getFilename();
     QList<ServerWorker*>* active_clients = mapFileWorkers->value(filename);
-    qDebug() << "BROADCAST from: "<<exclude->getUsername();
+    //qDebug() << "BROADCAST from: "<<exclude->getUsername();
     for (ServerWorker *worker : *active_clients) {
         Q_ASSERT(worker);
         if (worker == exclude)
             continue;
-        qDebug() << "BROADCAST to: "<<worker->getUsername();
+        //qDebug() << "BROADCAST to: "<<worker->getUsername();
         sendJson(worker, message);
     }
 }
@@ -185,14 +185,14 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
    if (bArray.size()!=0){
         quint32 size_img = bArray.size();
-        qDebug()<<"Img size connection: "<<size_img;
+        //qDebug()<<"Img size connection: "<<size_img;
         QByteArray p((const char *)&size_img, sizeof(size_img));
         p.append(bArray);
         ba.append(p);
     }
    else {
        quint32 size_img = 0;
-       qDebug()<<"Img size connection else: "<<size_img;
+       //qDebug()<<"Img size connection else: "<<size_img;
        QByteArray p((const char *)&size_img, sizeof(size_img));
        ba.append(p);
 
@@ -200,12 +200,12 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
    QString filename = exclude->getFilename();
    QList<ServerWorker*>* active_clients = mapFileWorkers->value(filename);
-   qDebug() << "BROADCAST from: "<<exclude->getUsername();
+   //qDebug() << "BROADCAST from: "<<exclude->getUsername();
    for (ServerWorker *worker : *active_clients) {
        Q_ASSERT(worker);
        if (worker == exclude)
            continue;
-       qDebug() << "BROADCAST to: "<<worker->getUsername();
+       //qDebug() << "BROADCAST to: "<<worker->getUsername();
        sendByteArray(worker, ba);
    }
 
@@ -217,7 +217,7 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-    qDebug() << "RECEIVED: "<<json;
+    //qDebug() << "RECEIVED: "<<json;
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
     else
@@ -244,7 +244,7 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
         QJsonObject disconnectedMessage;
         disconnectedMessage["type"] = QStringLiteral("userdisconnected");
         disconnectedMessage["username"] = userName;
-        qDebug() << userName << " disconnected";
+        //qDebug() << userName << " disconnected";
         sender->clearNickname();
     }
     sender->deleteLater();
@@ -253,7 +253,7 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 //void Server::userError(ServerWorker *sender)
 //{
 //    Q_UNUSED(sender) // Indicates to the compiler that the parameter with the specified name is not used in the body of a function.
-//    qDebug().nospace() << "Error from " << sender->getNickname();
+//    //qDebug().nospace() << "Error from " << sender->getNickname();
 //}
 
 void Server::stopServer()
@@ -264,7 +264,7 @@ void Server::stopServer()
 
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
-    qDebug()<<"Json from loggeoud thread: "<<QThread::currentThreadId()<<endl;
+    //qDebug()<<"Json from loggeoud thread: "<<QThread::currentThreadId()<<endl;
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return;
@@ -318,7 +318,7 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
         message["type"] = QStringLiteral("login");
         message["success"] = false;
         message["reason"] = QStringLiteral("Wrong username/password");
-        qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
+        //qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
         sendJson(sender, message);
         return;
     }
@@ -326,7 +326,7 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
     QJsonObject successMessage;
     successMessage["type"] = QStringLiteral("login");
     successMessage["success"] = true;
-    qDebug().noquote() << QString::fromUtf8(QJsonDocument(successMessage).toJson(QJsonDocument::Compact));
+    //qDebug().noquote() << QString::fromUtf8(QJsonDocument(successMessage).toJson(QJsonDocument::Compact));
     sendJson(sender, successMessage);
 //    QJsonObject connectedMessage;
 //    connectedMessage["type"] = QStringLiteral("newuser");
@@ -398,7 +398,7 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
     }
 
     for (ServerWorker *client : m_clients) {
-        qDebug() << client->getUsername();
+        //qDebug() << client->getUsername();
         if (client->getUsername() == username) {
             message["success"] = false;
             message["reason"] = QStringLiteral("Already connected from another device");
@@ -481,32 +481,33 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
         // update symbols in server memory and broadcast operation to other editors
         if (operation_type == INSERT) {
-            qDebug() << "insertion";
+            //qDebug() << "insertion";
             QJsonObject symbol = docObj["symbol"].toObject();
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == DELETE) {
-            qDebug() << "deletion";
+            //qDebug() << "deletion";
             QJsonObject symbol = docObj["symbol"].toObject();
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->remove(position);
         } else if (operation_type == CHANGE) {
-            qDebug() << "change";
+            //qDebug() << "change";
             QJsonObject symbol = docObj["symbol"].toObject();
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == ALIGN) {
-            qDebug() << "change alignment";
+            //qDebug() << "change alignment";
             QJsonObject symbol = docObj["symbol"].toObject();
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == PASTE) {
-            qDebug() << "change alignment";
+            //qDebug() << "change alignment";
             QJsonArray symbols = docObj["symbols"].toArray();
             for (int i = 0; i < symbols.size(); i++) {
                     QJsonObject symbol = symbols[i].toObject();
                     QString position = fromJsonArraytoString(symbol["position"].toArray());
                     Symbol s = Symbol::fromJson(symbol);
+                    //qDebug()<<"Insert: "<< symbol<<" in position: "<<position;
                     symbols_list.value(sender->getFilename())->insert(position, symbol);
                 }
         } else{
@@ -518,12 +519,12 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
         // TODO: store on disk -> CHANGE to save every X minutes
 //        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
-//        qDebug() << "filename " << sender->getFilename();
+//        //qDebug() << "filename " << sender->getFilename();
 ////        if (QFile::exists(filePath))
 ////        {
 ////            QFile::remove(filePath);
 ////        }
-////        qDebug() << filePath;
+////        //qDebug() << filePath;
 //        QFile file(filePath);
 //        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
 //        QJsonArray symbols_json;
@@ -531,7 +532,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 //            symbols_json.append(symbol);
 //        }
 
-////        qDebug() << symbols_json;
+////        //qDebug() << symbols_json;
 ////        file.write(QJsonDocument(symbols_json).toBinaryData());
 //        file.write(QJsonDocument(symbols_json).toJson());
 //        file.close();
@@ -552,7 +553,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         // store symbols in server memory
         foreach (const QJsonValue & symbol, message["content"].toArray()) {
             QString position = fromJsonArraytoString(symbol["position"].toArray());
-            qDebug() << position;
+            //qDebug() << position;
             if (!symbols_list.contains(sender->getFilename()))
                 symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
             symbols_list.value(sender->getFilename())->insert(position, symbol.toObject());
@@ -597,7 +598,7 @@ QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc){
         return message;
     }
     sender->setNickname(nickname);
-//    qDebug()<<"nickname: "<<nickname;
+//    //qDebug()<<"nickname: "<<nickname;
     DatabaseError result = this->db->updateNickname(username,nickname);
     if (result == CONNECTION_ERROR || result == QUERY_ERROR){
         message["success"] = false;
@@ -780,7 +781,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
     message["success"] = true;
     message["files"]=array_files;
     auto d = QJsonDocument(message);
-//    qDebug()<< d.toJson().constData()<<endl;
+//    //qDebug()<< d.toJson().constData()<<endl;
     return message;
 }
 
@@ -817,7 +818,7 @@ QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc, const QStr
     message["success"] = true;
     message["filename"] = filename;
 //    auto d = QJsonDocument(message);
-//    qDebug()<< d.toJson().constData()<<endl;
+//    //qDebug()<< d.toJson().constData()<<endl;
     return message;
 }
 
@@ -880,7 +881,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     QList<ServerWorker*>* list=new QList<ServerWorker*>();
     list->append(sender);
     mapFileWorkers->insert(filename + "," + username,list);
-    qDebug() << mapFileWorkers;
+    //qDebug() << mapFileWorkers;
 
     if (!symbols_list.contains(sender->getFilename()))
         symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
@@ -914,7 +915,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 
     sender->setFilename(filename);
     int index = 0;
-//    qDebug()<<"sender->setFilename() "<<file<<endl;
+//    //qDebug()<<"sender->setFilename() "<<file<<endl;
 
     if (mapFileWorkers->contains(filename)){
         index = mapFileWorkers->value(filename)->size();
@@ -926,7 +927,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
         mapFileWorkers->insert(filename,list);
     }
 
-//    qDebug() << "index " << index;
+//    //qDebug() << "index " << index;
     int color = color_palette[index % color_palette.size()];
     sender->setColor(color);
 
@@ -955,7 +956,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 
         QFileInfo file(image_path);
         if (file.exists()) {
-            qDebug()<<"added image";
+            //qDebug()<<"added image";
             QPixmap p(image_path);
             QByteArray bArray;
             QBuffer buffer(&bArray);
@@ -1010,21 +1011,21 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
     QFileInfo fileImage(image_path);
     QByteArray bArray;
     if (fileImage.exists()) {
-        qDebug()<<"added image to broadcast "<<image_path;
+        //qDebug()<<"added image to broadcast "<<image_path;
         QPixmap p(image_path);
-        qDebug()<< "Image size pixmpa: "<<p.size();
+        //qDebug()<< "Image size pixmpa: "<<p.size();
         QBuffer buffer(&bArray);
         buffer.open(QIODevice::WriteOnly);
         p.save(&buffer, "PNG");
        }
     else{
-        qDebug()<<"File not exist: "<<image_path;
+        //qDebug()<<"File not exist: "<<image_path;
     }
-    qDebug()<<"bArray size: "<<bArray.size();
+    //qDebug()<<"bArray size: "<<bArray.size();
     this->broadcastByteArray(message_broadcast,bArray,sender);
 
     auto d = QJsonDocument(message);
-//    qDebug()<< d.toJson().constData()<<endl;
+//    //qDebug()<< d.toJson().constData()<<endl;
     return message;
 }
 

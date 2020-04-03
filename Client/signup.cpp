@@ -41,7 +41,7 @@ void Signup::on_pushButtonClear_clicked()
 
 void Signup::signedUp()
 {
-    qDebug() << "Singup succeeded.";
+    //qDebug() << "Singup succeeded.";
     ui->pushButtonSignup->setEnabled(true); //pulsante disabilitato in attesa della risosta dal server
     ui->pushButtonClear->setEnabled(true);
     ui->pushButtonBackLogin->setEnabled(true);
@@ -54,7 +54,7 @@ void Signup::signedUp()
 }
 
 void Signup::signupFailed(const QString &reason){
-    qDebug() << "Signup failed.";
+    //qDebug() << "Signup failed.";
     client->disconnectFromHost();
     ui->labelInfoPass->setText(reason);
     ui->pushButtonSignup->setEnabled(true); //pulsante disabilitato in attesa della risosta dal server
@@ -236,7 +236,7 @@ void Signup::on_pushButtonUpload_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
-    qDebug()<<"Selected image: "<<fileName;
+    //qDebug()<<"Selected image: "<<fileName;
     if (!fileName.isEmpty() && !fileName.isNull()){
         profile->load(fileName);
         ui->profile_image->setPixmap(profile->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));

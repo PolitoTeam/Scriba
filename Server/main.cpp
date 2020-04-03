@@ -11,10 +11,10 @@ int main(int argc, char *argv[])
     quint16 port = PORT;
 
     QStringList args = QCoreApplication::arguments();
-    qDebug() << args;
+    //qDebug() << args;
     if (args.length() != 1 && args.length() != 2) {
-        qDebug() << "Usage: ./Server <port_number>";
-        qDebug() << "If no argument provided port 1500 is used.";
+        //qDebug() << "Usage: ./Server <port_number>";
+        //qDebug() << "If no argument provided port 1500 is used.";
         exit(-1);
     }
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
             port = tmp;
         }
 
-        qDebug() << "port:" << port;
+        //qDebug() << "port:" << port;
     }
 
     ServerWindow w(nullptr, port);

@@ -14,7 +14,7 @@ Database::Database()
 
 bool Database::checkConnection() {
     if (!db.open()) {
-        qDebug() << db.lastError();
+        //qDebug() << db.lastError();
         return false;
     } else {
         db.close();
@@ -43,7 +43,7 @@ DatabaseError Database::signup(const QString &username,const QString &password){
             if (crypto_pwhash_str
                 (hashed_password, password_char, strlen(password_char),
                  crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-                qDebug() << "Error while hashing...";
+                //qDebug() << "Error while hashing...";
             }
 
             QString hashed_password_qstring = QString::fromUtf8(hashed_password);
@@ -153,7 +153,7 @@ DatabaseError  Database::updatePassword(const QString &username,const QString &o
 
         if (crypto_pwhash_str(hashed_newpassword, password_newchar, strlen(password_newchar),
              crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-            qDebug() << "Error while hashing...";
+            //qDebug() << "Error while hashing...";
         }
 
         QString hashed_password_qstring = QString::fromUtf8(hashed_newpassword);
@@ -262,9 +262,9 @@ DatabaseError Database::getFiles(const QString &username,
     }
 
 //    DEBUG
-//    qDebug() << "files:";
+//    //qDebug() << "files:";
 //    for (auto i : files)
-//        qDebug() << i.first << " " << i.second;
+//        //qDebug() << i.first << " " << i.second;
 
     db.close();
     return err;
@@ -291,7 +291,7 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
         bool alreadyExisitingLink = true;
         while (alreadyExisitingLink) {
             sharedLink = "shared_editor://file/" + generateRandomString();
-//            qDebug() << "link generation attempt: " << sharedLink;
+//            //qDebug() << "link generation attempt: " << sharedLink;
             QSqlQuery qry;
             qry.prepare("SELECT * FROM FILE WHERE Link=:link FOR UPDATE");
             qry.bindValue(":link", sharedLink);

@@ -26,7 +26,7 @@ void Modify::on_pushButtonUpload_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open Image"), QDir::homePath(), tr("Image Files (*.png *.jpg *.bmp)")); //specificare path
-    qDebug()<<"Selected image: "<<fileName;
+    //qDebug()<<"Selected image: "<<fileName;
     if (!fileName.isEmpty() && !fileName.isNull()){
         profile_photo_temp->load(fileName);
         ui->profile_image->setPixmap(profile_photo_temp->scaled(IMAGE_WIDTH, IMAGE_HEIGHT, Qt::KeepAspectRatioByExpanding));
@@ -184,7 +184,7 @@ void Modify::on_pushSaveNickname_clicked()
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
         msgbox.setDefaultButton(QMessageBox::Save);
         if(msgbox.exec()==QMessageBox::Save){
-            qDebug()<<"client->updateNickname";
+            //qDebug()<<"client->updateNickname";
            client->updateNickname(nickname);
         }
     }

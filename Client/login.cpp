@@ -57,7 +57,7 @@ void Login::try_to_log()
 
 void Login::loggedIn()
 {
-    qDebug() << "Login succeeded.";
+    //qDebug() << "Login succeeded.";
     ui->pushButtonLogin->setEnabled(true);
     ui->pushButtonNewAccount->setEnabled(true);
     ui->lineEditUsername->clear();
@@ -70,7 +70,7 @@ void Login::loggedIn()
 
 void Login::loginFailed(const QString &reason)
 {
-    qDebug() << "Login failed.";
+    //qDebug() << "Login failed.";
     ui->pushButtonLogin->setEnabled(true);
     ui->pushButtonNewAccount->setEnabled(true);
     ui->labelMessage->setText(reason);
@@ -96,7 +96,7 @@ void Login::on_pushButtonNewAccount_clicked()
 }
 
 void Login::disconnect() {
-    qDebug() << "Logging out.";
+    //qDebug() << "Logging out.";
     client->disconnectFromHost();
 }
 
