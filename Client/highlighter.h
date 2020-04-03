@@ -16,6 +16,7 @@ public:
    void addLocal(int editor_id);
    QColor getColor(int editor_id);
    void freeColor(int editor_id);
+   void freeAll();
 
 
 private:

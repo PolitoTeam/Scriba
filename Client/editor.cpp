@@ -237,7 +237,7 @@ void Editor::printPdf()
 void Editor::exit()
 {
     client->closeFile();
-
+    highlighter->freeAll();
     // clean the editor: disconnect...
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
     disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
@@ -812,6 +812,7 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
        // QColor color = list_colors.getColor();
         int user = fromStringToIntegerHash(users.at(i).first.first);
       //  //qDebug()<<" --------Username: "<<user<<" Color: "<<color;
+        qDebug()<<"Try adding: "<<users.at(i).first.first;
         if (highlighter->addClient(user)){   //prevents duplicates
             QListWidgetItem* item = new QListWidgetItem();
             item->setIcon(QIcon(users.at(i).second));
@@ -840,7 +841,7 @@ void Editor::removeUser(const QString& username, const QString& nickname){
 
    for (QListWidgetItem* item: items){
        if (item->data(Qt::UserRole).toString()==username){
-           //qDebug()<<"ITEM TO REMOVE: "<<item->text();
+           qDebug()<<"ITEM TO REMOVE: "<<username;
            highlighter->freeColor(fromStringToIntegerHash(username));
            this->ui->listWidget->removeItemWidget(item);
            ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));

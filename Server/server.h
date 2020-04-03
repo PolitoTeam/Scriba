@@ -62,6 +62,7 @@ private:
     QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender, QVector<QByteArray>& v);
     QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
     QByteArray createByteArrayJsonImage(QJsonObject &message,QVector<QByteArray> &v);
+    bool udpateSymbolListAndCommunicateDisconnection(QString filename, ServerWorker* sender);
     static QString fromJsonArraytoString(const QJsonArray& data);
 
     void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);

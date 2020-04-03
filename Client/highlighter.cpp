@@ -50,7 +50,12 @@ QColor Highlighter::getColor(int editor_id){
 
 void Highlighter::freeColor(int editor_id){
      list_colors.freeColor(users.value(editor_id));
-     users.remove(editor_id); //return 0 if editor_id not in the map
+     if(users.remove(editor_id)!=0) //return 0 if editor_id not in the map
+         qDebug()<<"removed";
+}
 
+void Highlighter::freeAll(){
+    list_colors.clear();
+    users.clear();
 }
 

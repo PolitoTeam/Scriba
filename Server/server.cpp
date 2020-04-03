@@ -230,23 +230,8 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
     --m_threadsLoad[threadIdx];
     m_clients.removeAll(sender);
 
-    if (!sender->getFilename().isNull() || !sender->getFilename().isNull()){
-        mapFileWorkers->value(sender->getFilename())->removeOne(sender);
-        if (mapFileWorkers->value(sender->getFilename())->isEmpty()){
-            delete mapFileWorkers->value(sender->getFilename());
-            mapFileWorkers->remove(sender->getFilename());
-        }
-    }
-
-    // TODO: when is the message sent??
-    const QString userName = sender->getNickname();
-    if (!userName.isEmpty()) {
-        QJsonObject disconnectedMessage;
-        disconnectedMessage["type"] = QStringLiteral("userdisconnected");
-        disconnectedMessage["username"] = userName;
-        //qDebug() << userName << " disconnected";
-        sender->clearNickname();
-    }
+    if(!sender->getFilename().isNull() && !sender->getFilename().isEmpty())
+        udpateSymbolListAndCommunicateDisconnection(sender->getFilename(), sender);
     sender->deleteLater();
 }
 
@@ -1044,6 +1029,37 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
     return message;
 }
 
+bool Server::udpateSymbolListAndCommunicateDisconnection(QString filename, ServerWorker* sender){
+
+    // remove client from list of clients using current file
+    if (mapFileWorkers->contains(filename)){
+        if (!mapFileWorkers->value(filename)->removeOne(sender))
+                return false;
+    } else{
+        return false;
+    }
+
+
+    if (mapFileWorkers->value(filename)->isEmpty()){
+
+        delete mapFileWorkers->value(filename);
+        mapFileWorkers->remove(filename);
+        // empty symbol list
+        symbols_list.remove(sender->getFilename());
+    }
+    else{ QJsonObject message_broadcast;
+        message_broadcast["type"] = QStringLiteral("disconnection");
+        message_broadcast["filename"]=filename;
+        message_broadcast["user"]=sender->getUsername();
+        message_broadcast["nickname"]=sender->getNickname();
+        this->broadcast(message_broadcast,sender);
+    }
+
+    //forse questo si deve mettere fuori
+    sender->closeFile();
+    return true;
+}
+
 QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
 
     QJsonObject message;
@@ -1090,33 +1106,12 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         return message;
     }
 
-    // remove client from list of clients using current file
-    if (mapFileWorkers->contains(filename)){
-        mapFileWorkers->value(filename)->removeOne(sender);
-
-    } else{
+    if (!udpateSymbolListAndCommunicateDisconnection(filename,sender)){
         message["success"] = false;
         message["reason"] = QStringLiteral("File not exist");
         return message;
     }
 
-
-    if (mapFileWorkers->value(filename)->isEmpty()){
-
-        delete mapFileWorkers->value(filename);
-        mapFileWorkers->remove(filename);
-        // empty symbol list
-        symbols_list.remove(sender->getFilename());
-    }
-    else{ QJsonObject message_broadcast;
-        message_broadcast["type"] = QStringLiteral("disconnection");
-        message_broadcast["filename"]=filename;
-        message_broadcast["user"]=username;
-        message_broadcast["nickname"]=nickname;
-        this->broadcast(message_broadcast,sender);
-    }
-
-    sender->closeFile();
     message["success"] = true;
     return message;
 }
