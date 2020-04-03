@@ -834,6 +834,7 @@ void Editor::removeUser(const QString& username, const QString& nickname){
            qDebug()<<"ITEM TO REMOVE: "<<item->text();
            highlighter->freeColor(fromStringToIntegerHash(username));
            this->ui->listWidget->removeItemWidget(item);
+           ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
            delete item;
            break;
        }
