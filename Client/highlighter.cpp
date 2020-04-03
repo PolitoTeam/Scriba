@@ -5,14 +5,15 @@ Highlighter::Highlighter(QTextDocument *document,CRDT* crdt)
      list_colors = Colors();
 }
 
-void Highlighter::addClient(int editor_id){
+bool Highlighter::addClient(int editor_id){
 
     if (this->users.contains(editor_id))
-        return;
+        return false;
 
     int i = list_colors.getIndex();
     //qDebug()<<i;
     users.insert(editor_id,i);
+    return true;
 }
 
 void Highlighter::addLocal(int editor_id){

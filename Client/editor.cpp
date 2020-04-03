@@ -812,16 +812,17 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
        // QColor color = list_colors.getColor();
         int user = fromStringToIntegerHash(users.at(i).first.first);
       //  //qDebug()<<" --------Username: "<<user<<" Color: "<<color;
-        highlighter->addClient(user);
-        QListWidgetItem* item = new QListWidgetItem();
-        item->setIcon(QIcon(users.at(i).second));
-        item->setText(users.at(i).first.second);
-        item->setData(Qt::UserRole,users.at(i).first.first);
-        //item->setTextAlignment(Qt::AlignHCenter);
-        item->setBackground( highlighter->getColor(user));
-        item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
-        item->setWhatsThis(users.at(i).first.first);
-        this->ui->listWidget->addItem(item);
+        if (highlighter->addClient(user)){   //prevents duplicates
+            QListWidgetItem* item = new QListWidgetItem();
+            item->setIcon(QIcon(users.at(i).second));
+            item->setText(users.at(i).first.second);
+            item->setData(Qt::UserRole,users.at(i).first.first);
+            //item->setTextAlignment(Qt::AlignHCenter);
+            item->setBackground( highlighter->getColor(user));
+            item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
+            item->setWhatsThis(users.at(i).first.first);
+            this->ui->listWidget->addItem(item);
+        }
 
 
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga

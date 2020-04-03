@@ -12,7 +12,7 @@ class Highlighter: public QSyntaxHighlighter
      Q_OBJECT
 public:
    Highlighter(QTextDocument *document=0,CRDT* crdt=0);
-   void addClient(int editor_id);
+   bool addClient(int editor_id);
    void addLocal(int editor_id);
    QColor getColor(int editor_id);
    void freeColor(int editor_id);
