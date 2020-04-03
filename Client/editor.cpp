@@ -504,11 +504,11 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
             return;
         // move cursor before first char to insert
         QTextCursor cursor = ui->textEdit->textCursor();
-        cursor.setPosition(ui->textEdit->textCursor().position() - (charsAdded - charsRemoved));
+        cursor.setPosition(position);
+        //single character
+        int line = cursor.blockNumber();
+        int index = cursor.positionInBlock();
         if ((charsAdded - charsRemoved)==1){
-            //single character
-            int line = cursor.blockNumber();
-            int index = cursor.positionInBlock();
 
             //qDebug() << "Added " << added.at(0) << "in position (" << line << "," << index << ")";
 

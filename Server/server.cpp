@@ -505,9 +505,10 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             QJsonArray symbols = docObj["symbols"].toArray();
             for (int i = 0; i < symbols.size(); i++) {
                     QJsonObject symbol = symbols[i].toObject();
+
                     QString position = fromJsonArraytoString(symbol["position"].toArray());
                     Symbol s = Symbol::fromJson(symbol);
-                    //qDebug()<<"Insert: "<< symbol<<" in position: "<<position;
+
                     symbols_list.value(sender->getFilename())->insert(position, symbol);
                 }
         } else{
@@ -966,6 +967,13 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
         }
     }
 
+    QJsonArray symbols;
+    bool flag=true;
+    if (symbols_list.contains(filename)){
+        for (QJsonObject o: symbols_list.value(filename)->values())
+            symbols.append(o);
+    }else{
+
     // read symbols from file...
     QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
     QFile f(filePath);
@@ -982,21 +990,28 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 //        message["reason"] = QStringLiteral("Json parsing error");
 //    }
     if (!document.isArray()) {
-        message["success"] = false;
-        message["reason"] = QStringLiteral("File content different form json array");
+        flag=false;
+
     }
-    QJsonArray symbols = document.array();
+    symbols = document.array();
+    }
 
     // retrieve shared link
     QString sharedLink;
     db->getSharedLink(author, file, sharedLink);
 
-    message["success"] = true;
-    message["content"] = symbols;
-    message["filename"]= filename;
-    message["users"] = array_users;
-    message["shared_link"] = sharedLink;
-    message["color"] = color;
+    if (flag==true){
+        message["success"] = true;
+        message["content"] = symbols;
+        message["filename"]= filename;
+        message["users"] = array_users;
+        message["shared_link"] = sharedLink;
+        message["color"] = color;
+    }
+    else{
+        message["success"] = false;
+        message["reason"] = QStringLiteral("File content different form json array");
+    }
 
     //inform all the connected clients of the new connection
 

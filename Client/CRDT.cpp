@@ -87,7 +87,7 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, 
                s.setAlignment(SymbolFormat::Alignment::ALIGN_RIGHT);
         }
         symbols.append(s.toJson());
-
+        qDebug()<<"Insert char at position: line= "<<line<<" index="<<index;
         insertChar(s, line, index);
         this->size++;
         if (s.getValue()=='\n'){
