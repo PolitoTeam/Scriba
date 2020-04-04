@@ -32,7 +32,6 @@ SOURCES += \
         serverworker.cpp
 
 HEADERS += \
-        colors.h \
         database.h \
         server.h \
         serverwindow.h \

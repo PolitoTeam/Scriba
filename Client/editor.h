@@ -94,6 +94,8 @@ private:
     QAction *actionAlignRight;
     QAction *actionShowAssigned;
 
+    QMessageBox* popUp;
+
     void showEvent(QShowEvent* event);
     int fromStringToIntegerHash(QString str);
     void fontChanged(const QFont &f);

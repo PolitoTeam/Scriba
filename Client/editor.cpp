@@ -10,6 +10,7 @@
 #include <QTextBlock>
 #include <QCryptographicHash>
 #include <QtWidgets>
+#include <QTimer>
 #include <typeinfo>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -31,6 +32,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 {
     ui->setupUi(this);
 
+    this->popUp = new QMessageBox(this);
    // this->setCentralWidget(ui->textEdit);
 //    QTextDocument *document = ui->textEdit->document(); //cursore
 //    QTextCursor cursor(document);
@@ -384,7 +386,13 @@ void Editor::sharedLink()
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(client->getSharedLink());
 
-    QMessageBox::information(this, tr("Shared Link"), tr("Link copied to clipboard."), QMessageBox::Ok);
+    // Show popup for 1 second
+    this->popUp->setText("Link copied to clipboard.");
+    this->popUp->setWindowTitle("Shared Link");
+    this->popUp->setStandardButtons(this->popUp->NoButton);
+    this->popUp->setModal(false);
+    QTimer::singleShot(1000, this->popUp, &QMessageBox::hide);  // 1000 ms
+    this->popUp->show();
 }
 
 void Editor::setFontBold(bool bold)
