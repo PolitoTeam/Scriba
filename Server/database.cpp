@@ -14,7 +14,7 @@ Database::Database()
 
 bool Database::checkConnection() {
     if (!db.open()) {
-        //qDebug() << db.lastError();
+        qDebug() << db.lastError();
         return false;
     } else {
         db.close();
@@ -30,27 +30,29 @@ DatabaseError Database::signup(const QString &username,const QString &password){
     QSqlDatabase::database().transaction();
     QSqlQuery qry;
     qry.prepare("SELECT Username "
-                "FROM USER WHERE "
-                "Username = :username FOR UPDATE");
+                "FROM USER "
+                "WHERE Username=:username FOR UPDATE");
     qry.bindValue(":username", username);
 
     if (qry.exec()) {
         if (!qry.next()) {
             char hashed_password[crypto_pwhash_STRBYTES];
-            // conversion from QString to char *
+            // Conversion from QString to char *
             const char *password_char = password.toLocal8Bit().data();
 
-            if (crypto_pwhash_str
-                (hashed_password, password_char, strlen(password_char),
-                 crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-                //qDebug() << "Error while hashing...";
+            if (crypto_pwhash_str(
+                        hashed_password, password_char, strlen(password_char),
+                        crypto_pwhash_OPSLIMIT_SENSITIVE,
+                        crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+                qDebug() << "Error while hashing...";
             }
 
-            QString hashed_password_qstring = QString::fromUtf8(hashed_password);
-            qry.prepare("INSERT INTO USER (Username, Nickname, Password) VALUES (:username, :nickname, :password)");
+            QString hashed_pass_qstring = QString::fromUtf8(hashed_password);
+            qry.prepare("INSERT INTO USER (Username, Nickname, Password) "
+                        "VALUES (:username, :nickname, :password)");
             qry.bindValue(":username",username);
             qry.bindValue(":nickname",username);
-            qry.bindValue(":password", hashed_password_qstring);
+            qry.bindValue(":password", hashed_pass_qstring);
 
             if (!qry.exec()){
                 err = QUERY_ERROR;
@@ -67,24 +69,29 @@ DatabaseError Database::signup(const QString &username,const QString &password){
     return err;
 }
 
-DatabaseError Database::login(const QString &username,const QString &password,QString &nickname){
+DatabaseError Database::login(const QString &username,const QString &password,
+                              QString &nickname){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Username,Password,Nickname FROM USER WHERE Username=:username");
+    qry.prepare("SELECT Username,Password,Nickname "
+                "FROM USER "
+                "WHERE Username=:username");
     qry.bindValue(":username",username);
-    if (!qry.exec())
-        err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
-    else if (!qry.next())
-        //non esiste nessun utente con questo username
+
+    if (!qry.exec()) {
+        err = QUERY_ERROR;
+    } else if (!qry.next()) {
         err = NON_EXISTING_USER;
-    else {
+    } else {
         const char *password_char = password.toLocal8Bit().data();
         QString hashed_password = qry.value(1).toString();
         const char *hashed_password_char = hashed_password.toLocal8Bit().data();
-        if (crypto_pwhash_str_verify(hashed_password_char, password_char, strlen(password_char)) != 0) {
+        if (crypto_pwhash_str_verify(hashed_password_char,
+                                     password_char,
+                                     strlen(password_char)) != 0) {
             err = WRONG_PASSWORD;
         }
         else{
@@ -95,65 +102,82 @@ DatabaseError Database::login(const QString &username,const QString &password,QS
     return err;
 }
 
-DatabaseError Database::updateNickname(const QString &username,const QString &nickname){
+DatabaseError Database::updateNickname(const QString &username,
+                                       const QString &nickname){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
+    QSqlDatabase::database().transaction();
     QSqlQuery qry;
-    qry.prepare("SELECT Username FROM USER WHERE Username=:username");
+    qry.prepare("SELECT Username "
+                "FROM USER "
+                "WHERE Username=:username FOR UPDATE");
     qry.bindValue(":username",username);
-    if (!qry.exec())
-        err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
-    else if (!qry.next())
-        //non esiste nessun utente con questo username
-        err = NON_EXISTING_USER;
-    else {
 
+    if (!qry.exec()) {
+        err = QUERY_ERROR;
+    } else if (!qry.next()) {
+        err = NON_EXISTING_USER;
+    } else {
         QSqlQuery qry;
-        qry.prepare("UPDATE USER SET Nickname=:nickname WHERE Username=:username");
+        qry.prepare("UPDATE USER "
+                    "SET Nickname=:nickname "
+                    "WHERE Username=:username");
         qry.bindValue(":username",username);
         qry.bindValue(":nickname",nickname);
         if (!qry.exec()){
             err = QUERY_ERROR;
         }
     }
+    QSqlDatabase::database().commit();
 
     db.close();
     return err;
 }
 
-DatabaseError  Database::updatePassword(const QString &username,const QString &oldpass,const QString &newpass){
+DatabaseError  Database::updatePassword(const QString &username,
+                                        const QString &oldpass,
+                                        const QString &newpass){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
+    QSqlDatabase::database().transaction();
     QSqlQuery qry;
-    qry.prepare("SELECT Username,Password FROM USER WHERE Username=:username");
+    qry.prepare("SELECT Username,Password "
+                "FROM USER "
+                "WHERE Username=:username FOR UPDATE");
     qry.bindValue(":username",username);
-    if (!qry.exec())
-        err = QUERY_ERROR;  //valutare se usare codici di errore o segnali
-    else if (!qry.next())
-        //non esiste nessun utente con questo username
+
+    if (!qry.exec()) {
+        err = QUERY_ERROR;
+    } else if (!qry.next()) {
         err = NON_EXISTING_USER;
-    else {
+    } else {
         const char *password_char = oldpass.toLocal8Bit().data();
         QString hashed_password = qry.value(1).toString();
         const char *hashed_password_char = hashed_password.toLocal8Bit().data();
-        if (crypto_pwhash_str_verify(hashed_password_char, password_char, strlen(password_char)) != 0) {
+        if (crypto_pwhash_str_verify(hashed_password_char,
+                                     password_char,
+                                     strlen(password_char)) != 0) {
             err = WRONG_PASSWORD;
         }
         QSqlQuery qry;
-        qry.prepare("UPDATE USER SET Password=:newpassword WHERE Username=:username");
+        qry.prepare("UPDATE USER "
+                    "SET Password=:newpassword "
+                    "WHERE Username=:username");
         qry.bindValue(":username",username);
 
         char hashed_newpassword[crypto_pwhash_STRBYTES];
-        // conversion from QString to char *
+        // Conversion from QString to char *
         const char *password_newchar = newpass.toLocal8Bit().data();
 
-        if (crypto_pwhash_str(hashed_newpassword, password_newchar, strlen(password_newchar),
-             crypto_pwhash_OPSLIMIT_SENSITIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-            //qDebug() << "Error while hashing...";
+        if (crypto_pwhash_str(hashed_newpassword, password_newchar,
+                              strlen(password_newchar),
+                              crypto_pwhash_OPSLIMIT_SENSITIVE,
+                              crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+            qDebug() << "Error while hashing...";
         }
 
         QString hashed_password_qstring = QString::fromUtf8(hashed_newpassword);
@@ -163,20 +187,26 @@ DatabaseError  Database::updatePassword(const QString &username,const QString &o
             err = QUERY_ERROR;
         }
     }
+    QSqlDatabase::database().commit();
 
     db.close();
     return err;
 }
 
-DatabaseError Database::checkOldPassword(const QString &username, const QString &oldpass)
+// Check if old password provided is correct (used before to update it)
+DatabaseError Database::checkOldPassword(const QString &username,
+                                         const QString &oldpass)
 {
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Password FROM USER WHERE Username=:username");
+    qry.prepare("SELECT Password "
+                "FROM USER "
+                "WHERE Username=:username");
     qry.bindValue(":username", username);
+
     if (!qry.exec())
         err = QUERY_ERROR;
     else if (!qry.next())
@@ -184,12 +214,13 @@ DatabaseError Database::checkOldPassword(const QString &username, const QString 
     else {
         const char *old_password_char = oldpass.toLocal8Bit().data();
         QString hashed_old_password = qry.value(0).toString();
-        const char *hashed_password_char = hashed_old_password.toLocal8Bit().data();
-        if (crypto_pwhash_str_verify(hashed_password_char, old_password_char, strlen(old_password_char)) != 0) {
+        const char *hashed_password_char = hashed_old_password
+                                           .toLocal8Bit().data();
+        if (crypto_pwhash_str_verify(hashed_password_char, old_password_char,
+                                     strlen(old_password_char)) != 0) {
             err = WRONG_PASSWORD;
         }
     }
-
     db.close();
     return err;
 }
@@ -205,13 +236,15 @@ DatabaseError Database::getFiles(const QString &username,
     if (!shared) {
         // select own files (DISTINCT because every file can have 2 entries,
         // corresponding to the public and private shared link)
-        qry.prepare("SELECT DISTINCT Name FROM FILE WHERE Owner=:username");
+        qry.prepare("SELECT DISTINCT Name "
+                    "FROM FILE "
+                    "WHERE Owner=:username");
     } else {
         // select shared files (no distinction between public and private ones)
         qry.prepare("SELECT Name, Owner "
                     "FROM FILE, FILE_USER "
                     "WHERE FILE.Link = FILE_USER.Link "
-                        "AND User = :username");
+                          "AND User = :username");
     }
     qry.bindValue(":username", username);
 
@@ -257,20 +290,17 @@ DatabaseError Database::getFiles(const QString &username,
 //            }
 //        }
 
-        if (files.isEmpty())
+        if (files.isEmpty()) {
             err = NO_FILES_AVAILABLE;
+        }
     }
-
-//    DEBUG
-//    //qDebug() << "files:";
-//    for (auto i : files)
-//        //qDebug() << i.first << " " << i.second;
 
     db.close();
     return err;
 }
 
-DatabaseError Database::newFile(const QString &username, const QString &filename, QString &sharedLink)
+DatabaseError Database::newFile(const QString &username,
+                                const QString &filename, QString &sharedLink)
 {
     DatabaseError err = SUCCESS;
     if (!db.open())
@@ -278,28 +308,34 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
 
     QSqlDatabase::database().transaction();
     QSqlQuery qry;
-    qry.prepare("SELECT Name FROM FILE WHERE Name=:filename AND Owner=:username FOR UPDATE");
+    qry.prepare("SELECT Name "
+                "FROM FILE "
+                "WHERE Name=:filename "
+                      "AND Owner=:username FOR UPDATE");
     qry.bindValue(":filename", filename);
     qry.bindValue(":username", username);
 
     if (!qry.exec()) {
         err = QUERY_ERROR;
     }
-    else if (qry.next())
+    else if (qry.next()) {
         err = ALREADY_EXISTING_FILE;
-    else {
+    } else {
         bool alreadyExisitingLink = true;
         while (alreadyExisitingLink) {
             sharedLink = "shared_editor://file/" + generateRandomString();
-//            //qDebug() << "link generation attempt: " << sharedLink;
             QSqlQuery qry;
-            qry.prepare("SELECT * FROM FILE WHERE Link=:link FOR UPDATE");
+            qry.prepare("SELECT * "
+                        "FROM FILE "
+                        "WHERE Link=:link FOR UPDATE");
             qry.bindValue(":link", sharedLink);
-            if (!qry.exec())
+            if (!qry.exec()) {
                 err = QUERY_ERROR;
+            }
 
-            if (!qry.next())
+            if (!qry.next()) {
                 alreadyExisitingLink = false;
+            }
         }
 
         QSqlQuery qry;
@@ -318,42 +354,52 @@ DatabaseError Database::newFile(const QString &username, const QString &filename
     return err;
 }
 
-DatabaseError Database::getSharedLink(const QString &author,const QString &filename, QString &sharedLink){
+DatabaseError Database::getSharedLink(const QString &author,
+                                      const QString &filename,
+                                      QString &sharedLink){
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
     QSqlQuery qry;
-    qry.prepare("SELECT Link FROM FILE WHERE Owner=:owner AND Name=:name");
+    qry.prepare("SELECT Link "
+                "FROM FILE "
+                "WHERE Owner=:owner AND Name=:name");
     qry.bindValue(":owner", author);
     qry.bindValue(":name", filename);
-    if (!qry.exec())
+    if (!qry.exec()) {
         err = QUERY_ERROR;
-    else if (!qry.next())
-        // no file with such name
+    } else if (!qry.next()) {
         err = NON_EXISTING_FILE;
-    else {
+    } else {
         sharedLink = qry.value(0).toString();
     }
     db.close();
     return err;
 }
-DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink, QString& filename, const QString& user) {
+
+DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink,
+                                                  QString& filename,
+                                                  const QString& user) {
     DatabaseError err = SUCCESS;
     if (!db.open())
         err = CONNECTION_ERROR;
 
+    QSqlDatabase::database().transaction();
     QSqlQuery qry;
-    qry.prepare("SELECT Name, Owner FROM FILE WHERE Link=:link FOR UPDATE");
+    qry.prepare("SELECT Name, Owner "
+                "FROM FILE "
+                "WHERE Link=:link FOR UPDATE");
     qry.bindValue(":link", sharedLink);
-    if (!qry.exec())
+
+    if (!qry.exec()) {
         err = QUERY_ERROR;
-    else if (!qry.next())
+    } else if (!qry.next()) {
         err = NON_EXISTING_FILE;
-    else {
+    } else {
         filename = qry.value(0).toString() + "," + qry.value(1).toString();
 
-        // add file to list of shared files of 'user'
+        // Add file to list of shared files of 'user'
         QSqlQuery qry;
         qry.prepare("INSERT IGNORE INTO FILE_USER (Link, User, First_access) "
                     "VALUES (:link, :user, 1)");
@@ -363,17 +409,21 @@ DatabaseError Database::getFilenameFromSharedLink(const QString& sharedLink, QSt
             err = QUERY_ERROR;
         }
     }
+    QSqlDatabase::database().commit();
+
     db.close();
     return err;
 }
 
 QString Database::generateRandomString() const
 {
-   const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+   const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcde"
+                                    "fghijklmnopqrstuvwxyz0123456789");
 
    QString randomString;
    for(int i = 0; i < SHARE_LINK_LENGTH; i++) {
-       int index = QRandomGenerator::global()->generate() % possibleCharacters.length(); // qrand is obsolete
+       int index = QRandomGenerator::global()->generate()
+                   % possibleCharacters.length();
        QChar nextChar = possibleCharacters.at(index);
        randomString.append(nextChar);
    }
