@@ -258,8 +258,11 @@ public:
     QColor getColor(int index){
         if (index>=0 && index <list_colors.size())
             return list_colors[index];
-        else if (index==-1){
+        else if (index==-1){   //locale
             return QColor(124,252,0,255);
+        }
+        else if (index==-2){   //remote but offline
+            return QColor(192,192,192,255);
         }
         else{
             return QColor("white");

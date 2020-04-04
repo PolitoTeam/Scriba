@@ -17,6 +17,7 @@ public:
    QColor getColor(int editor_id);
    void freeColor(int editor_id);
    void freeAll();
+   void setCRDT(CRDT* crdt);
 
 
 private:

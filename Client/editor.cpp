@@ -195,7 +195,7 @@ void Editor::on_showAssigned(){
     if (this->highlighter->document()==0){
         //qDebug()<< "Assigning file";
         this->highlighter->setDocument(ui->textEdit->document());
-         //qDebug()<< "Assigned file";
+        // qDebug()<< "Assigned file";
     }
     else {
         this->highlighter->setDocument(0);
@@ -248,6 +248,8 @@ void Editor::exit()
 
     crdt = new CRDT(client);
     crdt->setId(fromStringToIntegerHash(client->getUsername()));
+    this->highlighter->setCRDT(crdt);
+    this->highlighter->addLocal(fromStringToIntegerHash(client->getUsername()));
 
     connect(crdt, &CRDT::insert, this, &Editor::on_insert);
     connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
@@ -849,7 +851,7 @@ void Editor::removeUser(const QString& username, const QString& nickname){
            qDebug()<<"ITEM TO REMOVE: "<<username;
            highlighter->freeColor(fromStringToIntegerHash(username));
            this->ui->listWidget->removeItemWidget(item);
-           ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
+         //  ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
            delete item;
            break;
        }

@@ -23,18 +23,28 @@ void Highlighter::addLocal(int editor_id){
 }
 
 void Highlighter::highlightBlock(const QString &text){
-    //qDebug()<<" in highlight block";
+    qDebug()<<" in highlight block";
     // save cursor position
     int line = this->currentBlock().blockNumber();
-    //qDebug()<<" Line: "<<line;
+    qDebug()<<" Line: "<<line;
     for (int index = 0; index < text.length(); index++) {
-            //qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
+            qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
             Symbol s = this->crdt->getSymbol(line,index);
-
+            qDebug()<<"Retrieved simbol: "<<s.getValue();
             int editor_id = s.getUsername();
             QTextCharFormat format = s.getQTextCharFormat();
 
-            QColor color = list_colors.getColor(users.value(editor_id));
+            int id;
+            if (users.contains(editor_id)){
+                id = users.value(editor_id);
+
+            }
+            else {
+                id = -2;
+            }
+            qDebug()<<"ID: "<<id;
+            QColor color = list_colors.getColor(id);
+            qDebug()<<"Color: "<<color;
 
             format.setBackground(QBrush(color,Qt::SolidPattern));
             setFormat(index,1,format);
@@ -57,5 +67,10 @@ void Highlighter::freeColor(int editor_id){
 void Highlighter::freeAll(){
     list_colors.clear();
     users.clear();
+    qDebug()<<"free all";
+}
+
+void Highlighter::setCRDT(CRDT* crdt){
+    this->crdt=crdt;
 }
 
