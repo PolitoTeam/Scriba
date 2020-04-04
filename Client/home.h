@@ -15,7 +15,6 @@ class Home : public QWidget
 
 public:
     Home(QWidget *parent = nullptr,Client* client=nullptr);
-    void setClient(Client* client);
     ~Home();
 
 private slots:
@@ -23,7 +22,7 @@ private slots:
      void on_pushButtonNewFile_clicked();
      void on_pushButtonModify_clicked();
      void on_pushButtonSharedLink_clicked();
-     void showActiveFiles();
+     void showActiveFiles(bool shared);
      void on_pushButtonOpenFile_clicked();
      void newFileCompleted();
      void openFileCompleted();

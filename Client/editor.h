@@ -19,7 +19,6 @@ class Editor : public QMainWindow
 
 public:
     Editor(QWidget *parent = nullptr,Client* client=0);
-    void setClient(Client* client);
     ~Editor();
     void clear();
     Qt::Alignment getCurrentAlignment();
@@ -28,8 +27,6 @@ public:
     SymbolFormat::Alignment alignmentConversion(Qt::Alignment a);
     Qt::Alignment alignmentConversion(SymbolFormat::Alignment a);
     void peerYou();
-
-//    void setCRDT(CRDT *crdt);
 
 
 signals:

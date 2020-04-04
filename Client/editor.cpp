@@ -212,9 +212,6 @@ void Editor::textChange(){
 //    //qDebug()<<"Cursor position: "<<ui->textEdit->textCursor().position()<<endl;
 }
 
-void Editor::setClient(Client *client){
-    this->client=client;
-}
 
 void Editor::printPdf()
 {
@@ -901,7 +898,8 @@ void Editor::saveCursorPosition()
 
 void Editor::showEvent(QShowEvent *)
 {
-    this->setWindowTitle(client->getOpenedFile() + " - Shared Editor");
+    QString windowTitle = client->getOpenedFile().replace(",", " (") + ")";
+    this->setWindowTitle(windowTitle + " - Shared Editor");
     moveCursorToEnd();
 }
 

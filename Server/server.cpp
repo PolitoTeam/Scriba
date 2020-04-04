@@ -217,7 +217,7 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-    //qDebug() << "RECEIVED: "<<json;
+    qDebug() << json;
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
     else
@@ -763,7 +763,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
         array_files.push_back(QJsonValue(data));
     }
 
-
+    message["shared"] = shared;
     message["success"] = true;
     message["files"]=array_files;
     auto d = QJsonDocument(message);
@@ -962,6 +962,11 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
     // read symbols from file...
     QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
     QFile f(filePath);
+    if (!f.exists()) {
+        message["success"] = false;
+        message["reason"] = QStringLiteral("File does not exist");
+        return message;
+    }
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     QByteArray json_data = f.readAll();
     f.close();

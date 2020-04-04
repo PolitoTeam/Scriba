@@ -349,6 +349,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         if (resultVal.isNull() || !resultVal.isBool())
             return;
         const bool getFile=resultVal.toBool();
+
         if (getFile){
             const QJsonValue array= docObj.value(QLatin1String("files"));
             if (array.isNull() || !array.isArray())
@@ -361,7 +362,11 @@ void Client::jsonReceived(const QJsonObject &docObj)
                 this->files.push_back(QPair<QString, QString>(v.toObject().value("name").toString(),v.toObject().value("owner").toString()));
             }
 
-            emit filesReceived();
+            const QJsonValue sharedJson = docObj.value(QLatin1String("shared"));
+            if (sharedJson.isNull() || !sharedJson.isBool())
+                return;
+            const bool shared = sharedJson.toBool();
+            emit filesReceived(shared);
         } else { // error handling
             const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
             emit openFilesError(reasonVal.toString());
@@ -379,83 +384,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
             const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
             emit wrongNewFile(reasonVal.toString());
         }
-    }/*
-    else if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0) {
-            const QJsonValue resultVal = docObj.value(QLatin1String("success"));
-            if (resultVal.isNull() || !resultVal.isBool())
-                return;
-            const bool success = resultVal.toBool();
-            if (success) {
-                const QJsonValue cont = docObj.value(QLatin1String("content"));
-                if (cont.isNull() || !cont.isArray())
-                    return;
-                const QJsonArray symbols = cont.toArray();
-                // read the symbols in the file and parse them into the editor
-//                foreach (const QJsonValue & symbol, symbols) {
-//                    Symbol s = Symbol::fromJson(symbol.toObject());
-//                    //qDebug() << "SYMBOL" << s.getValue();
-//                    emit remoteInsert(s);
-//                }
-                // REVERSE ORDER to have '\0' as first char
-                for (int i = symbols.size() - 1; i >= 0; i--) {
-                    Symbol s = Symbol::fromJson(symbols[i].toObject());
-                    //qDebug() << "SYMBOL" << s.getValue();
-                    emit remoteInsert(s);
-                    if (s.getValue()=='\n' || s.getValue()=='\0')
-                        emit remoteAlignChange(s);
-
-                }
-
-                const QJsonValue name = docObj.value(QLatin1String("filename"));
-                if (name.isNull() || !name.isString())
-                    return;
-                this->openfile=name.toString();
-
-                const QJsonValue shared_link = docObj.value(QLatin1String("shared_link"));
-                if (shared_link.isNull() || !shared_link.isString())
-                    return;
-                this->sharedLink = shared_link.toString();
-
-                const QJsonValue color= docObj.value(QLatin1String("color"));
-                if (color.isNull() || !color.isDouble())
-                    return;
-                this->cursor_color_rgb = color.toInt();
-
-                const QJsonValue array= docObj.value(QLatin1String("users"));
-                if (array.isNull() || !array.isArray())
-                    return;
-                const QJsonArray array_users=array.toArray();
-                QList<QPair<QString,QString>> connected;
-                foreach (const QJsonValue& v, array_users){
-                    //qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
-                    connected.append(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()));
-                }
-//                emit contentReceived(cont.toString()); TODO: remove comment
-                emit usersConnectedReceived(connected);
-                emit correctOpenedFile();
-            } else {
-                this->openfile.clear();
-                const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
-                emit wrongListFiles(reasonVal.toString());
-            }
-        }
-
-    else if (typeVal.toString().compare(QLatin1String("connection"), Qt::CaseInsensitive) == 0) {
-            const QJsonValue file = docObj.value(QLatin1String("filename"));
-            //qDebug()<<"connection "<<file.toString();
-            if (file.isNull() || !file.isString())
-                return;
-            const QJsonValue name = docObj.value(QLatin1String("username"));
-            if (name.isNull() || !name.isString())
-                return; 
-            if (!file.toString().compare(this->openfile)){
-                QList<QPair<QString,QString>> connected;
-                connected.append(QPair<QString,QString>(docObj.value("username").toString(),docObj.value("nickname").toString()));
-                emit usersConnectedReceived(connected);
-            }
-
-        }
-        */
+    }
     else if (typeVal.toString().compare(QLatin1String("disconnection"), Qt::CaseInsensitive) == 0) {
             const QJsonValue file = docObj.value(QLatin1String("filename"));
             if (file.isNull() || !file.isString())

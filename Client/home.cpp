@@ -27,10 +27,6 @@ Home::~Home()
     delete ui;
 }
 
-void Home::setClient(Client *client){
-    this->client=client;
-}
-
 void Home::on_pushButtonLogOut_clicked()
 {
     emit logOut();
@@ -45,7 +41,7 @@ void Home::on_pushButtonNewFile_clicked()
                                          tr(""), &ok);
 
     if (ok && !text.isEmpty()) {
-        // to update the window title in the editor
+        // To update the window title in the editor
         client->setOpenedFile(text + "," + client->getUsername());
 
         client->createNewFile(text);
@@ -81,60 +77,48 @@ void Home::on_pushButtonSharedLink_clicked()
 {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Shared Link"),
-                                                 tr("Paste link here:"), QLineEdit::Normal,
-                                                 tr(""), &ok);
+                                         tr("Paste link here:"),
+                                         QLineEdit::Normal, tr(""), &ok);
     if (ok && !text.isEmpty()) {
-        //qDebug().nospace() << "Line read: " << text;
-        // TODO: same as open file
         client->getFilenameFromLink(text);
     }
 }
 
-
 void Home::on_pushButtonOpenFile_clicked()
 {
-
-    //manda richiesta al server di ricevere la lista di file
     client->getFiles(false);
-    //disabilitare tutto?
-
-    //2- apri una dialogbox per permettere all'utente di selezionare quale file
-   /* QStringList items;
-       items << tr("Spring") << tr("Summer") << tr("Fall") << tr("Winter");
-
-       bool ok;
-       QString item = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
-                                            tr("Season:"), items, 0, false, &ok);
-       if (ok && !item.isEmpty())
-           itemLabel->setText(item); */
-
-    //3- manda la richiesta al server per quel file
-    //4- una volta che hai ricevuto il file:
-            //aggiorna in "background" il texteditor"
-            //cambia pagina sul texteditor
 }
 
-void Home::showActiveFiles(){
+void Home::on_pushButtonOpenShared_clicked()
+{
+    client->getFiles(true);
+}
+
+void Home::showActiveFiles(bool shared){
     QStringList items;
     QList<QPair<QString,QString>> map_files = client->getActiveFiles();
 
     for (auto i = map_files.begin(); i != map_files.end(); ++i){
-        items << QString(i->first);
+        if (!shared) {
+            items << QString(i->first);
+        } else {
+            items << QString(i->first + " (" + i->second + ")");
+        }
     }
+    // Sort entry by filename
     items.sort();
 
     bool ok;
     QString item = QInputDialog::getItem(this, tr("Open File"),
                                          tr("Files:"), items, 0, false, &ok);
     if (ok && !item.isEmpty()) {
-        QString choice = item + "," + client->getUsername();
-        //qDebug() << "File chosen:" << choice << endl;
+        // Format to obtain choice = "filename,user"
+        QString choice;
+        if (!shared) {
+            choice = item + "," + client->getUsername();
+        } else {
+            choice = item.replace(" (", ",").replace(")", "");
+        }
         emit fileChosen(choice);
     }
-}
-
-
-void Home::on_pushButtonOpenShared_clicked()
-{
-    client->getFiles(true);
 }

@@ -68,7 +68,7 @@ signals:
     void wrongOldPassword();
     void correctOldPassword();
 
-    void filesReceived();
+    void filesReceived(bool shared);
     void openFilesError(const QString& reason);
 
     void remoteInsert(Symbol s);
