@@ -1060,8 +1060,6 @@ bool Server::udpateSymbolListAndCommunicateDisconnection(QString filename, Serve
         this->broadcast(message_broadcast,sender);
     }
 
-    //forse questo si deve mettere fuori
-    sender->closeFile();
     return true;
 }
 
@@ -1116,6 +1114,8 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender){
         message["reason"] = QStringLiteral("File not exist");
         return message;
     }
+    //forse questo si deve mettere fuori
+    sender->closeFile();
 
     message["success"] = true;
     return message;
