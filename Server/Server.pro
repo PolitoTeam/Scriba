@@ -33,6 +33,7 @@ SOURCES += \
 
 HEADERS += \
         database.h \
+        serializeSize.h \
         server.h \
         serverwindow.h \
         serverworker.h

@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QSslSocket>
 #include <QReadWriteLock>
+#include <serializeSize.h>
+
 class QJsonObject;
 class ServerWorker : public QObject
 {

@@ -456,40 +456,70 @@ void Client::connectToServer(const QHostAddress &address, quint16 port)
 
 void Client::onReadyRead()
 {
-    // prepare a container to hold the UTF-8 encoded JSON we receive from the socket
-    QByteArray jsonData;
-    // create a QDataStream operating on the socket
-    QDataStream socketStream(m_clientSocket);
-    // set the version so that programs compiled with different versions of Qt can agree on how to serialise
-    socketStream.setVersion(QDataStream::Qt_5_7);
-    // start an infinite loop
-    for (;;) {
-        // we start a transaction so we can revert to the previous state in case we try to read more data than is available on the socket
-        socketStream.startTransaction();
-        // we try to read the JSON data
-        socketStream >> jsonData;
-        if (socketStream.commitTransaction()) {
-            // we successfully read some data
-            // we now need to make sure it's in fact a valid JSON
-            QJsonParseError parseError;
-            // we try to create a json document with the data we received
-            const QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
-            if (parseError.error == QJsonParseError::NoError) {
-                // if the data was indeed valid JSON
-                if (jsonDoc.isObject()) // and is a JSON object
-                    jsonReceived(jsonDoc.object()); // parse the JSON
-            } else { // profile image received
+    if(m_exptected_json_size == 0) {
+        // Update m_received_data and m_exptected_json_size
+        extract_content_size();
+    }
 
-                byteArrayReceived(jsonData);
-            }
-            // loop and try to read more JSONs if they are available
-        } else {
-            // the read failed, the socket goes automatically back to the state it was in before the transaction started
-            // we just exit the loop and wait for more data to become available
-            break;
+    m_received_data.append(m_clientSocket->readAll());
+    // If data completely received
+    if (m_exptected_json_size > 0
+            && m_received_data.size() > m_exptected_json_size ) {
+        if(parseJson()) {
+            m_exptected_json_size = 0;
         }
     }
 }
+
+void Client::extract_content_size()
+{
+    quint64 asize = m_clientSocket->bytesAvailable();
+    m_received_data.append(m_clientSocket->readAll());
+    QDataStream in;
+    QBuffer in_buffer;
+    in_buffer.setBuffer(&m_received_data);
+    in_buffer.open(QIODevice::ReadOnly);
+    in.setDevice(&in_buffer);
+    in.setVersion(QDataStream::Qt_5_7);
+    quint64 size = 0;
+    in >> size;
+    m_exptected_json_size = size;
+    in_buffer.close();
+}
+
+bool Client::parseJson()
+{
+    QByteArray json_data;
+    QDataStream in;
+    m_buffer.setBuffer(&m_received_data);
+    if (!m_buffer.open(QIODevice::ReadOnly))
+        return false;
+
+    in.setDevice(&m_buffer);
+    in.setVersion(QDataStream::Qt_5_7);
+    in.startTransaction();
+    quint64 json_size;
+    in >> json_size >> json_data;
+
+    if( !in.commitTransaction()) {
+        m_buffer.close();
+        return false;
+    }
+    m_buffer.close();
+
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(json_data, &parseError);
+    if (parseError.error == QJsonParseError::NoError) {
+        if (jsonDoc.isObject()) {
+            jsonReceived(jsonDoc.object());
+        }
+    } else {
+        byteArrayReceived(json_data);
+    }
+    m_received_data.clear();
+    return true;
+}
+
 void Client::byteArrayReceived(const QByteArray &doc){
 
     quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(doc.left(4).data()));

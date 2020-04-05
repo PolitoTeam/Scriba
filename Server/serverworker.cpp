@@ -54,43 +54,38 @@ bool ServerWorker::setSocketDescriptor(qintptr socketDescriptor,QSslKey key,QSsl
 
 }
 
+void ServerWorker::sendByteArray(const QByteArray &byteArray){
+    SerializeSize size;
+    quint64 json_size = size(byteArray);
+
+    QDataStream socketStream(m_serverSocket);
+    socketStream.setVersion(QDataStream::Qt_5_7);
+    socketStream << json_size << byteArray;
+}
+
 void ServerWorker::sendJson(const QJsonObject &json)
 {
     const QByteArray jsonData = QJsonDocument(json).toJson();
-//    emit logMessage("Sending to " + userName() + " - " + QString::fromUtf8(jsonData));
-    QDataStream socketStream(m_serverSocket);
-    socketStream.setVersion(QDataStream::Qt_5_7);
-    socketStream << jsonData;
+    sendByteArray(jsonData);
 }
-
-void ServerWorker::sendByteArray(const QByteArray &byteArray){
-    QDataStream socketStream(m_serverSocket);
-    socketStream.setVersion(QDataStream::Qt_5_7);
-    socketStream << byteArray;
-}
-
-
 
 void ServerWorker::sendProfileImage()
 {
-    QDataStream socketStream(m_serverSocket);
-    socketStream.setVersion(QDataStream::Qt_5_7);
-
-    QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + username + ".png";
-
+    QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
+                         + username + ".png";
     QFileInfo file(image_path);
     if (!file.exists()) {
-        //qDebug() << "Image not found.";
         return;
     }
 
+    // Read Image
     QPixmap p(image_path);
     QByteArray bArray;
     QBuffer buffer(&bArray);
     buffer.open(QIODevice::WriteOnly);
     p.save(&buffer, "PNG");
 
-    socketStream << bArray;
+    sendByteArray(bArray);
 }
 
 QString ServerWorker::getNickname()

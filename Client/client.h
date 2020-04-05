@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QSslSocket>
+#include <QBuffer>
 #include "symbol.h"
 #include "remotecursor.h"
 
@@ -50,6 +51,7 @@ public slots:
     void openFile(const QString& filename);
     void sslErrors(const QList<QSslError> &errors);
     void on_disconnected();
+
 
 private slots:
     void onReadyRead();
@@ -102,6 +104,12 @@ private:
 
     void jsonReceived(const QJsonObject &doc);
     void byteArrayReceived(const QByteArray &doc);
+    void extract_content_size();
+    bool parseJson();
+
+    quint64 m_exptected_json_size = 0;
+    QByteArray m_received_data;
+    QBuffer m_buffer;
 };
 
 #endif // CLIENT_H
