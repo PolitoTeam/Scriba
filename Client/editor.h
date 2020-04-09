@@ -78,7 +78,7 @@ private:
     CRDT *crdt;
     int line = 0, index = 0;
     Highlighter *highlighter;
-    QMap<QString,int> username_row; //map username - row in the list widget (peers)
+
 
 
 

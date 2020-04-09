@@ -20,6 +20,7 @@ class CRDT : public QObject
 
 public:
     CRDT(Client *client);
+    void clear();
     int getId();
     void setId(int site);
     void localInsert(int line, int index, ushort value, QFont font, QColor color,Qt::Alignment align);

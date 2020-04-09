@@ -516,6 +516,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
                 return; // a message with no type was received so we just ignore it
 
             if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0) {
+
                         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
                         if (resultVal.isNull() || !resultVal.isBool())
                             return;
@@ -532,9 +533,11 @@ void Client::byteArrayReceived(const QByteArray &doc){
             //                    emit remoteInsert(s);
             //                }
                             // REVERSE ORDER to have '\0' as first char
+                            qDebug()<<"To insert";
                             for (int i = symbols.size() - 1; i >= 0; i--) {
                                 Symbol s = Symbol::fromJson(symbols[i].toObject());
-                                //qDebug() << "SYMBOL" << s.getValue();
+                                if (s.getValue()=='\0')
+                                     qDebug() << "eccolo";
                                 emit remoteInsert(s);
                                 if (s.getValue()=='\n' || s.getValue()=='\0')
                                     emit remoteAlignChange(s);

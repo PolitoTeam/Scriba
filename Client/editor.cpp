@@ -235,38 +235,21 @@ void Editor::printPdf()
 }
 void Editor::exit()
 {
-    client->closeFile();
-    highlighter->freeAll();
-    // clean the editor: disconnect...
-    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
-    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
-
     this->clear();
-    // create new CRDT with connections
-    delete crdt;
 
-    crdt = new CRDT(client);
-    crdt->setId(fromStringToIntegerHash(client->getUsername()));
-    this->highlighter->setCRDT(crdt);
+  //  crdt = new CRDT(client);
+   crdt->setId(fromStringToIntegerHash(client->getUsername()));
+   // this->highlighter->setCRDT(crdt);
     this->highlighter->addLocal(fromStringToIntegerHash(client->getUsername()));
 
-    connect(crdt, &CRDT::insert, this, &Editor::on_insert);
-    connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
-    connect(crdt, &CRDT::erase, this, &Editor::on_erase);
-    connect(crdt, &CRDT::change, this, &Editor::on_change);
-    connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
-    // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
-    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
-    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 
     emit changeWidget(HOME);
 }
 
 void Editor::closeEvent (QCloseEvent *)
 {
-    client->closeFile();
+   this->clear();
+
 }
 
 void Editor::peerYou()
@@ -805,10 +788,23 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 }
 
 void Editor::clear(){
+    client->closeFile();
+    highlighter->freeAll();
+    // clean the editor: disconnect...
+    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
+    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+    // create new CRDT with connections
+    crdt->clear();
     ui->listWidget->clear();
     ui->textEdit->clear();
 
+    // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 }
+
 
 void Editor::removeUser(const QString& username, const QString& nickname){
    //qDebug()<<"Here remove"<<endl;
@@ -1082,17 +1078,6 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
 }
 
 
-/*
-void Editor::correct_position(int& line, int& index) {
-    for (RemoteCursor *cursor : ui->textEdit->remote_cursors) {
-        int cline, cindex;
-        cursor->getPosition(cline, cindex);
-        // TODO: less or less/equal? <= seems to work
-        if (line == cline && cindex <= index)
-            index--;
-    }
-}
-*/
 
 
 

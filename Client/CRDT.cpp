@@ -13,6 +13,29 @@ CRDT::CRDT(Client *client) : client(client) {
     this->size = -1;
 }
 
+
+void CRDT::clear(){
+    disconnect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    disconnect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
+    disconnect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
+    disconnect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
+    disconnect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
+    for (QVector<Symbol> v: _symbols){
+        v.clear();
+    }
+    _symbols.clear();
+    _symbols.push_back(QVector<Symbol>{});
+    this->size=-1;
+    _siteId=0;
+    _counter=0;
+    strategyCache.clear();
+    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    connect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
+    connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
+    connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
+    connect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
+}
+
 int CRDT::getId() { return _siteId; }
 void CRDT::setId(int site){this->_siteId = site;}
 
@@ -447,9 +470,11 @@ void CRDT::handleRemotePaste(const QJsonArray& symbols){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
+    qDebug()<<"qui";
 //    //qDebug() << "REMOTE INSERT" << QString(s.getValue()); // << QString(1, s.getValue());
     int line, index;
     if (_symbols.size() != 0) {
+        qDebug()<<"qui";
         findInsertPosition(s, line, index);
     } else {
         line=0;
