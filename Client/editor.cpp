@@ -726,19 +726,19 @@ void Editor::on_insertGroup(int line, int index, const QString& s,QTextCharForma
     //qDebug().noquote() << crdt->to_string();
 }
 
-void Editor::on_erase(int line, int index)
+void Editor::on_erase(int line, int index,int lenght)
 {
     QTextCursor cursor = ui->textEdit->textCursor();
-    cursor.setPosition(index);
-
 //    //qDebug() << line << index;
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
-
     cursor.setPosition(block.position() + index);
+    for (int i=0;i<lenght;i++){
+        cursor.movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor);
+    }
 //    //qDebug() << "block position" << block.position();
 
 //    //qDebug() << "before deleting";
-    cursor.deleteChar();
+    cursor.removeSelectedText();
 //    //qDebug() << "after deleting";
 
     //qDebug().noquote() << crdt->to_string();

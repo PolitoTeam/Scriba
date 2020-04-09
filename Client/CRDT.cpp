@@ -588,6 +588,7 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalL
 }
 
 void CRDT::handleRemoteErase(const QJsonArray& symbols) {
+    int startLine,startIndex,endLine,endIndex;
 
     for (int i = 0; i < symbols.size(); i++) {
             QJsonObject symbol = symbols[i].toObject();
@@ -595,6 +596,12 @@ void CRDT::handleRemoteErase(const QJsonArray& symbols) {
 
             int line, index;
             bool res = findPosition(s, line, index);
+            if (i==0){
+                startLine=line;
+                startIndex=index;
+            }
+            endLine=line;
+            endIndex=index;
             //qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
             if (!res){
 
@@ -616,9 +623,11 @@ void CRDT::handleRemoteErase(const QJsonArray& symbols) {
                     _symbols[line].erase(_symbols[line].begin() + index);
                 //qDebug() << "deleted";
                 this->size--;
-                emit erase(line, index);
+
             }
     }
+     emit erase(startLine, startIndex,symbols.size());
+
 }
 
 void CRDT::handleRemoteChange(const Symbol& s) {

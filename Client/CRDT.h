@@ -47,7 +47,7 @@ private slots:
 signals:
     void insert(int line, int index, const Symbol& s);
     void insertGroup(int firstLine,int firstIndex,QString partial,QTextCharFormat newFormat);
-    void erase(int line, int index);
+    void erase(int startLine, int startIndex,int lenght);
     void change(int line, int index, const Symbol& s);
     void changeAlignment(int align, int line, int index);
 

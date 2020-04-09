@@ -55,7 +55,7 @@ private slots:
     void on_insert(int line, int index, const Symbol& s);
     void on_insertGroup(int line, int index, const QString& s,QTextCharFormat newFormat);
     void on_changeAlignment(int align,int line, int index);
-    void on_erase(int line, int index);
+    void on_erase(int startLine, int startIndex,int lenght);
     void on_change(int line, int index, const Symbol& s);
     void addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users);
     void updateText(const QString& text);
