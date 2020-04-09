@@ -33,7 +33,6 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
 
     // generate symbol
     Symbol s(value, newPos, ++_counter, font, color);
-    s.setUsername(this->_siteId);
 
     if (s.getValue()=='\0' || s.getValue()=='\n'){
 
@@ -75,7 +74,6 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, 
 
         // generate symbol
         Symbol s(partial.at(i).unicode(), newPos, ++_counter, font, color);
-        s.setUsername(this->_siteId);
 
         if (s.getValue()=='\0' || s.getValue()=='\n'){
              //qDebug()<<"ALIGNMENT: "<<align;
