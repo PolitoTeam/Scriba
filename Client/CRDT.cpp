@@ -219,24 +219,30 @@ int CRDT::generateRandomNumBetween(int n1,int n2) { // TODO: check if better to 
     return n1 + (std::rand() % (n2 - n1 + 1));
 }
 
-void CRDT::localErase(int line, int index) {
-    Symbol s = _symbols[line][index];
-    bool newLineRemoved = (s.getValue() == '\n');
-    _symbols[line].erase(_symbols[line].begin() + index);
+void CRDT::localErase(int& line, int& index,int lenght) {
+    QJsonArray symbols;
 
-    if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
-        std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
-        _symbols.erase(_symbols.begin() + line + 1);
+    for (int i=0;i<lenght;i++){
+        qDebug()<<"Iteration: "<<i<<" "<<" line  index: "<<"("<<line<<","<<index<<")";
+        Symbol s = _symbols[line][index];
+        symbols.append(s.toJson());
+        bool newLineRemoved = (s.getValue() == '\n');
+        _symbols[line].erase(_symbols[line].begin() + index);
+
+        if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
+            std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
+            _symbols.erase(_symbols.begin() + line + 1);
+        }
+
+        this->size--;
     }
-
-    this->size--;
 
     // broadcast
     QJsonObject message;
     message["type"] = QStringLiteral("operation");
     message["editorId"] = _siteId;
     message["operation_type"] = DELETE;
-    message["symbol"] = s.toJson();
+    message["symbols"] = symbols;
 
     //qDebug().noquote() << to_string();
     client->sendJson(message);
@@ -581,32 +587,37 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalL
     }
 }
 
-void CRDT::handleRemoteErase(const Symbol& s) {
-    int line, index;
-    bool res = findPosition(s, line, index);
-    //qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
-    if (!res){
+void CRDT::handleRemoteErase(const QJsonArray& symbols) {
 
-        return;
-      }
+    for (int i = 0; i < symbols.size(); i++) {
+            QJsonObject symbol = symbols[i].toObject();
+            Symbol s = Symbol::fromJson(symbol);
 
-    bool newLineRemoved = (s.getValue() == '\n');
-    if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
+            int line, index;
+            bool res = findPosition(s, line, index);
+            //qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
+            if (!res){
 
-        if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
-            _symbols[line].erase(_symbols[line].begin() + index);
-            std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
-            _symbols.erase(_symbols.begin() + line + 1);
-        } else if (index==0 && _symbols[line].size()==1){
-             _symbols[line].erase(_symbols[line].begin() + index);
-             _symbols.erase(_symbols.begin()+line);
-        }
-        else
-            _symbols[line].erase(_symbols[line].begin() + index);
-        //qDebug() << "deleted";
-        this->size--;
-        emit erase(line, index);
-        return;
+                return;
+              }
+
+            bool newLineRemoved = (s.getValue() == '\n');
+            if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
+
+                if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
+                    _symbols[line].erase(_symbols[line].begin() + index);
+                    std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
+                    _symbols.erase(_symbols.begin() + line + 1);
+                } else if (index==0 && _symbols[line].size()==1){
+                     _symbols[line].erase(_symbols[line].begin() + index);
+                     _symbols.erase(_symbols.begin()+line);
+                }
+                else
+                    _symbols[line].erase(_symbols[line].begin() + index);
+                //qDebug() << "deleted";
+                this->size--;
+                emit erase(line, index);
+            }
     }
 }
 

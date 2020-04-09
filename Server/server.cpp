@@ -472,9 +472,12 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == DELETE) {
             //qDebug() << "deletion";
-            QJsonObject symbol = docObj["symbol"].toObject();
-            QString position = fromJsonArraytoString(symbol["position"].toArray());
-            symbols_list.value(sender->getFilename())->remove(position);
+            QJsonArray symbols = docObj["symbols"].toArray();
+            for (int i = 0; i < symbols.size(); i++) {
+                    QJsonObject symbol = symbols[i].toObject();
+                    QString position = fromJsonArraytoString(symbol["position"].toArray());
+                    symbols_list.value(sender->getFilename())->remove(position);
+                }
         } else if (operation_type == CHANGE) {
             //qDebug() << "change";
             QJsonObject symbol = docObj["symbol"].toObject();

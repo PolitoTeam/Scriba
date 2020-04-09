@@ -28,9 +28,9 @@ void Highlighter::highlightBlock(const QString &text){
     int line = this->currentBlock().blockNumber();
     qDebug()<<" Line: "<<line;
     for (int index = 0; index < text.length(); index++) {
-            qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
+           // qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
             Symbol s = this->crdt->getSymbol(line,index);
-            qDebug()<<"Retrieved simbol: "<<s.getValue();
+           // qDebug()<<"Retrieved simbol: "<<s.getValue();
             int editor_id = s.getUsername();
             QTextCharFormat format = s.getQTextCharFormat();
 
@@ -42,9 +42,9 @@ void Highlighter::highlightBlock(const QString &text){
             else {
                 id = -2;
             }
-            qDebug()<<"ID: "<<id;
+           // qDebug()<<"ID: "<<id;
             QColor color = list_colors.getColor(id);
-            qDebug()<<"Color: "<<color;
+           // qDebug()<<"Color: "<<color;
 
             format.setBackground(QBrush(color,Qt::SolidPattern));
             setFormat(index,1,format);

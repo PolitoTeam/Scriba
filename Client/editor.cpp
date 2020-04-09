@@ -310,23 +310,6 @@ void Editor::undo()
      ui->textEdit->document()->undo();  //the change due to the insert/delete are automatically managed by on_contents_change
      // update alignment icon
      alignmentChanged(ui->textEdit->alignment());
-     /*
-     int line = this->line;
-     int index = this->index;
-
-
-     if (index ==0 && this->crdt->lineSize(line)>1){
-         line-=1;
-         if (line<0)
-             line=0;
-     }
-    QTextBlockFormat a = ui->textEdit->document()->findBlockByLineNumber(line).blockFormat();
-    Qt::Alignment align = a.alignment();
-    //qDebug()<<"ALIGNMENT: "<<align;
-
-     this->crdt->localChangeAlignment(line,alignmentConversion(align));
-   // this->undoFlag=false;
-   */
 
 }
 
@@ -340,23 +323,6 @@ void Editor::redo()
     ui->textEdit->document()->redo();
     // update alignment icon
     alignmentChanged(ui->textEdit->alignment());
-    /*
-    int line = this->line;
-    int index = this->index;
-
-
-    if (index ==0 && this->crdt->lineSize(line)>1){
-        line-=1;
-        if (line<0)
-            line=0;
-    }
-   QTextBlockFormat a = ui->textEdit->document()->findBlockByLineNumber(line).blockFormat();
-   Qt::Alignment align = a.alignment();
-   //qDebug()<<"ALIGNMENT: "<<align;
-
-    this->crdt->localChangeAlignment(line,alignmentConversion(align));
-   // this->redoFlag=false;
-   */
 }
 
 void Editor::selectFont()
@@ -608,10 +574,10 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
         saveCursorPosition();
         // remove multiple chars
-        for (int i = 0; i < removed.length(); i++) {
-            //qDebug() << "Removed " << removed.at(i) << "in position (" << this->line << "," << this->index << ")";
-            crdt->localErase(line, index);
-        }
+        qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
+        if (removed.length())
+            crdt->localErase(line, index,removed.length());
+        qDebug()<<"After remove line and index: "<<"("<<line<<","<<index<<")";
     } else if (charsRemoved==charsAdded && (this->undoFlag==true || this->redoFlag==true)){
         //format/alignment change by redo/undo
         //qDebug()<<"format change";

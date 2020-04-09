@@ -311,11 +311,11 @@ void Client::jsonReceived(const QJsonObject &docObj)
 //            //qDebug() << "INSERT";
             emit remoteInsert(s);
         } else if (operation_type == DELETE){
-            QJsonObject symbol = docObj["symbol"].toObject();
-            Symbol s = Symbol::fromJson(symbol);
+            QJsonArray symbols = docObj["symbols"].toArray();
+
             //qDebug() << s.to_string();
 //            //qDebug() << "ERASE";
-            emit remoteErase(s);
+            emit remoteErase(symbols);
         } else if (operation_type == CHANGE) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s = Symbol::fromJson(symbol);
