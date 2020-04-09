@@ -245,7 +245,9 @@ void CRDT::localErase(int& line, int& index,int lenght) {
     message["symbols"] = symbols;
 
     //qDebug().noquote() << to_string();
+    qDebug()<<"BEFORE SEND JSON IN LOCAL ERASE";
     client->sendJson(message);
+    qDebug()<<"AFTER SEND JSON IN LOCAL ERASE";
 }
 
 void CRDT::localChange(int line, int index, QFont font, QColor color) {
@@ -590,7 +592,10 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalL
 void CRDT::handleRemoteErase(const QJsonArray& symbols) {
     int startLine,startIndex,endLine,endIndex;
 
+    qDebug()<<"Remote deleting: "<<symbols.size()<<" characters";
+
     for (int i = 0; i < symbols.size(); i++) {
+            qDebug()<<"Remote delete: "<<i;
             QJsonObject symbol = symbols[i].toObject();
             Symbol s = Symbol::fromJson(symbol);
 

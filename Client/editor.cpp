@@ -575,8 +575,9 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         saveCursorPosition();
         // remove multiple chars
         qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
-        if (removed.length())
+        if (removed.length()){
             crdt->localErase(line, index,removed.length());
+        }
         qDebug()<<"After remove line and index: "<<"("<<line<<","<<index<<")";
     } else if (charsRemoved==charsAdded && (this->undoFlag==true || this->redoFlag==true)){
         //format/alignment change by redo/undo
@@ -728,6 +729,7 @@ void Editor::on_insertGroup(int line, int index, const QString& s,QTextCharForma
 
 void Editor::on_erase(int line, int index,int lenght)
 {
+    qDebug()<<"ON ERASE";
     QTextCursor cursor = ui->textEdit->textCursor();
 //    //qDebug() << line << index;
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);

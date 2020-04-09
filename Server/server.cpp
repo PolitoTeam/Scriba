@@ -217,7 +217,7 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-    qDebug() << json;
+    qDebug() << "JSON RECEIVDE";
     if (sender->getNickname().isEmpty())
         return jsonFromLoggedOut(sender, json);
     else
@@ -471,9 +471,11 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
         } else if (operation_type == DELETE) {
-            //qDebug() << "deletion";
+
             QJsonArray symbols = docObj["symbols"].toArray();
+            qDebug() << "TO DELETE: "<<symbols.size();
             for (int i = 0; i < symbols.size(); i++) {
+                    qDebug()<<"deleting "<<i;
                     QJsonObject symbol = symbols[i].toObject();
                     QString position = fromJsonArraytoString(symbol["position"].toArray());
                     symbols_list.value(sender->getFilename())->remove(position);
@@ -1133,18 +1135,17 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
 
 void Server::saveFile() {
     for (QString filename : symbols_list.keys()) {
-        qDebug()<<"I'm saving "<<filename;
+        //qDebug()<<"I'm saving "<<filename;
         QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
 
         QFile file(filePath);
         bool flag = file.open(QIODevice::ReadWrite | QIODevice::Truncate);
-        if (flag==false)
-            qDebug()<<"Unable to open file: "<<filename;
+
         QJsonArray symbols_json;
         for (QJsonObject symbol : symbols_list.value(filename)->values()) {
             symbols_json.append(symbol);
         }
-        qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
+      //  qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
 
         file.write(QJsonDocument(symbols_json).toBinaryData());
 //        file.write(QJsonDocument(symbols_json).toJson());
