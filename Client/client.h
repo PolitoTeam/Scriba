@@ -8,6 +8,7 @@
 #include "symbol.h"
 #include "remotecursor.h"
 
+
 class QHostAddress;
 class QJsonDocument;
 
@@ -50,7 +51,7 @@ public slots:
     void disconnectFromHost();
     void openFile(const QString& filename);
     void sslErrors(const QList<QSslError> &errors);
-    void on_disconnected();
+
 
 
 private slots:

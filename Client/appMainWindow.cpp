@@ -46,6 +46,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
     QObject::connect(home,&Home::modify,modify,&Modify::upload);
     connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
     connect(client, &Client::error, this, &AppMainWindow::error);
+    connect(client, &Client::disconnected, this, &AppMainWindow::errorServerConnection);
 }
 
 AppMainWindow::~AppMainWindow()
@@ -76,6 +77,14 @@ void AppMainWindow::on_changeWidget(int widget) {
     }
 }
 
+void AppMainWindow::errorServerConnection(){
+    qDebug()<<"qui";
+    this->on_logOut();
+    QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
+
+    on_changeWidget(LOGIN);
+}
+
 void AppMainWindow::error(QAbstractSocket::SocketError socketError)
 {
     // show a message to the user that informs of what kind of error occurred
@@ -83,9 +92,7 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
     case QAbstractSocket::RemoteHostClosedError:
         qDebug()<<"Remote Host Closed Error";
     case QAbstractSocket::ProxyConnectionClosedError:
-        this->on_logOut();
-        QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
-        on_changeWidget(LOGIN);
+        this->errorServerConnection();
         break;
     case QAbstractSocket::ConnectionRefusedError:
         QMessageBox::critical(this, tr("Error"), tr("The host refused the connection"));

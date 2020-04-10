@@ -29,6 +29,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
     // Forward the connected and disconnected signals
     connect(m_clientSocket, &QSslSocket::connected, this, &Client::connected);
     connect(m_clientSocket, &QSslSocket::disconnected, this, &Client::disconnected);
+     connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{this->m_received_data.clear();this->m_exptected_json_size=0;});
     connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
 
     connect(this,&Client::connected,this, []()->void{qDebug()<<"New client Connected";});
@@ -37,7 +38,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 
 
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
-    connect(m_clientSocket, &QSslSocket::disconnected, this, &Client::on_disconnected);
+
     connect(m_clientSocket, &QSslSocket::encrypted, this, [](){qDebug()<<"encrypted!";});
     connect(m_clientSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&Client::sslErrors);
 
@@ -224,6 +225,7 @@ void Client::disconnectFromHost()
     this->username.clear();
     this->nickname.clear();
     this->files.clear();
+    this->m_loggedIn=false;
     m_clientSocket->disconnectFromHost();
 }
 
@@ -461,25 +463,33 @@ void Client::onReadyRead()
 
     if (m_clientSocket->bytesAvailable()>0)
         m_received_data.append(m_clientSocket->readAll());
+    else {
+        qDebug()<<"Richiamata ma niente da leggere";
+    }
 
-    if (m_received_data.isNull()|| m_received_data.size()<8)
+
+    if (m_received_data.isNull()|| m_received_data.size()<8){
+        qDebug()<<"return: "<<m_received_data.size()<<" , "<<m_exptected_json_size;
         return;
+    }
 
     if(m_exptected_json_size == 0) {
         qDebug()<<"extract_content_size()";
         // Update m_received_data and m_exptected_json_size
         extract_content_size();
+        qDebug()<<"After extract "<<m_exptected_json_size;
     }
 
     // If data completely received
     if (m_exptected_json_size > 0
             && m_received_data.size() >= m_exptected_json_size+8 ) {
-        qDebug()<<"Nel ciclo; received data: "<<m_received_data.size()<<" m_expected_json_size: "<<m_exptected_json_size;
+        qDebug()<<"received data before: "<<m_received_data.size();
         if(parseJson()) {
                  m_exptected_json_size=0;
                  onReadyRead();
              }
         }
+        qDebug()<<"received data before: "<<m_received_data.size();
 
 }
 
@@ -797,7 +807,3 @@ int Client::getColor()
     return cursor_color_rgb;
 }
 
-void Client::on_disconnected() {
-    //qDebug()<<"Disconnected";
-    this->m_loggedIn = false;
-}
