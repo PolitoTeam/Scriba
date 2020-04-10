@@ -239,6 +239,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
         if (m_loggedIn)
             return; // if we are already logged in we ignore
         // the success field will contain the result of our attempt to login
+
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
         if (resultVal.isNull() || !resultVal.isBool())
             return; // the message had no success field so we ignore
@@ -456,24 +457,35 @@ void Client::connectToServer(const QHostAddress &address, quint16 port)
 
 void Client::onReadyRead()
 {
+    qDebug()<<"onReadyRead";
+
+    if (m_clientSocket->bytesAvailable()>0)
+        m_received_data.append(m_clientSocket->readAll());
+
+    if (m_received_data.isNull()|| m_received_data.size()<8)
+        return;
+
     if(m_exptected_json_size == 0) {
+        qDebug()<<"extract_content_size()";
         // Update m_received_data and m_exptected_json_size
         extract_content_size();
     }
 
-    m_received_data.append(m_clientSocket->readAll());
     // If data completely received
     if (m_exptected_json_size > 0
-            && m_received_data.size() > m_exptected_json_size ) {
+            && m_received_data.size() >= m_exptected_json_size+8 ) {
+        qDebug()<<"Nel ciclo; received data: "<<m_received_data.size()<<" m_expected_json_size: "<<m_exptected_json_size;
         if(parseJson()) {
-            m_exptected_json_size = 0;
+                 m_exptected_json_size=0;
+                 onReadyRead();
+             }
         }
-    }
+
 }
 
 void Client::extract_content_size()
 {
-    quint64 asize = m_clientSocket->bytesAvailable();
+    //quint64 asize = m_clientSocket->bytesAvailable();
     m_received_data.append(m_clientSocket->readAll());
     QDataStream in;
     QBuffer in_buffer;
@@ -485,10 +497,12 @@ void Client::extract_content_size()
     in >> size;
     m_exptected_json_size = size;
     in_buffer.close();
+
 }
 
 bool Client::parseJson()
 {
+    qDebug()<<"parseJson";
     QByteArray json_data;
     QDataStream in;
     m_buffer.setBuffer(&m_received_data);
@@ -500,6 +514,7 @@ bool Client::parseJson()
     in.startTransaction();
     quint64 json_size;
     in >> json_size >> json_data;
+    json_data.truncate(json_size);
 
     if( !in.commitTransaction()) {
         m_buffer.close();
@@ -509,14 +524,17 @@ bool Client::parseJson()
 
     QJsonParseError parseError;
     QJsonDocument jsonDoc = QJsonDocument::fromJson(json_data, &parseError);
+
     if (parseError.error == QJsonParseError::NoError) {
+
         if (jsonDoc.isObject()) {
             jsonReceived(jsonDoc.object());
         }
     } else {
+        qDebug()<<parseError.error;
         byteArrayReceived(json_data);
     }
-    m_received_data.clear();
+    m_received_data.remove(0,8+json_size);
     return true;
 }
 
@@ -653,8 +671,9 @@ void Client::byteArrayReceived(const QByteArray &doc){
         }
 
     }else{
-         //qDebug() << "Profile image received";
+
          profile->loadFromData(doc);
+         qDebug() << "Profile image loaded";
 
     }
 

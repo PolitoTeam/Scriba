@@ -262,7 +262,9 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
         QJsonObject message=this->login(sender,docObj);
         if (message.value(QLatin1String("success")).toBool() == true)
             this->sendProfileImage(sender);
+        qDebug()<<"sendingJsonLogin";
         this->sendJson(sender,message);
+        qDebug()<<"sentJsonLogin";
     }
 
 
