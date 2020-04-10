@@ -20,11 +20,12 @@ class CRDT : public QObject
 
 public:
     CRDT(Client *client);
+    void clear();
     int getId();
     void setId(int site);
     void localInsert(int line, int index, ushort value, QFont font, QColor color,Qt::Alignment align);
     void localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align);
-    void localErase(int line, int index);
+    void localErase(int& line, int& index,int length);
     int getSiteID();
     void localChangeAlignment(int line,SymbolFormat::Alignment align);
     void localChange(int line, int index, QFont font, QColor color);
@@ -40,14 +41,14 @@ public:
 private slots:
     void handleRemoteInsert(const Symbol& s);
     void handleRemotePaste(const QJsonArray& s);
-    void handleRemoteErase(const Symbol& s);
+    void handleRemoteErase(const QJsonArray& s);
     void handleRemoteChange(const Symbol& s);
     void handleRemoteAlignChange(const Symbol& s);
 
 signals:
     void insert(int line, int index, const Symbol& s);
     void insertGroup(int firstLine,int firstIndex,QString partial,QTextCharFormat newFormat);
-    void erase(int line, int index);
+    void erase(int startLine, int startIndex,int lenght);
     void change(int line, int index, const Symbol& s);
     void changeAlignment(int align, int line, int index);
 

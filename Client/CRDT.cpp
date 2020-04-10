@@ -13,6 +13,29 @@ CRDT::CRDT(Client *client) : client(client) {
     this->size = -1;
 }
 
+
+void CRDT::clear(){
+    disconnect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    disconnect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
+    disconnect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
+    disconnect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
+    disconnect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
+    for (QVector<Symbol> v: _symbols){
+        v.clear();
+    }
+    _symbols.clear();
+    _symbols.push_back(QVector<Symbol>{});
+    this->size=-1;
+    _siteId=0;
+    _counter=0;
+    strategyCache.clear();
+    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    connect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
+    connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
+    connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
+    connect(client, &Client::remoteAlignChange, this, &CRDT::handleRemoteAlignChange);
+}
+
 int CRDT::getId() { return _siteId; }
 void CRDT::setId(int site){this->_siteId = site;}
 
@@ -33,7 +56,6 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font, QColor col
 
     // generate symbol
     Symbol s(value, newPos, ++_counter, font, color);
-    s.setUsername(this->_siteId);
 
     if (s.getValue()=='\0' || s.getValue()=='\n'){
 
@@ -75,7 +97,6 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial, QFont font, 
 
         // generate symbol
         Symbol s(partial.at(i).unicode(), newPos, ++_counter, font, color);
-        s.setUsername(this->_siteId);
 
         if (s.getValue()=='\0' || s.getValue()=='\n'){
              //qDebug()<<"ALIGNMENT: "<<align;
@@ -219,27 +240,35 @@ int CRDT::generateRandomNumBetween(int n1,int n2) { // TODO: check if better to 
     return n1 + (std::rand() % (n2 - n1 + 1));
 }
 
-void CRDT::localErase(int line, int index) {
-    Symbol s = _symbols[line][index];
-    bool newLineRemoved = (s.getValue() == '\n');
-    _symbols[line].erase(_symbols[line].begin() + index);
+void CRDT::localErase(int& line, int& index,int lenght) {
+    QJsonArray symbols;
 
-    if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
-        std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
-        _symbols.erase(_symbols.begin() + line + 1);
+    for (int i=0;i<lenght;i++){
+        qDebug()<<"Iteration: "<<i<<" "<<" line  index: "<<"("<<line<<","<<index<<")";
+        Symbol s = _symbols[line][index];
+        symbols.append(s.toJson());
+        bool newLineRemoved = (s.getValue() == '\n');
+        _symbols[line].erase(_symbols[line].begin() + index);
+
+        if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
+            std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
+            _symbols.erase(_symbols.begin() + line + 1);
+        }
+
+        this->size--;
     }
-
-    this->size--;
 
     // broadcast
     QJsonObject message;
     message["type"] = QStringLiteral("operation");
     message["editorId"] = _siteId;
     message["operation_type"] = DELETE;
-    message["symbol"] = s.toJson();
+    message["symbols"] = symbols;
 
     //qDebug().noquote() << to_string();
+    qDebug()<<"BEFORE SEND JSON IN LOCAL ERASE";
     client->sendJson(message);
+    qDebug()<<"AFTER SEND JSON IN LOCAL ERASE";
 }
 
 void CRDT::localChange(int line, int index, QFont font, QColor color) {
@@ -441,9 +470,11 @@ void CRDT::handleRemotePaste(const QJsonArray& symbols){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
+    qDebug()<<"qui";
 //    //qDebug() << "REMOTE INSERT" << QString(s.getValue()); // << QString(1, s.getValue());
     int line, index;
     if (_symbols.size() != 0) {
+        qDebug()<<"qui";
         findInsertPosition(s, line, index);
     } else {
         line=0;
@@ -581,33 +612,50 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalL
     }
 }
 
-void CRDT::handleRemoteErase(const Symbol& s) {
-    int line, index;
-    bool res = findPosition(s, line, index);
-    //qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
-    if (!res){
+void CRDT::handleRemoteErase(const QJsonArray& symbols) {
+    int startLine,startIndex,endLine,endIndex;
 
-        return;
-      }
+    qDebug()<<"Remote deleting: "<<symbols.size()<<" characters";
 
-    bool newLineRemoved = (s.getValue() == '\n');
-    if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
+    for (int i = 0; i < symbols.size(); i++) {
+            qDebug()<<"Remote delete: "<<i;
+            QJsonObject symbol = symbols[i].toObject();
+            Symbol s = Symbol::fromJson(symbol);
 
-        if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
-            _symbols[line].erase(_symbols[line].begin() + index);
-            std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
-            _symbols.erase(_symbols.begin() + line + 1);
-        } else if (index==0 && _symbols[line].size()==1){
-             _symbols[line].erase(_symbols[line].begin() + index);
-             _symbols.erase(_symbols.begin()+line);
-        }
-        else
-            _symbols[line].erase(_symbols[line].begin() + index);
-        //qDebug() << "deleted";
-        this->size--;
-        emit erase(line, index);
-        return;
+            int line, index;
+            bool res = findPosition(s, line, index);
+            if (i==0){
+                startLine=line;
+                startIndex=index;
+            }
+            endLine=line;
+            endIndex=index;
+            //qDebug()<<"ERASE res= "<<res<< " LINE: "<<line<<" INDEX: "<<index;
+            if (!res){
+
+                return;
+              }
+
+            bool newLineRemoved = (s.getValue() == '\n');
+            if (index >= 0 && line >= 0) { // otherwise already deleted by another editor (i.e. another site)
+
+                if (newLineRemoved && line + 1 < _symbols.size()) { // non-empty line after current line
+                    _symbols[line].erase(_symbols[line].begin() + index);
+                    std::copy(_symbols[line + 1].begin(), _symbols[line + 1].end(), std::back_inserter(_symbols[line]));
+                    _symbols.erase(_symbols.begin() + line + 1);
+                } else if (index==0 && _symbols[line].size()==1){
+                     _symbols[line].erase(_symbols[line].begin() + index);
+                     _symbols.erase(_symbols.begin()+line);
+                }
+                else
+                    _symbols[line].erase(_symbols[line].begin() + index);
+                //qDebug() << "deleted";
+                this->size--;
+
+            }
     }
+     emit erase(startLine, startIndex,symbols.size());
+
 }
 
 void CRDT::handleRemoteChange(const Symbol& s) {

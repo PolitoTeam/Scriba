@@ -235,38 +235,21 @@ void Editor::printPdf()
 }
 void Editor::exit()
 {
-    client->closeFile();
-    highlighter->freeAll();
-    // clean the editor: disconnect...
-    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
-    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
-
     this->clear();
-    // create new CRDT with connections
-    delete crdt;
 
-    crdt = new CRDT(client);
-    crdt->setId(fromStringToIntegerHash(client->getUsername()));
-    this->highlighter->setCRDT(crdt);
+  //  crdt = new CRDT(client);
+   crdt->setId(fromStringToIntegerHash(client->getUsername()));
+   // this->highlighter->setCRDT(crdt);
     this->highlighter->addLocal(fromStringToIntegerHash(client->getUsername()));
 
-    connect(crdt, &CRDT::insert, this, &Editor::on_insert);
-    connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
-    connect(crdt, &CRDT::erase, this, &Editor::on_erase);
-    connect(crdt, &CRDT::change, this, &Editor::on_change);
-    connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
-    // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
-    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
-    connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
-    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 
     emit changeWidget(HOME);
 }
 
 void Editor::closeEvent (QCloseEvent *)
 {
-    client->closeFile();
+   this->clear();
+
 }
 
 void Editor::peerYou()
@@ -310,23 +293,6 @@ void Editor::undo()
      ui->textEdit->document()->undo();  //the change due to the insert/delete are automatically managed by on_contents_change
      // update alignment icon
      alignmentChanged(ui->textEdit->alignment());
-     /*
-     int line = this->line;
-     int index = this->index;
-
-
-     if (index ==0 && this->crdt->lineSize(line)>1){
-         line-=1;
-         if (line<0)
-             line=0;
-     }
-    QTextBlockFormat a = ui->textEdit->document()->findBlockByLineNumber(line).blockFormat();
-    Qt::Alignment align = a.alignment();
-    //qDebug()<<"ALIGNMENT: "<<align;
-
-     this->crdt->localChangeAlignment(line,alignmentConversion(align));
-   // this->undoFlag=false;
-   */
 
 }
 
@@ -340,23 +306,6 @@ void Editor::redo()
     ui->textEdit->document()->redo();
     // update alignment icon
     alignmentChanged(ui->textEdit->alignment());
-    /*
-    int line = this->line;
-    int index = this->index;
-
-
-    if (index ==0 && this->crdt->lineSize(line)>1){
-        line-=1;
-        if (line<0)
-            line=0;
-    }
-   QTextBlockFormat a = ui->textEdit->document()->findBlockByLineNumber(line).blockFormat();
-   Qt::Alignment align = a.alignment();
-   //qDebug()<<"ALIGNMENT: "<<align;
-
-    this->crdt->localChangeAlignment(line,alignmentConversion(align));
-   // this->redoFlag=false;
-   */
 }
 
 void Editor::selectFont()
@@ -608,10 +557,11 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
         saveCursorPosition();
         // remove multiple chars
-        for (int i = 0; i < removed.length(); i++) {
-            //qDebug() << "Removed " << removed.at(i) << "in position (" << this->line << "," << this->index << ")";
-            crdt->localErase(line, index);
+        qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
+        if (removed.length()){
+            crdt->localErase(line, index,removed.length());
         }
+        qDebug()<<"After remove line and index: "<<"("<<line<<","<<index<<")";
     } else if (charsRemoved==charsAdded && (this->undoFlag==true || this->redoFlag==true)){
         //format/alignment change by redo/undo
         //qDebug()<<"format change";
@@ -760,19 +710,20 @@ void Editor::on_insertGroup(int line, int index, const QString& s,QTextCharForma
     //qDebug().noquote() << crdt->to_string();
 }
 
-void Editor::on_erase(int line, int index)
+void Editor::on_erase(int line, int index,int lenght)
 {
+    qDebug()<<"ON ERASE";
     QTextCursor cursor = ui->textEdit->textCursor();
-    cursor.setPosition(index);
-
 //    //qDebug() << line << index;
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
-
     cursor.setPosition(block.position() + index);
+    for (int i=0;i<lenght;i++){
+        cursor.movePosition(QTextCursor::NextCharacter,QTextCursor::KeepAnchor);
+    }
 //    //qDebug() << "block position" << block.position();
 
 //    //qDebug() << "before deleting";
-    cursor.deleteChar();
+    cursor.removeSelectedText();
 //    //qDebug() << "after deleting";
 
     //qDebug().noquote() << crdt->to_string();
@@ -837,10 +788,23 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 }
 
 void Editor::clear(){
+    client->closeFile();
+    highlighter->freeAll();
+    // clean the editor: disconnect...
+    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
+    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
+    // create new CRDT with connections
+    crdt->clear();
     ui->listWidget->clear();
     ui->textEdit->clear();
 
+    // ... and then riconnect (because we want to remove chars locally without deleteling them in server)
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);
+    connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 }
+
 
 void Editor::removeUser(const QString& username, const QString& nickname){
    //qDebug()<<"Here remove"<<endl;
@@ -1114,17 +1078,6 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
 }
 
 
-/*
-void Editor::correct_position(int& line, int& index) {
-    for (RemoteCursor *cursor : ui->textEdit->remote_cursors) {
-        int cline, cindex;
-        cursor->getPosition(cline, cindex);
-        // TODO: less or less/equal? <= seems to work
-        if (line == cline && cindex <= index)
-            index--;
-    }
-}
-*/
 
 
 

@@ -55,8 +55,10 @@ AppMainWindow::~AppMainWindow()
 
 void AppMainWindow::on_logOut()
 {
+    if (!editor->isHidden())
+        editor->clear();
     login->disconnect();
-  //  editor->clear();
+
 }
 
 void AppMainWindow::on_changeWidget(int widget) {
@@ -79,7 +81,9 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
     // show a message to the user that informs of what kind of error occurred
     switch (socketError) {
     case QAbstractSocket::RemoteHostClosedError:
+        qDebug()<<"Remote Host Closed Error";
     case QAbstractSocket::ProxyConnectionClosedError:
+        this->on_logOut();
         QMessageBox::warning(this, tr("Disconnected"), tr("The host terminated the connection"));
         on_changeWidget(LOGIN);
         break;
