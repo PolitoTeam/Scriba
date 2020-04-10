@@ -91,6 +91,7 @@ private:
     QAction *actionAlignRight;
     QAction *actionShowAssigned;
 
+
     QMessageBox* popUp;
 
     void showEvent(QShowEvent* event);

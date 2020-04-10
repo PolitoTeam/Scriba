@@ -14,8 +14,12 @@ public:
     explicit MyQTextEdit(QWidget *parent = nullptr);
     QMap<int, RemoteCursor*> remote_cursors;
     void keyPressEvent(QKeyEvent *e) override;
+    void insertFromMimeData(const QMimeData *source) override;
+    void setLine(int* line);
+    void setIndex(int* index);
 private:
     QTextCursor cursor;
+    int* line,*index;
     // <editorid, cursor>
 
 
@@ -25,6 +29,8 @@ signals:
     void undo();
     void redo();
     void resetDefaultAlignment(bool a);
+    void firstLineAlignmentOnPaste(QString alignment);
+
 
 public slots:
 

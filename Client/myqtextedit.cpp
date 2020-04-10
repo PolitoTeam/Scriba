@@ -2,10 +2,15 @@
 #include <QPaintEvent>
 #include <QDebug>
 #include <qabstracttextdocumentlayout.h>
+#include <QMimeData>
+#include <QRegularExpression>
+#include <QTextBlock>
+
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent)
 {
     this->setFont(QFont("American Typewriter"));
+
 }
 
 void MyQTextEdit::paintEvent(QPaintEvent *e)
@@ -70,5 +75,52 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e)
     //qDebug()<<"KEY: "<<e->key();
 
 
+}
+
+void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
+
+    QTextCursor temp = this->textCursor();
+
+    QRegularExpression re("(?<=<body>\\n<p align=\\\")(right)|(center)(?=\\\")");
+    QRegularExpressionMatch match = re.match(source->html());
+
+    if(match.hasMatch()){
+        QString alignment = match.captured(0);
+        qDebug()<<"alignment first line: "<<alignment;
+
+        QTextBlockFormat newformat;
+        qDebug()<<"inDEX ON PASTE: "<<*index;
+
+        if (*index==0){
+            if (alignment=="right"){
+                qDebug()<<"qui right";
+                newformat.setAlignment(Qt::AlignTrailing|Qt::AlignAbsolute);
+            }
+            else if(alignment=="center")
+                newformat.setAlignment(Qt::AlignHCenter);
+            else {
+                 newformat.setAlignment(Qt::AlignLeft|Qt::AlignLeading);
+            }
+            qDebug()<<"alignment: "<<alignment;
+
+            QTextBlock block = this->document()->findBlockByLineNumber(*line);
+            temp.setPosition(block.position() + *index);
+            qDebug()<<"Get Position: "<<temp.position();
+            temp.mergeBlockFormat(newformat);
+        }
+    }
+
+    this->QTextEdit::insertFromMimeData(source);
+
+
+
+}
+
+void MyQTextEdit::setLine(int* line){
+    this->line=line;
+}
+
+void MyQTextEdit::setIndex(int* index){
+    this->index=index;
 }
 

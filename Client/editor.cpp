@@ -78,6 +78,7 @@ Editor::Editor(QWidget *parent,Client* client) :
     connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
     connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this, &Editor::on_currentCharFormatChanged);
 
+
     // ADD font, size and color to toolbar (cannot be otherwise achieved using Qt creator GUI):
     // 1. font
     comboFont = new QFontComboBox(ui->toolBar);
@@ -174,6 +175,8 @@ Editor::Editor(QWidget *parent,Client* client) :
 //    connect(actionTextColor, &QAction::triggered, this, &Editor::on_formatChange);
 //      connect(this, &Editor::formatChange, this, &Editor::on_formatChange);
 
+    ui->textEdit->setLine(&line);
+    ui->textEdit->setIndex(&index);
 
 
 }
@@ -493,6 +496,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
                 // to retrieve the format it is necessary to be on the RIGHT of the target char
                 cursor.movePosition(QTextCursor::Right);
+                qDebug()<<"Added at: "<<i<<" -> "<<added.at(i).unicode();
                 font = cursor.charFormat().font();
                 color = cursor.charFormat().foreground().color();
                 align = alignPrec;
