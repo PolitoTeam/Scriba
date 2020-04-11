@@ -235,7 +235,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString())
         return; // a message with no type was received so we just ignore it
-    //qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
+    qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
 
     if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0) { //It's a login message
         if (m_loggedIn)
@@ -416,9 +416,9 @@ void Client::jsonReceived(const QJsonObject &docObj)
             emit wrongSharedLink(reasonVal.toString());
         }
     }
-    else if (typeVal.toString().compare(QLatin1String("server_stopped"), Qt::CaseInsensitive) == 0) {
-        emit error(QAbstractSocket::ProxyConnectionClosedError);
-    }
+//    else if (typeVal.toString().compare(QLatin1String("server_stopped"), Qt::CaseInsensitive) == 0) {
+//        emit error(QAbstractSocket::ProxyConnectionClosedError);
+//    }
 }
 
 void Client::createNewFile(QString filename)
@@ -459,37 +459,37 @@ void Client::connectToServer(const QHostAddress &address, quint16 port)
 
 void Client::onReadyRead()
 {
-    qDebug()<<"onReadyRead";
+//    qDebug()<<"onReadyRead";
 
     if (m_clientSocket->bytesAvailable()>0)
         m_received_data.append(m_clientSocket->readAll());
     else {
-        qDebug()<<"Richiamata ma niente da leggere";
+//        qDebug()<<"Richiamata ma niente da leggere";
     }
 
 
     if (m_received_data.isNull()|| m_received_data.size()<8){
-        qDebug()<<"return: "<<m_received_data.size()<<" , "<<m_exptected_json_size;
+//        qDebug()<<"return: "<<m_received_data.size()<<" , "<<m_exptected_json_size;
         return;
     }
 
     if(m_exptected_json_size == 0) {
-        qDebug()<<"extract_content_size()";
+//        qDebug()<<"extract_content_size()";
         // Update m_received_data and m_exptected_json_size
         extract_content_size();
-        qDebug()<<"After extract "<<m_exptected_json_size;
+//        qDebug()<<"After extract "<<m_exptected_json_size;
     }
 
     // If data completely received
     if (m_exptected_json_size > 0
             && m_received_data.size() >= m_exptected_json_size+8 ) {
-        qDebug()<<"received data before: "<<m_received_data.size();
+//        qDebug()<<"received data before: "<<m_received_data.size();
         if(parseJson()) {
                  m_exptected_json_size=0;
                  onReadyRead();
              }
         }
-        qDebug()<<"received data before: "<<m_received_data.size();
+//        qDebug()<<"received data before: "<<m_received_data.size();
 
 }
 
@@ -512,7 +512,7 @@ void Client::extract_content_size()
 
 bool Client::parseJson()
 {
-    qDebug()<<"parseJson";
+//    qDebug()<<"parseJson";
     QByteArray json_data;
     QDataStream in;
     m_buffer.setBuffer(&m_received_data);
@@ -594,8 +594,8 @@ void Client::byteArrayReceived(const QByteArray &doc){
                             qDebug()<<"To insert";
                             for (int i = symbols.size() - 1; i >= 0; i--) {
                                 Symbol s = Symbol::fromJson(symbols[i].toObject());
-                                if (s.getValue()=='\0')
-                                     qDebug() << "eccolo";
+//                                if (s.getValue()=='\0')
+//                                     qDebug() << "eccolo";
                                 emit remoteInsert(s);
                                 if (s.getValue()=='\n' || s.getValue()=='\0')
                                     emit remoteAlignChange(s);

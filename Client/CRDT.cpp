@@ -470,11 +470,11 @@ void CRDT::handleRemotePaste(const QJsonArray& symbols){
 }
 
 void CRDT::handleRemoteInsert(const Symbol& s) {
-    qDebug()<<"qui";
+//    qDebug()<<"qui";
 //    //qDebug() << "REMOTE INSERT" << QString(s.getValue()); // << QString(1, s.getValue());
     int line, index;
     if (_symbols.size() != 0) {
-        qDebug()<<"qui";
+//        qDebug()<<"qui";
         findInsertPosition(s, line, index);
     } else {
         line=0;

@@ -979,8 +979,8 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
     f.close();
     // ...and check for errors in the format
 //    QJsonParseError parseError;
-    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
-//    QJsonDocument document = QJsonDocument::fromJson(json_data);
+//    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
+    QJsonDocument document = QJsonDocument::fromJson(json_data);
 
 //    if (parseError.error != QJsonParseError::NoError) {
 //        message["success"] = false;
@@ -1137,7 +1137,7 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
 
 void Server::saveFile() {
     for (QString filename : symbols_list.keys()) {
-        //qDebug()<<"I'm saving "<<filename;
+        qDebug()<<"I'm saving "<<filename;
         QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
 
         QFile file(filePath);
@@ -1149,8 +1149,8 @@ void Server::saveFile() {
         }
       //  qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
 
-        file.write(QJsonDocument(symbols_json).toBinaryData());
-//        file.write(QJsonDocument(symbols_json).toJson());
+//        file.write(QJsonDocument(symbols_json).toBinaryData());
+        file.write(QJsonDocument(symbols_json).toJson());
         file.close();
     }
 }
