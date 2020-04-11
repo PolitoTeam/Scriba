@@ -15,7 +15,6 @@ Server::Server(QObject *parent,Database* db)
 	: QTcpServer(parent)
 	, m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
 	, db(db)
-
 {
 	m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
 	m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
@@ -60,9 +59,7 @@ Server::Server(QObject *parent,Database* db)
 	//    QVector<QPair<QString, QString>> a;
 	//    db->getFiles("b@b", a);
 
-	// testing the timer TODO: use slot to save all files
 	QTimer *timer = new QTimer(this);
-	//    connect(timer, &QTimer::timeout, [=]() { qDebug()<<"Timer!"<<endl;});
 	connect(timer, &QTimer::timeout, this, &Server::saveFile);
 	timer->start(1000 * SAVE_INTERVAL_SEC);
 }
@@ -266,60 +263,6 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 		this->sendJson(sender,message);
 		qDebug()<<"sentJsonLogin";
 	}
-
-
-
-	/*
-	if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) != 0)
-		return;
-	const QJsonValue user = docObj.value(QLatin1String("username"));
-	if (user.isNull() || !user.isString())
-		return;
-	const QString username = user.toString().simplified();
-	if (username.isEmpty())
-		return;
-//    for (ServerWorker *worker : qAsConst(m_clients)) {
-//        if (worker == sender)
-//            continue;
-//        if (worker->userName().compare(newUserName, Qt::CaseInsensitive) == 0) {
-//            QJsonObject message;
-//            message["type"] = QStringLiteral("login");
-//            message["success"] = false;
-//            message["reason"] = QStringLiteral("duplicate username");
-//            sendJson(sender, message);
-//            return;
-//        }
-//    }
-//    sender->setUserName(newUserName);
-
-	const QJsonValue pass = docObj.value(QLatin1String("password"));
-	if (pass.isNull() || !pass.isString())
-		return;
-	const QString password = pass.toString().simplified();
-	if (password.isEmpty())
-		return;
-
-	// login failed
-	if (username != "test" || password != "test") {
-		QJsonObject message;
-		message["type"] = QStringLiteral("login");
-		message["success"] = false;
-		message["reason"] = QStringLiteral("Wrong username/password");
-		//qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
-		sendJson(sender, message);
-		return;
-	}
-
-	QJsonObject successMessage;
-	successMessage["type"] = QStringLiteral("login");
-	successMessage["success"] = true;
-	//qDebug().noquote() << QString::fromUtf8(QJsonDocument(successMessage).toJson(QJsonDocument::Compact));
-	sendJson(sender, successMessage);
-//    QJsonObject connectedMessage;
-//    connectedMessage["type"] = QStringLiteral("newuser");
-//    connectedMessage["username"] = newUserName;
-//    broadcast(connectedMessage, sender);
-*/
 }
 
 QJsonObject Server::signup(ServerWorker *sender,const QJsonObject &doc){
@@ -508,27 +451,9 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 			// TODO: now saving after every cursor change (code right after), but this shouldn't be
 			// a problem once we set the saving every X seconds
 		}
+
+		changed.insert(sender->getFilename(), true);
 		broadcast(docObj, sender);
-
-		// TODO: store on disk -> CHANGE to save every X minutes
-		//        QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + sender->getFilename();
-		//        //qDebug() << "filename " << sender->getFilename();
-		////        if (QFile::exists(filePath))
-		////        {
-		////            QFile::remove(filePath);
-		////        }
-		////        //qDebug() << filePath;
-		//        QFile file(filePath);
-		//        file.open(QIODevice::ReadWrite | QIODevice::Truncate);
-		//        QJsonArray symbols_json;
-		//        for (QJsonObject symbol : symbols_list.value(sender->getFilename())->values()) {
-		//            symbols_json.append(symbol);
-		//        }
-
-		////        //qDebug() << symbols_json;
-		////        file.write(QJsonDocument(symbols_json).toBinaryData());
-		//        file.write(QJsonDocument(symbols_json).toJson());
-		//        file.close();
 	}
 
 	if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
@@ -536,20 +461,20 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 		this->sendJson(sender,message);
 	}
 	if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
-		// send symbols in file to client
+		// Send symbols in file to client
 		QVector<QByteArray> v;
 		QJsonObject message = this->sendFile(docObj,sender,v);
 		QByteArray toSend = this->createByteArrayJsonImage(message,v);
 
 		this->sendByteArray(sender,toSend);
 
-		// store symbols in server memory
+		// Store symbols in server memory
 		foreach (const QJsonValue & symbol, message["content"].toArray()) {
 			QString position = fromJsonArraytoString(symbol["position"].toArray());
-			//qDebug() << position;
 			if (!symbols_list.contains(sender->getFilename()))
 				symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
 			symbols_list.value(sender->getFilename())->insert(position, symbol.toObject());
+			changed.insert(sender->getFilename(), false);
 		}
 	}
 	if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
@@ -876,10 +801,11 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	mapFileWorkers->insert(filename + "," + username,list);
 	//qDebug() << mapFileWorkers;
 
-	if (!symbols_list.contains(sender->getFilename()))
+	if (!symbols_list.contains(sender->getFilename())) {
 		symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
+		changed.insert(sender->getFilename(), true);
+	}
 
-	//    symbols_list.insert()
 	message["success"] = true;
 	message["shared_link"] = sharedLink;
 	return message;
@@ -1041,23 +967,23 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 	return message;
 }
 
-bool Server::udpateSymbolListAndCommunicateDisconnection(QString filename, ServerWorker* sender){
-
-	// remove client from list of clients using current file
+bool Server::udpateSymbolListAndCommunicateDisconnection(QString filename,
+														 ServerWorker* sender){
+	// Remove client from list of clients using current file
 	if (mapFileWorkers->contains(filename)){
 		if (!mapFileWorkers->value(filename)->removeOne(sender))
 			return false;
-	} else{
+	} else {
 		return false;
 	}
 
-
 	if (mapFileWorkers->value(filename)->isEmpty()){
-
 		delete mapFileWorkers->value(filename);
 		mapFileWorkers->remove(filename);
-		// empty symbol list
+
+		// Empty symbol list
 		symbols_list.remove(sender->getFilename());
+		changed.remove(sender->getFilename());
 	}
 	else{ QJsonObject message_broadcast;
 		message_broadcast["type"] = QStringLiteral("disconnection");
@@ -1137,20 +1063,25 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
 
 void Server::saveFile() {
 	for (QString filename : symbols_list.keys()) {
-		qDebug()<<"I'm saving "<<filename;
-		QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
+		if (changed.value(filename) == true) {
+			qDebug() << "I'm saving " << filename;
+			QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
 
-		QFile file(filePath);
-		bool flag = file.open(QIODevice::ReadWrite | QIODevice::Truncate);
+			QFile file(filePath);
+			bool flag = file.open(QIODevice::ReadWrite | QIODevice::Truncate);
 
-		QJsonArray symbols_json;
-		for (QJsonObject symbol : symbols_list.value(filename)->values()) {
-			symbols_json.append(symbol);
+			QJsonArray symbols_json;
+			for (QJsonObject symbol : symbols_list.value(filename)->values()) {
+				symbols_json.append(symbol);
+			}
+			//  qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
+
+			// file.write(QJsonDocument(symbols_json).toBinaryData());
+			file.write(QJsonDocument(symbols_json).toJson());
+			file.close();
 		}
-		//  qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
 
-		//        file.write(QJsonDocument(symbols_json).toBinaryData());
-		file.write(QJsonDocument(symbols_json).toJson());
-		file.close();
+		// Reset value to false
+		changed.insert(filename, false);
 	}
 }
