@@ -20,30 +20,30 @@ class Modify;
 
 class AppMainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    AppMainWindow(QWidget *parent = nullptr,Client* c=nullptr);
-    ~AppMainWindow();
+	AppMainWindow(QWidget *parent = nullptr,Client* c=nullptr);
+	~AppMainWindow();
 
-//public slots:
-//     void errorServerConnection();
+	//public slots:
+	//     void errorServerConnection();
 
 private slots:
-    void on_logOut();
-    void error(QAbstractSocket::SocketError socketError);
+	void on_logOut();
+	void error(QAbstractSocket::SocketError socketError);
 
-    void on_changeWidget(int widget);
+	void on_changeWidget(int widget);
 
 private:
-    Ui::Index *ui;
-    QStackedWidget *stackedWidget;
-    Login* login;
-    Signup* signup;
-    Home* home;
-    Editor* editor;
-    Client* client;
-    Modify* modify;
+	Ui::Index *ui;
+	QStackedWidget *stackedWidget;
+	Login* login;
+	Signup* signup;
+	Home* home;
+	Editor* editor;
+	Client* client;
+	Modify* modify;
 };
 
 #endif // INDEX_H

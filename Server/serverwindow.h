@@ -10,21 +10,21 @@ class ServerWindow;
 class Server;
 class ServerWindow : public QWidget
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(ServerWindow)
+	Q_OBJECT
+	Q_DISABLE_COPY(ServerWindow)
 public:
-    explicit ServerWindow(QWidget *parent = nullptr, quint16 port = 0);
-    ~ServerWindow();
+	explicit ServerWindow(QWidget *parent = nullptr, quint16 port = 0);
+	~ServerWindow();
 
 private:
-    Ui::ServerWindow *ui;
-    Server *m_Server;
-    quint16 port;
+	Ui::ServerWindow *ui;
+	Server *m_Server;
+	quint16 port;
 
-    void closeEvent(QCloseEvent *event);
+	void closeEvent(QCloseEvent *event);
 
 private slots:
-    void toggleStartServer();
+	void toggleStartServer();
 };
 
 #endif // SERVERWINDOW_H

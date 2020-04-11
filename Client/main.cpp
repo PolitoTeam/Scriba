@@ -7,31 +7,31 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    QString addr = ADDR;
-    quint16 port = PORT;
+	QApplication a(argc, argv);
+	QString addr = ADDR;
+	quint16 port = PORT;
 
-    QStringList args = QCoreApplication::arguments();
-    //qDebug() << args;
-    if (args.length() != 1 && args.length() != 3) {
-        //qDebug() << "Usage: ./Client <ip_addr> <port_number>";
-        //qDebug() << "If no argument provided localhost:1500 is used.";
-        exit(-1);
-    }
+	QStringList args = QCoreApplication::arguments();
+	//qDebug() << args;
+	if (args.length() != 1 && args.length() != 3) {
+		//qDebug() << "Usage: ./Client <ip_addr> <port_number>";
+		//qDebug() << "If no argument provided localhost:1500 is used.";
+		exit(-1);
+	}
 
-    if (args.length() == 3) {
-        addr = args.at(1);
+	if (args.length() == 3) {
+		addr = args.at(1);
 
-        bool ok;
-        unsigned int tmp = args.at(2).toInt(&ok);
-        if (ok) {
-            port = tmp;
-        }
+		bool ok;
+		unsigned int tmp = args.at(2).toInt(&ok);
+		if (ok) {
+			port = tmp;
+		}
 
-        //qDebug() << "addr:" << addr << "port:" << port;
-    }
+		//qDebug() << "addr:" << addr << "port:" << port;
+	}
 
-    AppMainWindow m(nullptr,new Client(nullptr, addr, port));
-    m.show();
-    return a.exec();
+	AppMainWindow m(nullptr,new Client(nullptr, addr, port));
+	m.show();
+	return a.exec();
 }
