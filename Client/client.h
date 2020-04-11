@@ -7,7 +7,7 @@
 #include <QBuffer>
 #include "symbol.h"
 #include "remotecursor.h"
-
+#include <QProgressDialog>
 
 class QHostAddress;
 class QJsonDocument;
@@ -111,6 +111,8 @@ private:
     quint64 m_exptected_json_size = 0;
     QByteArray m_received_data;
     QBuffer m_buffer;
+    QProgressDialog *progress;
+
 };
 
 #endif // CLIENT_H

@@ -580,15 +580,28 @@ void Client::byteArrayReceived(const QByteArray &doc){
             //                }
                             // REVERSE ORDER to have '\0' as first char
                             qDebug()<<"To insert";
+                            progress = new QProgressDialog(nullptr);
+                            progress->setWindowTitle("Loading...");
+                            progress->setRange(0, symbols.size() - 1);
+                            progress->setModal(true);
+                            progress->setMinimumDuration(500);
+                            progress->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+                            progress->setCancelButton(nullptr);
+
+                            int progress_counter = 0;
                             for (int i = symbols.size() - 1; i >= 0; i--) {
                                 Symbol s = Symbol::fromJson(symbols[i].toObject());
-//                                if (s.getValue()=='\0')
-//                                     qDebug() << "eccolo";
+                                // if (s.getValue()=='\0')
+                                //    qDebug() << "eccolo";
                                 emit remoteInsert(s);
                                 if (s.getValue()=='\n' || s.getValue()=='\0')
                                     emit remoteAlignChange(s);
 
+                                progress_counter++;
+                                progress->setValue(progress_counter);
                             }
+                            progress->hide();
+                            progress->cancel();
 
                             const QJsonValue name = docObj.value(QLatin1String("filename"));
                             if (name.isNull() || !name.isString())
