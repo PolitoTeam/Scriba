@@ -28,8 +28,12 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 
     // Forward the connected and disconnected signals
     connect(m_clientSocket, &QSslSocket::connected, this, &Client::connected);
-    connect(m_clientSocket, &QSslSocket::disconnected, this, &Client::disconnected);
-     connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{this->m_received_data.clear();this->m_exptected_json_size=0;});
+//    connect(m_clientSocket, &QSslSocket::disconnected, this, &Client::disconnected);
+//    connect(m_clientSocket, &QSslSocket::error, this, &Client::error);
+    connect(m_clientSocket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
+            this, &Client::error);
+
+    connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{this->m_received_data.clear();this->m_exptected_json_size=0;});
     connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
 
     connect(this,&Client::connected,this, []()->void{qDebug()<<"New client Connected";});
@@ -40,7 +44,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
     // Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
 
     connect(m_clientSocket, &QSslSocket::encrypted, this, [](){qDebug()<<"encrypted!";});
-    connect(m_clientSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&Client::sslErrors);
+//    connect(m_clientSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&Client::sslErrors);
 
 
 
@@ -68,11 +72,11 @@ Client::Client(QObject *parent, QString addr, quint16 port)
     profile=new QPixmap(":/images/anonymous");
 }
 
-void Client::sslErrors(const QList<QSslError> &errors)
-    {
-        foreach (const QSslError &error, errors)
-            qDebug() <<"ERROR :"<< error.errorString();
-    }
+//void Client::sslErrors(const QList<QSslError> &errors)
+//    {
+//        foreach (const QSslError &error, errors)
+//            qDebug() <<"ERROR :"<< error.errorString();
+//    }
 
 void Client::login(const QString &username, const QString &password)
 {
@@ -202,22 +206,6 @@ void Client::checkOldPassword(const QString &old_password)
 
     clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 }
-//void Client::sendMessage(const QString &text)
-//{
-//    if (text.isEmpty())
-//        return; // We don't send empty messages
-//    // create a QDataStream operating on the socket
-//    QDataStream clientStream(m_clientSocket);
-//    // set the version so that programs compiled with different versions of Qt can agree on how to serialise
-//    clientStream.setVersion(QDataStream::Qt_5_7);
-//    // Create the JSON we want to send
-//    QJsonObject message;
-//    message["type"] = QStringLiteral("message");
-//    message["text"] = text;
-//    // send the JSON using QDataStream
-//    clientStream << QJsonDocument(message).toJson();
-//}
-
 
 //Attempts to close the socket. If there is pending data waiting to be written, QAbstractSocket will enter ClosingState and wait until all data has been written.
 void Client::disconnectFromHost()
@@ -453,7 +441,7 @@ void Client::connectToServer(const QHostAddress &address, quint16 port)
         }
         else {
             qDebug("Unable to connect to server");
-            emit error(QAbstractSocket::HostNotFoundError);
+//            emit error(QAbstractSocket::HostNotFoundError);
         }
 }
 

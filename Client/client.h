@@ -50,7 +50,7 @@ public slots:
     void checkOldPassword(const QString &old_password);
     void disconnectFromHost();
     void openFile(const QString& filename);
-    void sslErrors(const QList<QSslError> &errors);
+//    void sslErrors(const QList<QSslError> &errors);
 
 
 

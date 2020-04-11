@@ -238,20 +238,19 @@ void Editor::printPdf()
 }
 void Editor::exit()
 {
-    this->clear();
+    this->clear(false);
 
   //  crdt = new CRDT(client);
    crdt->setId(fromStringToIntegerHash(client->getUsername()));
    // this->highlighter->setCRDT(crdt);
     this->highlighter->addLocal(fromStringToIntegerHash(client->getUsername()));
 
-
     emit changeWidget(HOME);
 }
 
-void Editor::closeEvent (QCloseEvent *)
+void Editor::closeEvent(QCloseEvent *)
 {
-   this->clear();
+   this->clear(false);
 
 }
 
@@ -791,8 +790,9 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
     }//per ora è visualizzato l'username per faciliatare la cancellazione senza riferimenti alla riga
 }
 
-void Editor::clear(){
-    client->closeFile();
+void Editor::clear(bool serverDisconnected){
+    if (!serverDisconnected)
+        client->closeFile();
     highlighter->freeAll();
     // clean the editor: disconnect...
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this, &Editor::on_contentsChange);

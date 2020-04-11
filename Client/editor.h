@@ -20,7 +20,7 @@ class Editor : public QMainWindow
 public:
     Editor(QWidget *parent = nullptr,Client* client=0);
     ~Editor();
-    void clear();
+    void clear(bool serverDisconnected);
     Qt::Alignment getCurrentAlignment();
     bool undoFlag;
     bool redoFlag;

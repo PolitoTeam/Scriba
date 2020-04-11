@@ -26,8 +26,8 @@ public:
     AppMainWindow(QWidget *parent = nullptr,Client* c=nullptr);
     ~AppMainWindow();
 
-public slots:
-     void errorServerConnection();
+//public slots:
+//     void errorServerConnection();
 
 private slots:
     void on_logOut();
