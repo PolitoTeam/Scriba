@@ -7,6 +7,8 @@
 #include <QSslKey>
 #include <QSslCertificate>
 #include "database.h"
+//#include "mongo.h"
+
 class QThread;
 class ServerWorker;
 class QJsonObject;
@@ -42,6 +44,7 @@ private:
 	QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
 	// <filename, changed>
 	QMap<QString, bool> changed;
+//	Mongo mongo_db;
 
 private slots:
 	void broadcast(const QJsonObject &message, ServerWorker *exclude);

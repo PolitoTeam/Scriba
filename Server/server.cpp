@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QSslSocket>
 #include <QSslConfiguration>
+#include "mongo.h"
 
 Server::Server(QObject *parent,Database* db)
 	: QTcpServer(parent)
@@ -208,9 +209,6 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
 
 }
-
-
-
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
@@ -795,6 +793,11 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	}
 	file.open(QIODevice::WriteOnly);
 
+	Mongo mongo_db;
+	if (!mongo_db.insertNewFile(filename, username)) {
+		throw new std::runtime_error("File shouldn't already exist.");
+	}
+
 	// add current worker to the map <file, list_of_workers>
 	QList<ServerWorker*>* list=new QList<ServerWorker*>();
 	list->append(sender);
@@ -917,6 +920,9 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 
 		}
 		symbols = document.array();
+
+//		Mongo mongodb;
+//		mongodb.retrieveFile();
 	}
 
 	// retrieve shared link
@@ -1071,14 +1077,22 @@ void Server::saveFile() {
 			bool flag = file.open(QIODevice::ReadWrite | QIODevice::Truncate);
 
 			QJsonArray symbols_json;
+			std::vector<std::string> vector = {};
 			for (QJsonObject symbol : symbols_list.value(filename)->values()) {
 				symbols_json.append(symbol);
+				QJsonDocument doc(symbol);
+				QString strJson(doc.toJson(QJsonDocument::Compact));
+				std::string a = strJson.toUtf8().constData();
+				vector.push_back(a);
 			}
 			//  qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
 
 			// file.write(QJsonDocument(symbols_json).toBinaryData());
 			file.write(QJsonDocument(symbols_json).toJson());
 			file.close();
+
+			Mongo mongo_db;
+			mongo_db.saveFile(vector);
 		}
 
 		// Reset value to false

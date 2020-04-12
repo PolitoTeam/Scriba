@@ -40,12 +40,10 @@ DatabaseError Database::signup(const QString &username,const QString &password){
 			// Conversion from QString to char *
 			const char *password_char = password.toLocal8Bit().data();
 
-			if (crypto_pwhash_str(
-						hashed_password, password_char, strlen(password_char),
-						crypto_pwhash_OPSLIMIT_SENSITIVE,
-						crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-				qDebug() << "Error while hashing...";
-			}
+			crypto_pwhash_str(hashed_password, password_char,
+							  strlen(password_char),
+							  crypto_pwhash_OPSLIMIT_SENSITIVE,
+							  crypto_pwhash_MEMLIMIT_INTERACTIVE);
 
 			QString hashed_pass_qstring = QString::fromUtf8(hashed_password);
 			qry.prepare("INSERT INTO USER (Username, Nickname, Password) "

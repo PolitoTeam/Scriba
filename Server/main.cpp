@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <stdlib.h>
-#include "mongo.h"
+//#include "mongo.h"
 
 #define PORT 1500
 
