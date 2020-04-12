@@ -27,12 +27,14 @@ CONFIG += c++11
 SOURCES += \
         database.cpp \
         main.cpp \
+        mongo.cpp \
         server.cpp \
         serverwindow.cpp \
         serverworker.cpp
 
 HEADERS += \
         database.h \
+        mongo.h \
         serializeSize.h \
         server.h \
         serverwindow.h \
@@ -53,8 +55,21 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../3rdparty/libsodium/1
 else:macx: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/macOS -lsodium
 else:unix: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/linux -lsodium
 
+unix:CONFIG(debug, debug|release): LIBS += -L/usr/local/lib -lmongocxx -lbsoncxx
+#unix:CONFIG(debug, debug|release): LIBS += -lmongocxx -lbsoncxx
+
+#c++ --std=c++11 test.cpp -o test -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -L /usr/local/lib -lmongocxx -lbsoncxx
+#/home/enrico/mongo-cxx-driver
+
+INCLUDEPATH += /usr/local/include/mongocxx/v_noabi
+INCLUDEPATH += /usr/local/include/bsoncxx/v_noabi
+
 INCLUDEPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
 DEPENDPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
 
+INCLUDEPATH += $$PWD/../3rdparty
+
 RESOURCES += \
     server.qrc
+
+LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH

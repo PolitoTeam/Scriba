@@ -2,11 +2,18 @@
 #include <QApplication>
 #include <QDebug>
 #include <stdlib.h>
+#include "mongo.h"
 
 #define PORT 1500
 
 int main(int argc, char *argv[])
 {
+//	Mongo db;
+//	qDebug() << db.signup("enrico@gmail.com", "Admin11.");
+//	QString nick;
+//	qDebug() << db.login("enrico@gmail.com", "Amin11.", nick);
+//	qDebug() << nick;
+
 	QApplication a(argc, argv);
 	quint16 port = PORT;
 
