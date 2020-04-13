@@ -10,7 +10,7 @@
 #include <QTimer>
 #include <QSslSocket>
 #include <QSslConfiguration>
-#include "mongo.h"
+//#include "mongo.h"
 
 Server::Server(QObject *parent,Database* db)
 	: QTcpServer(parent)

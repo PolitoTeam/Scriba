@@ -7,7 +7,7 @@
 #include <QSslKey>
 #include <QSslCertificate>
 #include "database.h"
-//#include "mongo.h"
+#include "mongo.h"
 
 class QThread;
 class ServerWorker;

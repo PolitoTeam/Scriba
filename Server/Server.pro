@@ -56,6 +56,7 @@ else:macx: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/macOS -lsodium
 else:unix: LIBS += -L$$PWD/../3rdparty/libsodium/1.0.18/lib/linux -lsodium
 
 unix:CONFIG(debug, debug|release): LIBS += -L/usr/local/lib -lmongocxx -lbsoncxx
+else:macx:CONFIG(debug, debug|release): LIBS += -L/usr/local/lib -lmongocxx -lbsoncxx
 #unix:CONFIG(debug, debug|release): LIBS += -lmongocxx -lbsoncxx
 
 #c++ --std=c++11 test.cpp -o test -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/bsoncxx/v_noabi -L /usr/local/lib -lmongocxx -lbsoncxx
