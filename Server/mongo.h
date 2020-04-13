@@ -15,7 +15,8 @@ public:
 	Mongo();
 	bool insertNewFile(const QString filename, const QString username);
 	void saveFile(const std::vector<std::string>& symbols_json);
-	void retrieveFile(const std::vector<std::string>& symbols_json);
+	void saveFile(const QString& symbols);
+	void retrieveFile(QJsonArray& symbols);
 
 private:
 	mongocxx::instance inst{};

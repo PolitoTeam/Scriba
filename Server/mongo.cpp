@@ -49,6 +49,19 @@ void Mongo::saveFile(const std::vector<std::string>& symbols_json) {
 	collection.insert_many(documents);
 }
 
+void Mongo::saveFile(const QString& symbols) {
+	qDebug() << "SYMBOLS" << symbols;
+	std::string symbols_str = symbols.toUtf8().constData();
+	auto s = bsoncxx::from_json(symbols_str);
+
+	auto collection = this->conn["editor"]["files"];
+	collection.insert_one(s.view());
+}
+
+void Mongo::retrieveFile(QJsonArray& symbols) {
+
+}
+
 //bool Mongo::checkConnection() {
 //	// Do a fake query to check for the connection
 //	auto collection = this->conn["test"]["test"];

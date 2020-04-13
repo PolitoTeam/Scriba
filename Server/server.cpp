@@ -793,10 +793,10 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	}
 	file.open(QIODevice::WriteOnly);
 
-	Mongo mongo_db;
-	if (!mongo_db.insertNewFile(filename, username)) {
-		throw new std::runtime_error("File shouldn't already exist.");
-	}
+//	Mongo mongo_db;
+//	if (!mongo_db.insertNewFile(filename, username)) {
+//		throw new std::runtime_error("File shouldn't already exist.");
+//	}
 
 	// add current worker to the map <file, list_of_workers>
 	QList<ServerWorker*>* list=new QList<ServerWorker*>();
@@ -922,7 +922,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		symbols = document.array();
 
 //		Mongo mongodb;
-//		mongodb.retrieveFile();
+//		mongodb.retrieveFile(symbols);
 	}
 
 	// retrieve shared link
@@ -1091,8 +1091,14 @@ void Server::saveFile() {
 			file.write(QJsonDocument(symbols_json).toJson());
 			file.close();
 
+			QJsonObject json_to_store;
+			json_to_store["filename"] = filename;
+			json_to_store["content"] = symbols_json;
+
+			QJsonDocument doc(json_to_store);
+			QString strJson(doc.toJson(QJsonDocument::Compact));
 			Mongo mongo_db;
-			mongo_db.saveFile(vector);
+			mongo_db.saveFile(strJson);
 		}
 
 		// Reset value to false
