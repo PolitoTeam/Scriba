@@ -14,12 +14,9 @@ using bsoncxx::builder::stream::open_document;
 
 using json = nlohmann::json;
 
-Mongo::Mongo()
-{
+Mongo::Mongo() { }
 
-}
-
-void Mongo::connect(){
+void Mongo::connect() {
     db = conn["editor"];
 }
 
@@ -93,16 +90,13 @@ bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
 
 }
 
-
-
-//bool Mongo::checkConnection() {
-//	// Do a fake query to check for the connection
-//	auto collection = this->conn["test"]["test"];
-//	try {
-//		auto result = collection.find_one({});
-//	} catch (...) {
-//		return false;
-//	}
-//	// TODO: remove fake collection created
-//	return true;
-//}
+bool Mongo::checkConnection() {
+	// Do a fake query to check for the connection
+	auto collection = this->conn["editor"]["files"];
+	try {
+		auto result = collection.find_one({});
+	} catch (...) {
+		return false;
+	}
+	return true;
+}

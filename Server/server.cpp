@@ -161,6 +161,11 @@ bool Server::tryConnectionToDatabase()
 	return db->checkConnection();
 }
 
+bool Server::tryConnectionToMongo()
+{
+	return mongo_db.checkConnection();
+}
+
 void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 {
 	QString filename = exclude->getFilename();

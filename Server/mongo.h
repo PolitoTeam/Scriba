@@ -15,12 +15,11 @@ class Mongo
 {
 public:
 	Mongo();
+	void connect();
+	bool checkConnection();
 	bool insertNewFile(const QString filename, const QString username);
-
     void saveFile(const QString filename,const QJsonArray& symbols);
     bool retrieveFile(const QString filename, QJsonArray& symbols);
-    void connect();
-
 
 private:
 	mongocxx::client conn{mongocxx::uri{}};

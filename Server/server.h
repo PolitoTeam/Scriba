@@ -28,6 +28,8 @@ public:
 	Server(QObject *parent = nullptr,Database* db=0);
 	~Server() override;
 	bool tryConnectionToDatabase();
+	bool tryConnectionToMongo();
+
 
 protected:
 	void incomingConnection(qintptr socketDescriptor) override;
