@@ -46,7 +46,7 @@ private:
 	QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
 	// <filename, changed>
 	QMap<QString, bool> changed;
-//	Mongo mongo_db;
+    Mongo mongo_db;
 
 private slots:
 	void broadcast(const QJsonObject &message, ServerWorker *exclude);

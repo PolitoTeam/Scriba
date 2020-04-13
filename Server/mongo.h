@@ -3,6 +3,7 @@
 #include <QString>
 #include <QPair>
 #include <QJsonArray>
+#include <QJsonDocument>
 
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
@@ -14,13 +15,15 @@ class Mongo
 public:
 	Mongo();
 	bool insertNewFile(const QString filename, const QString username);
-	void saveFile(const std::vector<std::string>& symbols_json);
-	void saveFile(const QString& symbols);
+
+    void saveFile(const QString filename,const QJsonArray& symbols);
 	void retrieveFile(QJsonArray& symbols);
+    void connect();
+
 
 private:
-	mongocxx::instance inst{};
 	mongocxx::client conn{mongocxx::uri{}};
+    mongocxx::database db;
 };
 
 #endif // MONGO_H

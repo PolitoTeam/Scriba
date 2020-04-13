@@ -18,49 +18,47 @@ Mongo::Mongo()
 
 }
 
-bool Mongo::insertNewFile(const QString filename, const QString username) {
-	try {
+void Mongo::connect(){
+    db = conn["editor"];
+}
 
+bool Mongo::insertNewFile(const QString filename, const QString username) {
+    mongocxx::collection collection = db["files"];
+    qDebug()<<"Trying to insert new file in MongoDB: "<<filename<<","<<username;
+	try {
 		bsoncxx::builder::stream::document document{};
 		auto builder = bsoncxx::builder::stream::document{};
 		bsoncxx::document::value doc = builder
-				<< "filename" << filename.toStdString()
-				<< "owner" << username.toStdString()
+                << "filename" << filename.toStdString()+","+ username.toStdString()
 				<< bsoncxx::builder::stream::finalize;
-
-		auto collection = this->conn["editor"]["files"];
-		collection.insert_one(doc.view());
-
+        bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collection.insert_one(doc.view());
 		return true;
 	} catch(...) {
 		return false;
 	}
 }
 
-void Mongo::saveFile(const std::vector<std::string>& symbols_json) {
-	std::vector<bsoncxx::document::value> documents;
-	for (auto symbol : symbols_json) {
-//		qDebug() << QString::fromStdString(a);
-		auto s = bsoncxx::from_json(symbol);
-		documents.push_back(s);
-	}
 
-	auto collection = this->conn["editor"]["files"];
-	collection.insert_many(documents);
-}
-
-void Mongo::saveFile(const QString& symbols) {
+void Mongo::saveFile(const QString filename, const QJsonArray& symbols) {
 	qDebug() << "SYMBOLS" << symbols;
-	std::string symbols_str = symbols.toUtf8().constData();
-	auto s = bsoncxx::from_json(symbols_str);
+    mongocxx::collection collection = db["files"];
+    QJsonDocument doc(symbols);
+    QString strJson(doc.toJson(QJsonDocument::Compact));
 
-	auto collection = this->conn["editor"]["files"];
-	collection.insert_one(s.view());
+    std::string symbols_str = strJson.toUtf8().constData();
+	auto s = bsoncxx::from_json(symbols_str);
+    qDebug()<<"content: "<<QString::fromStdString(symbols_str);
+
+    collection.update_one(document{} << "filename" << filename.toStdString() << finalize,
+                          document{} << "$set" << open_document <<
+                            "content" << s.view()<< close_document << finalize);
 }
 
 void Mongo::retrieveFile(QJsonArray& symbols) {
 
 }
+
+
 
 //bool Mongo::checkConnection() {
 //	// Do a fake query to check for the connection

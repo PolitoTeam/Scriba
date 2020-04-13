@@ -17,11 +17,13 @@ Server::Server(QObject *parent,Database* db)
 	, m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
 	, db(db)
 {
+    mongocxx::instance inst{};   // instance of the driver should be alive for all the process lifetime
 	m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
 	m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
 	//    //qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
 
 	mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
+    mongo_db.connect();
 
 	// create folder to store profile images
 	QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
@@ -794,9 +796,12 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	file.open(QIODevice::WriteOnly);
 
 //	Mongo mongo_db;
-//	if (!mongo_db.insertNewFile(filename, username)) {
-//		throw new std::runtime_error("File shouldn't already exist.");
-//	}
+    if (!mongo_db.insertNewFile(filename, username)) {
+       throw new std::runtime_error("File shouldn't already exist.");
+    }
+    else{
+       qDebug()<<"saving OK";
+    }
 
 	// add current worker to the map <file, list_of_workers>
 	QList<ServerWorker*>* list=new QList<ServerWorker*>();
@@ -1097,8 +1102,8 @@ void Server::saveFile() {
 
 			QJsonDocument doc(json_to_store);
 			QString strJson(doc.toJson(QJsonDocument::Compact));
-			Mongo mongo_db;
-			mongo_db.saveFile(strJson);
+
+            mongo_db.saveFile(filename,symbols_json);
 		}
 
 		// Reset value to false
