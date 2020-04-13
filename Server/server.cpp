@@ -899,7 +899,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		for (QJsonObject o: symbols_list.value(filename)->values())
 			symbols.append(o);
 	}else{
-
+        /*
 		// read symbols from file...
 		QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
 		QFile f(filePath);
@@ -924,10 +924,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 			flag=false;
 
 		}
-		symbols = document.array();
+        symbols = document.array();
+        qDebug()<<"content: "<<symbols;*/
 
-//		Mongo mongodb;
-//		mongodb.retrieveFile(symbols);
+        flag = mongo_db.retrieveFile(filename,symbols);
 	}
 
 	// retrieve shared link

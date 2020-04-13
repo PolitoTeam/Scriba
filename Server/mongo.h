@@ -4,6 +4,7 @@
 #include <QPair>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
@@ -17,7 +18,7 @@ public:
 	bool insertNewFile(const QString filename, const QString username);
 
     void saveFile(const QString filename,const QJsonArray& symbols);
-	void retrieveFile(QJsonArray& symbols);
+    bool retrieveFile(const QString filename, QJsonArray& symbols);
     void connect();
 
 
