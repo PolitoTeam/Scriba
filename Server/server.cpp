@@ -1,6 +1,6 @@
 #include "server.h"
 #include "serverworker.h"
-#include "colors.h"
+//#include "colors.h"
 #include "../Client/CRDT.h"
 #include <QThread>
 #include <functional>
@@ -860,8 +860,8 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 	}
 
 	//    //qDebug() << "index " << index;
-	int color = color_palette[index % color_palette.size()];
-	sender->setColor(color);
+//	int color = color_palette[index % color_palette.size()];
+    //sender->setColor(color);
 
 	QList<ServerWorker*>* list=mapFileWorkers->value(filename);
 	QJsonArray array_users;
@@ -945,7 +945,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		message["filename"]= filename;
 		message["users"] = array_users;
 		message["shared_link"] = sharedLink;
-		message["color"] = color;
+/*		message["color"] = color;*/
 	}
 	else{
 		message["success"] = false;

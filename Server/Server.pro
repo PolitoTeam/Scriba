@@ -65,6 +65,8 @@ else:macx:CONFIG(debug, debug|release): LIBS += -L/usr/local/lib -lmongocxx -lbs
 INCLUDEPATH += /usr/local/include/mongocxx/v_noabi
 INCLUDEPATH += /usr/local/include/bsoncxx/v_noabi
 
+#INCLUDEPATH += $$PWD/.../3rdparty/mongo/bsoncxx/v_noabi
+
 INCLUDEPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
 DEPENDPATH += $$PWD/../3rdparty/libsodium/1.0.18/include
 

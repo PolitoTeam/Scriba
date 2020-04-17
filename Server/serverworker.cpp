@@ -194,8 +194,9 @@ void ServerWorker::setFilename(const QString& filename){
 void ServerWorker::closeFile(){
 	this->filename.clear();
 }
-
+/*
 void ServerWorker::setColor(int color)
 {
 	this->color_rgb = color;
 }
+*/

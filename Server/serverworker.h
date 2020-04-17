@@ -26,7 +26,7 @@ public:
 	QString getFilename();
 	void setFilename(const QString& filename);
 	void closeFile();
-	void setColor(int color);
+    //void setColor(int color);
 
 public slots:
 	void disconnectFromClient();
@@ -48,7 +48,7 @@ private:
 	QString shared_link;
 	QString image_name;
 	QString filename;
-	int color_rgb;
+    //int color_rgb;
 };
 
 #endif // SERVERWORKER_H
