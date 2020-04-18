@@ -87,7 +87,6 @@ bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
 	else {
 		return false;
 	}
-
 }
 
 bool Mongo::checkConnection() {
@@ -103,7 +102,7 @@ bool Mongo::checkConnection() {
 
 // Rollback is performed automatically when returning without commitng the
 // transaction; 'find_one_and_update' is used to emulated SELECT ... FOR UPDATE
-DatabaseError Mongo::signup(const QString &username,const QString &password) {
+DatabaseError Mongo::signup(const QString &username, const QString &password) {
 	auto session = conn.start_session();
 	session.start_transaction();
 	try {
@@ -139,7 +138,7 @@ DatabaseError Mongo::signup(const QString &username,const QString &password) {
 				<< "username" << username.toStdString()
 				<< "nickname" << username.toStdString()
 				<< "password" << hashed_password
-				<< "lock" << bsoncxx::oid() << finalize;
+				<< finalize;
 		collection.insert_one(doc.view());
 
 		session.commit_transaction();
@@ -151,7 +150,7 @@ DatabaseError Mongo::signup(const QString &username,const QString &password) {
 	}
 }
 
-DatabaseError Mongo::login(const QString &username,const QString password,
+DatabaseError Mongo::login(const QString &username, const QString password,
 						   QString& nickname) {
 	try {
 		mongocxx::collection collection = this->conn["editor"]["users"];
@@ -184,58 +183,49 @@ DatabaseError Mongo::login(const QString &username,const QString password,
 }
 
 DatabaseError Mongo::updateNickname(const QString &username,
-									   const QString &nickname){
-	DatabaseError err = SUCCESS;
-//	if (!db.open())
-//		err = CONNECTION_ERROR;
+									const QString &nickname) {
+	auto session = conn.start_session();
+	session.start_transaction();
+	try {
+		mongocxx::collection collection = this->conn["editor"]["users"];
+		bsoncxx::builder::stream::document document{};
 
-//	QSqlDatabase::database().transaction();
-//	QSqlQuery qry;
-//	qry.prepare("SELECT Username "
-//				"FROM USER "
-//				"WHERE Username=:username FOR UPDATE");
-//	qry.bindValue(":username",username);
+		auto cursor = collection.find_one_and_update(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$set" << open_document << "lock"
+							 << bsoncxx::oid() << close_document << finalize
+		);
 
-//	if (!qry.exec()) {
-//		err = QUERY_ERROR;
-//	} else if (!qry.next()) {
-//		err = NON_EXISTING_USER;
-//	} else {
-//		QSqlQuery qry;
-//		qry.prepare("UPDATE USER "
-//					"SET Nickname=:nickname "
-//					"WHERE Username=:username");
-//		qry.bindValue(":username",username);
-//		qry.bindValue(":nickname",nickname);
-//		if (!qry.exec()){
-//			err = QUERY_ERROR;
-//		}
-//	}
-//	QSqlDatabase::database().commit();
+		if (!cursor) {
+			return NON_EXISTING_USER;
+		}
 
-//	db.close();
-	return err;
+		collection.update_one(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$set" << open_document << "nickname"
+							 << nickname.toStdString() << close_document
+							 << finalize
+		);
+
+		session.commit_transaction();
+		return SUCCESS;
+	} catch(const mongocxx::operation_exception& e) {
+		qDebug() << e.what();
+		session.abort_transaction();
+		return QUERY_ERROR;
+	}
 }
 
+// TODO
 DatabaseError  Mongo::updatePassword(const QString &username,
-										const QString &oldpass,
-										const QString &newpass){
-	DatabaseError err = SUCCESS;
-//	if (!db.open())
-//		err = CONNECTION_ERROR;
+									 const QString &oldpass,
+									 const QString &newpass){
 
-//	QSqlDatabase::database().transaction();
-//	QSqlQuery qry;
-//	qry.prepare("SELECT Username,Password "
-//				"FROM USER "
-//				"WHERE Username=:username FOR UPDATE");
-//	qry.bindValue(":username",username);
 
-//	if (!qry.exec()) {
-//		err = QUERY_ERROR;
-//	} else if (!qry.next()) {
-//		err = NON_EXISTING_USER;
-//	} else {
 //		const char *password_char = oldpass.toLocal8Bit().data();
 //		QString hashed_password = qry.value(1).toString();
 //		const char *hashed_password_char = hashed_password.toLocal8Bit().data();
@@ -264,21 +254,58 @@ DatabaseError  Mongo::updatePassword(const QString &username,
 //		QString hashed_password_qstring = QString::fromUtf8(hashed_newpassword);
 //		qry.bindValue(":newpassword",hashed_password_qstring);
 
-//		if (!qry.exec()){
-//			err = QUERY_ERROR;
-//		}
-//	}
-//	QSqlDatabase::database().commit();
+//	auto session = conn.start_session();
+//	session.start_transaction();
+//	try {
+//		mongocxx::collection collection = this->conn["editor"]["users"];
+//		bsoncxx::builder::stream::document document{};
 
-//	db.close();
-	return err;
+//		auto cursor = collection.find_one_and_update(
+//					session,
+//					document << "username" << username.toStdString()
+//							 << finalize,
+//					document << "$set" << open_document << "lock"
+//							 << bsoncxx::oid() << close_document << finalize
+//		);
+
+//		if (!cursor) {
+//			return NON_EXISTING_USER;
+//		}
+
+//		std::string qry = bsoncxx::to_json(*cursor);
+//		std::string pass = json::parse(qry)["password"];
+
+//		QByteArray ba = oldpass.toUtf8();
+//		const char *password_char = ba.constData();
+//		const char *hashed_password_char = pass.c_str();
+//		if (crypto_pwhash_str_verify(hashed_password_char, password_char,
+//									 strlen(password_char)) != 0) {
+//			return WRONG_PASSWORD;
+//		}
+
+//		collection.update_one(
+//					session,
+//					document << "username" << username.toStdString()
+//							 << finalize,
+//					document << "$set" << open_document << "nickname"
+//							 << nickname.toStdString() << close_document
+//							 << finalize
+//		);
+
+//		session.commit_transaction();
+//		return SUCCESS;
+//	} catch(const mongocxx::operation_exception& e) {
+//		qDebug() << e.what();
+//		session.abort_transaction();
+//		return QUERY_ERROR;
+//	}
 }
 
 // Check if old password provided is correct (used before to update it)
 DatabaseError Mongo::checkOldPassword(const QString &username,
-										 const QString &oldpass) {
+									  const QString &oldpass) {
 	try {
-		auto collection = this->conn["editor"]["user"];
+		mongocxx::collection collection = this->conn["editor"]["users"];
 		bsoncxx::builder::stream::document document{};
 		auto cursor = collection.find_one(document << "username"
 										  << username.toStdString()
@@ -305,9 +332,10 @@ DatabaseError Mongo::checkOldPassword(const QString &username,
 	}
 }
 
+// TODO
 DatabaseError Mongo::getFiles(const QString &username,
-								 QVector<QPair<QString,QString>> &files,
-								 bool shared){
+							  QVector<QPair<QString,QString>> &files,
+							  bool shared){
 	DatabaseError err = SUCCESS;
 //	if (!db.open())
 //		err = CONNECTION_ERROR;
@@ -379,8 +407,9 @@ DatabaseError Mongo::getFiles(const QString &username,
 	return err;
 }
 
-DatabaseError Mongo::newFile(const QString &username,
-								const QString &filename, QString &sharedLink)
+// TODO
+DatabaseError Mongo::newFile(const QString &username, const QString &filename,
+							 QString &sharedLink)
 {
 	DatabaseError err = SUCCESS;
 //	if (!db.open())
@@ -434,9 +463,10 @@ DatabaseError Mongo::newFile(const QString &username,
 	return err;
 }
 
+// TODO
 DatabaseError Mongo::getSharedLink(const QString &author,
-									  const QString &filename,
-									  QString &sharedLink){
+								   const QString &filename,
+								   QString &sharedLink){
 	DatabaseError err = SUCCESS;
 //	if (!db.open())
 //		err = CONNECTION_ERROR;
@@ -458,9 +488,10 @@ DatabaseError Mongo::getSharedLink(const QString &author,
 	return err;
 }
 
+// TODO
 DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
-												  QString& filename,
-												  const QString& user) {
+											   QString& filename,
+											   const QString& user) {
 	DatabaseError err = SUCCESS;
 //	if (!db.open())
 //		err = CONNECTION_ERROR;

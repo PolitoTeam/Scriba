@@ -9,15 +9,15 @@
 int main(int argc, char *argv[])
 {
 	Mongo db;
-	qDebug() << db.signup("enrico@gmail.com", "Admin11.");
+//	qDebug() << db.signup("enrico@gmail.com", "Admin11.");
 
-	QString nick;
-	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
-	qDebug() << nick;
+//	QString nick;
+//	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
+//	qDebug() << nick;
 
-	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
-	qDebug() << nick;
-
+//	qDebug() << db.updateNickname("enrico@gmail.com", "enrico");
+	qDebug() << db.checkOldPassword("enrico@gmail.com", "enrico");
+	qDebug() << db.checkOldPassword("enrico@gmail.com", "Admin11.");
 
 	QApplication a(argc, argv);
 	quint16 port = PORT;
