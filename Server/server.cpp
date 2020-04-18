@@ -17,7 +17,7 @@ Server::Server(QObject *parent,Database* db)
 	, m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
 	, db(db)
 {
-    mongocxx::instance inst{};   // instance of the driver should be alive for all the process lifetime
+	/*mongocxx::instance inst{}; */  // instance of the driver should be alive for all the process lifetime
 	m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
 	m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
 	//    //qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
