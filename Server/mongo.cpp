@@ -1,6 +1,7 @@
 #include <QRandomGenerator>
 #include <QDebug>
 #include <sodium.h>
+#include <nlohmann/json.hpp>
 #include "mongo.h"
 #include <iostream>
 #include <mongocxx/exception/operation_exception.hpp>
