@@ -18,13 +18,14 @@ int main(int argc, char *argv[])
 	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
 	qDebug() << nick;
 
+
 	QApplication a(argc, argv);
 	quint16 port = PORT;
 
 	QStringList args = QCoreApplication::arguments();
 	if (args.length() != 1 && args.length() != 2) {
-		qDebug() << "Usage: ./Server <port_number>";
-		qDebug() << "If no argument provided port 1500 is used.";
+        //qDebug() << "Usage: ./Server <port_number>";
+        //qDebug() << "If no argument provided port 1500 is used.";
 		exit(-1);
 	}
 

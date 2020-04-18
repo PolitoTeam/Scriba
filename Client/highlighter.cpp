@@ -23,10 +23,10 @@ void Highlighter::addLocal(int editor_id){
 }
 
 void Highlighter::highlightBlock(const QString &text){
-	qDebug()<<" in highlight block";
+    //qDebug()<<" in highlight block";
 	// save cursor position
 	int line = this->currentBlock().blockNumber();
-	qDebug()<<" Line: "<<line;
+    //qDebug()<<" Line: "<<line;
 	for (int index = 0; index < text.length(); index++) {
 		// qDebug()<<"Retrieving simbol at: "<<line<<" ,"<<index;
 		Symbol s = this->crdt->getSymbol(line,index);
@@ -61,13 +61,13 @@ QColor Highlighter::getColor(int editor_id){
 void Highlighter::freeColor(int editor_id){
 	list_colors.freeColor(users.value(editor_id));
 	if(users.remove(editor_id)!=0) //return 0 if editor_id not in the map
-		qDebug()<<"removed";
+        qDebug()<<"removed";
 }
 
 void Highlighter::freeAll(){
 	list_colors.clear();
 	users.clear();
-	qDebug()<<"free all";
+    //qDebug()<<"free all";
 }
 
 void Highlighter::setCRDT(CRDT* crdt){

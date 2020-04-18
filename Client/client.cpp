@@ -72,6 +72,16 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 	profile=new QPixmap(":/images/anonymous");
 }
 
+void Client::sendByteArray(const QByteArray &byteArray){
+    SerializeSize size;
+    quint64 json_size = size(byteArray);
+
+    QDataStream socketStream(m_clientSocket);
+    socketStream.setVersion(QDataStream::Qt_5_7);
+    socketStream << json_size << byteArray;
+
+}
+
 //void Client::sslErrors(const QList<QSslError> &errors)
 //    {
 //        foreach (const QSslError &error, errors)
@@ -84,9 +94,9 @@ void Client::login(const QString &username, const QString &password)
 	//if (m_clientSocket->waitForEncrypted()) {
 	//qDebug()<<"mandato login";
 	// create a QDataStream operating on the socket
-	QDataStream clientStream(m_clientSocket);
+//	QDataStream clientStream(m_clientSocket);
 	// set the version so that programs compiled with different versions of Qt can agree on how to serialise
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	// Create the JSON we want to send
 	QJsonObject message;
 	message["type"] = QStringLiteral("login");
@@ -95,7 +105,8 @@ void Client::login(const QString &username, const QString &password)
 	message["password"] = password;
 	// send the JSON using QDataStream
 	//qDebug()<<QJsonDocument(message).toJson(QJsonDocument::Compact);
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	//qDebug()<<"mandato msg login";
 	//  }
 }
@@ -105,9 +116,9 @@ void Client::signup(const QString &username, const QString &password)
 	connectToServer(QHostAddress(this->addr), this->port);
 	// if (m_clientSocket->waitForEncrypted()) {
 	// create a QDataStream operating on the socket
-	QDataStream clientStream(m_clientSocket);
+    //QDataStream clientStream(m_clientSocket);
 	// set the version so that programs compiled with different versions of Qt can agree on how to serialise
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	// Create the JSON we want to send
 	QJsonObject message;
 	message["type"] = QStringLiteral("signup");
@@ -115,17 +126,17 @@ void Client::signup(const QString &username, const QString &password)
 	//aggiungere cifratura oppure passare a QSSLsocket
 	message["password"] = password;
 	// send the JSON using QDataStream
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	// }
 }
 
 void Client::getFiles(bool shared){
 	// if (m_clientSocket->waitForEncrypted()) {
 	// create a QDataStream operating on the socket
-	QDataStream clientStream(m_clientSocket);
+    //QDataStream clientStream(m_clientSocket);
 	// set the version so that programs compiled with different versions of Qt can agree on how to serialise
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	// Create the JSON we want to send
 	QJsonObject message;
 	if (shared) {
@@ -136,23 +147,25 @@ void Client::getFiles(bool shared){
 	message["username"] = this->username;
 	//aggiungere cifratura oppure passare a QSSLsocket
 	// send the JSON using QDataStream
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	//}
 }
 
 void Client::getFilenameFromLink(const QString& sharedLink) {
 	// if (m_clientSocket->waitForEncrypted()) {
 	// create a QDataStream operating on the socket
-	QDataStream clientStream(m_clientSocket);
+    //QDataStream clientStream(m_clientSocket);
 	// set the version so that programs compiled with different versions of Qt can agree on how to serialise
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	// Create the JSON we want to send
 	QJsonObject message;
 	message["type"] = QStringLiteral("filename_from_sharedLink");
 	message["sharedLink"] = sharedLink;
 	//aggiungere cifratura oppure passare a QSSLsocket
 	// send the JSON using QDataStream
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	//}
 }
 
@@ -160,9 +173,9 @@ void Client::updateNickname(const QString &nickname)
 {
 	//if (m_clientSocket->waitForEncrypted()) {
 	// create a QDataStream operating on the socket
-	QDataStream clientStream(m_clientSocket);
+    //QDataStream clientStream(m_clientSocket);
 	// set the version so that programs compiled with different versions of Qt can agree on how to serialise
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	// Create the JSON we want to send
 	QJsonObject message;
 	message["type"] = QStringLiteral("nickname");
@@ -170,8 +183,8 @@ void Client::updateNickname(const QString &nickname)
 	message["nickname"] = nickname;
 	//aggiungere cifratura oppure passare a QSSLsocket
 	// send the JSON using QDataStream
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	this->nickname = nickname;
 	// }
 }
@@ -179,9 +192,9 @@ void Client::updateNickname(const QString &nickname)
 void  Client::updatePassword(const QString &oldpassword,const QString &newpassword){
 	// if (m_clientSocket->waitForEncrypted()) {
 	// create a QDataStream operating on the socket
-	QDataStream clientStream(m_clientSocket);
+    //QDataStream clientStream(m_clientSocket);
 	// set the version so that programs compiled with different versions of Qt can agree on how to serialise
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	// Create the JSON we want to send
 	QJsonObject message;
 	message["type"] = QStringLiteral("password");
@@ -190,21 +203,23 @@ void  Client::updatePassword(const QString &oldpassword,const QString &newpasswo
 	message["newpass"] = newpassword;
 	//aggiungere cifratura oppure passare a QSSLsocket
 	// send the JSON using QDataStream
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	//}
 }
 
+// GUARDARE QUESTA IN CASO DI ERRORE PER RIPRISTINARE SE IN CASO LA SENDBYTEARRAY NON VA
 void Client::checkOldPassword(const QString &old_password)
 {
-	QDataStream clientStream(m_clientSocket);
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //QDataStream clientStream(m_clientSocket);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 
 	QJsonObject message;
 	message["type"] = QStringLiteral("check_old_password");
 	message["username"] = this->username;
 	message["old_password"] = old_password;
-
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
 }
 
 //Attempts to close the socket. If there is pending data waiting to be written, QAbstractSocket will enter ClosingState and wait until all data has been written.
@@ -223,7 +238,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 	const QJsonValue typeVal = docObj.value(QLatin1String("type"));
 	if (typeVal.isNull() || !typeVal.isString())
 		return; // a message with no type was received so we just ignore it
-	qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
+    //qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
 
 	if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0) { //It's a login message
 		if (m_loggedIn)
@@ -412,8 +427,8 @@ void Client::jsonReceived(const QJsonObject &docObj)
 void Client::createNewFile(QString filename)
 {
 	// if (m_clientSocket->waitForEncrypted()) {
-	QDataStream clientStream(m_clientSocket);
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //QDataStream clientStream(m_clientSocket);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 
 	QJsonObject message;
 	message["type"] = QStringLiteral("new_file");
@@ -421,7 +436,8 @@ void Client::createNewFile(QString filename)
 	message["author"] = this->username;
 
 	//qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	//}
 }
 
@@ -529,7 +545,7 @@ bool Client::parseJson()
 			jsonReceived(jsonDoc.object());
 		}
 	} else {
-		qDebug()<<parseError.error;
+        //qDebug()<<parseError.error;
 		byteArrayReceived(json_data);
 	}
 	m_received_data.remove(0,8+json_size);
@@ -579,7 +595,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
 					//                    emit remoteInsert(s);
 					//                }
 					// REVERSE ORDER to have '\0' as first char
-					qDebug()<<"To insert";
+                    //qDebug()<<"To insert";
 					progress = new QProgressDialog(nullptr);
 					progress->setWindowTitle("Loading...");
 					progress->setRange(0, symbols.size() - 1);
@@ -591,9 +607,9 @@ void Client::byteArrayReceived(const QByteArray &doc){
 					int progress_counter = 0;
 					for (int i = symbols.size() - 1; i >= 0; i--) {
 						Symbol s = Symbol::fromJson(symbols[i].toObject());
-						// if (s.getValue()=='\0')
-						//    qDebug() << "eccolo";
-						emit remoteInsert(s);
+
+
+                        emit remoteInsert(s);
 						if (s.getValue()=='\n' || s.getValue()=='\0')
 							emit remoteAlignChange(s);
 
@@ -602,6 +618,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
 					}
 					progress->hide();
 					progress->cancel();
+
 
 					const QJsonValue name = docObj.value(QLatin1String("filename"));
 					if (name.isNull() || !name.isString())
@@ -613,10 +630,8 @@ void Client::byteArrayReceived(const QByteArray &doc){
 						return;
 					this->sharedLink = shared_link.toString();
 
-					const QJsonValue color= docObj.value(QLatin1String("color"));
-					if (color.isNull() || !color.isDouble())
-						return;
-					this->cursor_color_rgb = color.toInt();
+
+
 
 					const QJsonValue array= docObj.value(QLatin1String("users"));
 					if (array.isNull() || !array.isArray())
@@ -638,6 +653,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
 					}
 					//                emit contentReceived(cont.toString()); TODO: remove comment
 					//qDebug()<<"emitted usersConnectedReceived";
+
 					emit usersConnectedReceived(connected);
 					emit correctOpenedFile();
 
@@ -684,9 +700,10 @@ void Client::byteArrayReceived(const QByteArray &doc){
 	}else{
 
 		profile->loadFromData(doc);
-		qDebug() << "Profile image loaded";
+        //qDebug() << "Profile image loaded";
 
 	}
+
 
 
 }
@@ -713,32 +730,35 @@ void Client::setProfileImage(const QString& filename)
 void Client::sendProfileImage()
 {
 	// if (m_clientSocket->waitForEncrypted()) {
-	QDataStream clientStream(m_clientSocket);
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    /*QDataStream clientStream(m_clientSocket);
+    clientStream.setVersion(QDataStream::Qt_5_7);*/
 
 	QByteArray bArray;
 	QBuffer buffer(&bArray);
 	buffer.open(QIODevice::WriteOnly);
 	profile->save(&buffer, "PNG");
-	clientStream << bArray;
+    //clientStream << bArray;
+    sendByteArray(bArray);
 	// }
 }
 
 void Client::sendProfileImage(const QString& name,QPixmap* image )
 {
 	// if (m_clientSocket->waitForEncrypted()) {
-	QDataStream clientStream(m_clientSocket);
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //QDataStream clientStream(m_clientSocket);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 	QJsonObject message;
 	message["type"] = QStringLiteral("image_signup");
 	message["image_name"] = name;
 	//qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	QByteArray bArray;
 	QBuffer buffer(&bArray);
 	buffer.open(QIODevice::WriteOnly);
 	image->save(&buffer, "PNG");
-	clientStream << bArray;
+    //clientStream << bArray;
+    sendByteArray(bArray);
 	// }
 }
 
@@ -755,30 +775,32 @@ QList<QPair<QString,QString>> Client::getActiveFiles(){
 
 void Client::sendJson(const QJsonObject& message)
 {
+    /*
 	QDataStream clientStream(m_clientSocket);
 	clientStream.setVersion(QDataStream::Qt_5_7);
-
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+*/
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 }
 
 void Client::openFile(const QString& filename){
 	//  if (m_clientSocket->waitForEncrypted()) {
-	QDataStream clientStream(m_clientSocket);
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //QDataStream clientStream(m_clientSocket);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 
 	QJsonObject message;
 	message["type"] = QStringLiteral("file_to_open");
 	message["filename"] = filename;
 
 	//qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	//  }
 }
 
 void Client::closeFile(){
 	//  if (m_clientSocket->waitForEncrypted()) {
-	QDataStream clientStream(m_clientSocket);
-	clientStream.setVersion(QDataStream::Qt_5_7);
+    //QDataStream clientStream(m_clientSocket);
+    //clientStream.setVersion(QDataStream::Qt_5_7);
 
 	QJsonObject message;
 	message["type"] = QStringLiteral("close");
@@ -787,7 +809,8 @@ void Client::closeFile(){
 	message["nickname"]=this->nickname;
 
 	//qDebug().noquote() << QString::fromUtf8(QJsonDocument(message).toJson(QJsonDocument::Compact));
-	clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 	// }
 }
 
@@ -803,8 +826,5 @@ QString Client::getOpenedFile()
 void Client::setOpenedFile(const QString& name) {
 	this->openfile = name;
 }
-int Client::getColor()
-{
-	return cursor_color_rgb;
-}
+
 

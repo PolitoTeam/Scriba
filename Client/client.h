@@ -8,6 +8,7 @@
 #include "symbol.h"
 #include "remotecursor.h"
 #include <QProgressDialog>
+#include "serializesize.h"
 
 class QHostAddress;
 class QJsonDocument;
@@ -35,6 +36,8 @@ public:
 	void sendJson(const QJsonObject& message);
 	void createNewFile(QString filename);
 	void closeFile();
+
+    void sendByteArray(const QByteArray &byteArray);
 
 	QString getSharedLink();
 	QString getOpenedFile();
@@ -101,7 +104,7 @@ private:
 	QList<QPair<QString,QString>> files;
 	QString openfile;
 	QString sharedLink;
-	int cursor_color_rgb;
+
 
 	void jsonReceived(const QJsonObject &doc);
 	void byteArrayReceived(const QByteArray &doc);

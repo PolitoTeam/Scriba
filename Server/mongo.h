@@ -30,7 +30,7 @@ public:
     bool retrieveFile(const QString filename, QJsonArray& symbols);
 
 	DatabaseError signup(const QString& username, const QString& password);
-	DatabaseError login(const QString& username, const QString& password,
+    DatabaseError login(const QString& username, const QString password,
 						QString& nickname);
 	DatabaseError updateNickname(const QString& username,
 								 const QString& nickname);

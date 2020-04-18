@@ -14,7 +14,7 @@ Database::Database()
 
 bool Database::checkConnection() {
 	if (!db.open()) {
-		qDebug() << db.lastError();
+        //qDebug() << db.lastError();
 		return false;
 	} else {
 		db.close();
@@ -175,7 +175,7 @@ DatabaseError  Database::updatePassword(const QString &username,
 							  strlen(password_newchar),
 							  crypto_pwhash_OPSLIMIT_SENSITIVE,
 							  crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-			qDebug() << "Error while hashing...";
+            //qDebug() << "Error while hashing...";
 		}
 
 		QString hashed_password_qstring = QString::fromUtf8(hashed_newpassword);
