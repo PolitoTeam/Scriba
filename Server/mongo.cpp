@@ -101,40 +101,24 @@ bool Mongo::checkConnection() {
 	return true;
 }
 
-
-DatabaseError Mongo::signup(const QString &username,const QString &password){
+// Rollback is performed automatically when returning without commitng the
+// transaction; 'find_one_and_update' is used to emulated SELECT ... FOR UPDATE
+DatabaseError Mongo::signup(const QString &username,const QString &password) {
 	auto session = conn.start_session();
-//	session.start_transaction();
+	session.start_transaction();
 	try {
 		mongocxx::collection collection = this->conn["editor"]["users"];
 		bsoncxx::builder::stream::document document{};
-		auto cursor = collection.find_one(session, document << "username"
-										  << username.toStdString()
-										  << finalize);
-//		auto cursor = collection.find_one(session, document << "username"
-//										  << username.toStdString()
-//										  << finalize);
 
-//		auto cursor = collection.find_one_and_update(
-//					session,
-//					document << "username" << username.toStdString()
-//							 << finalize,
-//					document << "$set" << open_document << "lock"
-////							 << bsoncxx::oid()
-//					<< "AAA"
-
-//							 << close_document << finalize
-//		);
-
-//		collection.update_one(document{} << "i" << 10 << finalize,
-//							  document{} << "$set" << open_document <<
-//								"i" << 110 << close_document << finalize);
-
-//		var doc = db.foo.findOneAndUpdate({ _id: 1 },
-//			 { $set: { myLock: { appName: "myApp", pseudoRandom: ObjectId() } } })
+		auto cursor = collection.find_one_and_update(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$set" << open_document << "lock"
+							 << bsoncxx::oid() << close_document << finalize
+		);
 
 		if (cursor) {
-			qDebug() << "already existing";
 			return ALREADY_EXISTING_USER;
 		}
 
@@ -155,15 +139,14 @@ DatabaseError Mongo::signup(const QString &username,const QString &password){
 				<< "username" << username.toStdString()
 				<< "nickname" << username.toStdString()
 				<< "password" << hashed_pass_qstring.toStdString()
-				<< bsoncxx::builder::stream::finalize;
+				<< "lock" << bsoncxx::oid() << finalize;
 		collection.insert_one(doc.view());
 
-//		session.commit_transaction();
-		qDebug() << "Finished";
+		session.commit_transaction();
 		return SUCCESS;
 	} catch(const mongocxx::operation_exception& e) {
 		qDebug() << e.what();
-//		session.abort_transaction();
+		session.abort_transaction();
 		return QUERY_ERROR;
 	}
 }
@@ -185,13 +168,9 @@ DatabaseError Mongo::login(const QString &username,const QString &password,
 		std::string pass = json::parse(qry)["password"];
 
 		const char *password_char = password.toLocal8Bit().data();
-		QString hashed_password = QString::fromStdString(pass);
-		const char *hashed_password_char = hashed_password.toLocal8Bit().data();
-		qDebug() << QString::fromStdString(hashed_password_char) <<
-					QString::fromStdString(password_char);
+		const char *hashed_password_char = pass.c_str();
 		if (crypto_pwhash_str_verify(hashed_password_char, password_char,
 									 strlen(password_char)) != 0) {
-			qDebug() << "Wrong psw";
 			return WRONG_PASSWORD;
 		}
 

@@ -57,6 +57,7 @@ private:
 	// it must be created before using the driver and
 	// must remain alive for as long as the driver is in use.
 	mongocxx::instance inst{};
+//	mongocxx::client conn{mongocxx::uri{"mongodb://localhost:27000"}};
 	mongocxx::client conn{mongocxx::uri{}};
     mongocxx::database db;
 };

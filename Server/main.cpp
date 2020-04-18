@@ -10,8 +10,6 @@ int main(int argc, char *argv[])
 {
 	Mongo db;
 	qDebug() << db.signup("enrico@gmail.com", "Admin11.");
-//	QThread::sleep(5);
-//	qDebug() << "In the middle...";
 
 	QString nick;
 	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
@@ -19,11 +17,6 @@ int main(int argc, char *argv[])
 
 	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
 	qDebug() << nick;
-
-	qDebug() << "";
-	qDebug() << "";
-	qDebug() << "";
-
 
 	QApplication a(argc, argv);
 	quint16 port = PORT;
