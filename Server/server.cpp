@@ -219,7 +219,7 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-	qDebug() << "JSON RECEIVDE";
+    //qDebug() << "JSON RECEIVDE";
 	if (sender->getNickname().isEmpty())
 		return jsonFromLoggedOut(sender, json);
 	else
@@ -264,9 +264,9 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 		QJsonObject message=this->login(sender,docObj);
 		if (message.value(QLatin1String("success")).toBool() == true)
 			this->sendProfileImage(sender);
-		qDebug()<<"sendingJsonLogin";
+        //qDebug()<<"sendingJsonLogin";
 		this->sendJson(sender,message);
-		qDebug()<<"sentJsonLogin";
+        //qDebug()<<"sentJsonLogin";
 	}
 }
 
@@ -423,9 +423,9 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 		} else if (operation_type == DELETE) {
 
 			QJsonArray symbols = docObj["symbols"].toArray();
-			qDebug() << "TO DELETE: "<<symbols.size();
+            //qDebug() << "TO DELETE: "<<symbols.size();
 			for (int i = 0; i < symbols.size(); i++) {
-				qDebug()<<"deleting "<<i;
+                //qDebug()<<"deleting "<<i;
 				QJsonObject symbol = symbols[i].toObject();
 				QString position = fromJsonArraytoString(symbol["position"].toArray());
 				symbols_list.value(sender->getFilename())->remove(position);
@@ -805,7 +805,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
        throw new std::runtime_error("File shouldn't already exist.");
     }
     else{
-       qDebug()<<"saving OK";
+       //qDebug()<<"saving OK";
     }
 
 	// add current worker to the map <file, list_of_workers>
@@ -1080,7 +1080,7 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
 void Server::saveFile() {
 	for (QString filename : symbols_list.keys()) {
 		if (changed.value(filename) == true) {
-			qDebug() << "I'm saving " << filename;
+            //qDebug() << "I'm saving " << filename;
 			QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
 
 			QFile file(filePath);

@@ -31,9 +31,11 @@ public:
 public slots:
 	void disconnectFromClient();
 	void sslErrors(const QList<QSslError> &errors);
+    void onReadyRead();
+    bool parseJson();
 
 private slots:
-	void receiveJson();
+    //void receiveJson();
 
 signals:
 	void jsonReceived(const QJsonObject &jsonDoc);
@@ -49,6 +51,12 @@ private:
 	QString image_name;
 	QString filename;
     //int color_rgb;
+    quint64 m_exptected_json_size = 0;
+    QByteArray m_received_data;
+    QBuffer m_buffer;
+
+    void extract_content_size();
+
 };
 
 #endif // SERVERWORKER_H

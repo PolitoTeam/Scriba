@@ -88,7 +88,7 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
 	// ProxyConnectionClosedError (note that there is no break in the
 	// 'case') when the server window is closed or the server crashes
 	case QAbstractSocket::RemoteHostClosedError:
-		qDebug()<<"Remote Host Closed Error";
+        //qDebug()<<"Remote Host Closed Error";
 
 		// This is called alone (not in couple with QAbstractSocket::
 		// RemoteHostClosedError) only when the button stop

@@ -50,6 +50,7 @@ HEADERS += \
     modify.h \
     myqtextedit.h \
     remotecursor.h \
+    serializesize.h \
     signup.h \
     symbol.h
 

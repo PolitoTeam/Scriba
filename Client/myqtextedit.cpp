@@ -86,14 +86,14 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
 
 	if(match.hasMatch()){
 		QString alignment = match.captured(0);
-		qDebug()<<"alignment first line: "<<alignment;
+        //qDebug()<<"alignment first line: "<<alignment;
 
 		QTextBlockFormat newformat;
-		qDebug()<<"inDEX ON PASTE: "<<*index;
+        //qDebug()<<"inDEX ON PASTE: "<<*index;
 
 		if (*index==0){
 			if (alignment=="right"){
-				qDebug()<<"qui right";
+                //qDebug()<<"qui right";
 				newformat.setAlignment(Qt::AlignTrailing|Qt::AlignAbsolute);
 			}
 			else if(alignment=="center")
@@ -101,11 +101,11 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
 			else {
 				newformat.setAlignment(Qt::AlignLeft|Qt::AlignLeading);
 			}
-			qDebug()<<"alignment: "<<alignment;
+            //qDebug()<<"alignment: "<<alignment;
 
 			QTextBlock block = this->document()->findBlockByLineNumber(*line);
 			temp.setPosition(block.position() + *index);
-			qDebug()<<"Get Position: "<<temp.position();
+            //qDebug()<<"Get Position: "<<temp.position();
 			temp.mergeBlockFormat(newformat);
 		}
 	}

@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-	Mongo db;
+    /*Mongo db;
 	qDebug() << db.signup("enrico@gmail.com", "Admin11.");
 //	QThread::sleep(5);
 //	qDebug() << "In the middle...";
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 
 	qDebug() << "";
 	qDebug() << "";
-	qDebug() << "";
+    qDebug() << "";*/
 
 
 	QApplication a(argc, argv);
@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
 	QStringList args = QCoreApplication::arguments();
 	if (args.length() != 1 && args.length() != 2) {
-		qDebug() << "Usage: ./Server <port_number>";
-		qDebug() << "If no argument provided port 1500 is used.";
+        //qDebug() << "Usage: ./Server <port_number>";
+        //qDebug() << "If no argument provided port 1500 is used.";
 		exit(-1);
 	}
 

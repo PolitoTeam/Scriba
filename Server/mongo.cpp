@@ -23,7 +23,7 @@ void Mongo::connect() {
 
 bool Mongo::insertNewFile(const QString filename, const QString username) {
     mongocxx::collection collection = db["files"];
-    qDebug()<<"Trying to insert new file in MongoDB: "<<filename<<","<<username;
+    //qDebug()<<"Trying to insert new file in MongoDB: "<<filename<<","<<username;
 	try {
 		bsoncxx::builder::stream::document document{};
 		auto builder = bsoncxx::builder::stream::document{};
@@ -38,11 +38,11 @@ bool Mongo::insertNewFile(const QString filename, const QString username) {
 }
 
 void Mongo::saveFile(const QString filename, const QJsonArray& symbols) {
-    qDebug()<<"symbols to inser: "<<symbols;
+    //qDebug()<<"symbols to inser: "<<symbols;
     mongocxx::collection collection = db["files"];
     QJsonDocument doc(symbols);
     QString strJson(doc.toJson(QJsonDocument::Compact));
-    qDebug()<<"Content that we're adding: "<<strJson;
+    //qDebug()<<"Content that we're adding: "<<strJson;
 
     std::string symbols_str = strJson.toUtf8().constData();
     bsoncxx::document::value s = bsoncxx::from_json(symbols_str);
@@ -70,18 +70,18 @@ bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
        QJsonDocument json_doc = QJsonDocument::fromJson(q_content.toUtf8());
        QJsonObject  json_object = json_doc.object();
        int size = json_object.size();
-       qDebug()<<json_object;
+       //qDebug()<<json_object;
 
-       qDebug()<<"size: "<<size;
+       //qDebug()<<"size: "<<size;
        for (int i=0;i<size;i++){
            QString index = QString::number(i);
-           qDebug()<<index;
+           //qDebug()<<index;
            QJsonValue e = json_object[index];
-           qDebug()<<"element: "<<e;
+           //qDebug()<<"element: "<<e;
            symbols.append(e);
        }
 
-       qDebug()<<"Symbols: "<<symbols;
+       //qDebug()<<"Symbols: "<<symbols;
        return true;
     }
     else {
@@ -92,7 +92,7 @@ bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
 
 bool Mongo::checkConnection() {
 	// Do a fake query to check for the connection
-	auto collection = this->conn["editor"]["files"];
+    auto collection = this->conn["editor"]["files"];
 	try {
 		auto result = collection.find_one({});
 	} catch (...) {
@@ -103,12 +103,12 @@ bool Mongo::checkConnection() {
 
 
 DatabaseError Mongo::signup(const QString &username,const QString &password){
-	auto session = conn.start_session();
+    //auto session = conn.start_session();
 //	session.start_transaction();
 	try {
 		mongocxx::collection collection = this->conn["editor"]["users"];
 		bsoncxx::builder::stream::document document{};
-		auto cursor = collection.find_one(session, document << "username"
+        auto cursor = collection.find_one( document << "username"
 										  << username.toStdString()
 										  << finalize);
 //		auto cursor = collection.find_one(session, document << "username"
@@ -134,13 +134,15 @@ DatabaseError Mongo::signup(const QString &username,const QString &password){
 //			 { $set: { myLock: { appName: "myApp", pseudoRandom: ObjectId() } } })
 
 		if (cursor) {
-			qDebug() << "already existing";
+            //qDebug() << "already existing";
 			return ALREADY_EXISTING_USER;
 		}
 
 		char hashed_password[crypto_pwhash_STRBYTES];
 		// Conversion from QString to char *
-		const char *password_char = password.toLocal8Bit().data();
+        QByteArray ba = password.toUtf8();
+        const char *password_char = ba.constData();
+
 
 		if (crypto_pwhash_str(hashed_password, password_char,
 							  strlen(password_char),
@@ -149,26 +151,27 @@ DatabaseError Mongo::signup(const QString &username,const QString &password){
 			return CRYPTO_ERROR;
 		}
 
-		QString hashed_pass_qstring = QString::fromUtf8(hashed_password);
+
+
 		auto builder = bsoncxx::builder::stream::document{};
 		bsoncxx::document::value doc = builder
 				<< "username" << username.toStdString()
 				<< "nickname" << username.toStdString()
-				<< "password" << hashed_pass_qstring.toStdString()
+                << "password" << hashed_password
 				<< bsoncxx::builder::stream::finalize;
 		collection.insert_one(doc.view());
 
 //		session.commit_transaction();
-		qDebug() << "Finished";
+        //qDebug() << "Finished";
 		return SUCCESS;
 	} catch(const mongocxx::operation_exception& e) {
-		qDebug() << e.what();
+        //qDebug() << e.what();
 //		session.abort_transaction();
 		return QUERY_ERROR;
 	}
 }
 
-DatabaseError Mongo::login(const QString &username,const QString &password,
+DatabaseError Mongo::login(const QString &username,const QString password,
 						   QString& nickname) {
 	try {
 		mongocxx::collection collection = this->conn["editor"]["users"];
@@ -184,14 +187,21 @@ DatabaseError Mongo::login(const QString &username,const QString &password,
 		std::string qry = bsoncxx::to_json(*cursor);
 		std::string pass = json::parse(qry)["password"];
 
-		const char *password_char = password.toLocal8Bit().data();
-		QString hashed_password = QString::fromStdString(pass);
-		const char *hashed_password_char = hashed_password.toLocal8Bit().data();
-		qDebug() << QString::fromStdString(hashed_password_char) <<
-					QString::fromStdString(password_char);
+        //qDebug()<<"password: "<<password;
+        //qDebug()<<"password: "<<password;
+
+        QByteArray ba = password.toUtf8();
+        const char *password_char = ba.constData();
+
+
+        const char *hashed_password_char = pass.c_str();
+
+       // std::cout<<"hash pwd char: "<<hashed_password_char;
+       // std::cout<<"pwd char: "<<hashed_password_char;
+
 		if (crypto_pwhash_str_verify(hashed_password_char, password_char,
-									 strlen(password_char)) != 0) {
-			qDebug() << "Wrong psw";
+                                     strlen(password_char)) != 0) {
+            //qDebug() << "Wrong psw";
 			return WRONG_PASSWORD;
 		}
 

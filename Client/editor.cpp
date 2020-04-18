@@ -495,7 +495,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
 				// to retrieve the format it is necessary to be on the RIGHT of the target char
 				cursor.movePosition(QTextCursor::Right);
-				qDebug()<<"Added at: "<<i<<" -> "<<added.at(i).unicode();
+                //qDebug()<<"Added at: "<<i<<" -> "<<added.at(i).unicode();
 				font = cursor.charFormat().font();
 				color = cursor.charFormat().foreground().color();
 				align = alignPrec;
@@ -560,11 +560,11 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 		connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this, &Editor::saveCursorPosition);
 		saveCursorPosition();
 		// remove multiple chars
-		qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
+        //qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
 		if (removed.length()){
 			crdt->localErase(line, index,removed.length());
 		}
-		qDebug()<<"After remove line and index: "<<"("<<line<<","<<index<<")";
+        //qDebug()<<"After remove line and index: "<<"("<<line<<","<<index<<")";
 	} else if (charsRemoved==charsAdded && (this->undoFlag==true || this->redoFlag==true)){
 		//format/alignment change by redo/undo
 		//qDebug()<<"format change";
@@ -715,7 +715,7 @@ void Editor::on_insertGroup(int line, int index, const QString& s,QTextCharForma
 
 void Editor::on_erase(int line, int index,int lenght)
 {
-	qDebug()<<"ON ERASE";
+    //qDebug()<<"ON ERASE";
 	QTextCursor cursor = ui->textEdit->textCursor();
 	//    //qDebug() << line << index;
 	QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
@@ -762,7 +762,7 @@ void Editor::updateText(const QString& text){
 	item->setIcon(*client->getProfile());
 	item->setText(client->getUsername());
 	//qDebug() << "color: " << client->getColor();
-	item->setTextColor(QColor(client->getColor()));
+    //item->setTextColor(QColor(client->getColor()));
 	this->ui->listWidget->addItem(item);
 	this->ui->textEdit->setText(text);
 }
@@ -773,7 +773,7 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 		// QColor color = list_colors.getColor();
 		int user = fromStringToIntegerHash(users.at(i).first.first);
 		//  //qDebug()<<" --------Username: "<<user<<" Color: "<<color;
-		qDebug()<<"Try adding: "<<users.at(i).first.first;
+        //qDebug()<<"Try adding: "<<users.at(i).first.first;
 		if (highlighter->addClient(user)){   //prevents duplicates
 			QListWidgetItem* item = new QListWidgetItem();
 			item->setIcon(QIcon(users.at(i).second));
@@ -816,7 +816,7 @@ void Editor::removeUser(const QString& username, const QString& nickname){
 
 	for (QListWidgetItem* item: items){
 		if (item->data(Qt::UserRole).toString()==username){
-			qDebug()<<"ITEM TO REMOVE: "<<username;
+            //qDebug()<<"ITEM TO REMOVE: "<<username;
 			highlighter->freeColor(fromStringToIntegerHash(username));
 			this->ui->listWidget->removeItemWidget(item);
 			//  ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
