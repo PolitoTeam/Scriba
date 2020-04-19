@@ -221,85 +221,66 @@ DatabaseError Mongo::updateNickname(const QString &username,
 	}
 }
 
-// TODO
 DatabaseError  Mongo::updatePassword(const QString &username,
 									 const QString &oldpass,
-									 const QString &newpass){
+									 const QString &newpass) {
+	auto session = conn.start_session();
+	session.start_transaction();
+	try {
+		mongocxx::collection collection = this->conn["editor"]["users"];
+		bsoncxx::builder::stream::document document{};
 
+		auto cursor = collection.find_one_and_update(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$set" << open_document << "lock"
+							 << bsoncxx::oid() << close_document << finalize
+		);
 
-//		const char *password_char = oldpass.toLocal8Bit().data();
-//		QString hashed_password = qry.value(1).toString();
-//		const char *hashed_password_char = hashed_password.toLocal8Bit().data();
-//		if (crypto_pwhash_str_verify(hashed_password_char,
-//									 password_char,
-//									 strlen(password_char)) != 0) {
-//			err = WRONG_PASSWORD;
-//		}
-//		QSqlQuery qry;
-//		qry.prepare("UPDATE USER "
-//					"SET Password=:newpassword "
-//					"WHERE Username=:username");
-//		qry.bindValue(":username",username);
+		if (!cursor) {
+			return NON_EXISTING_USER;
+		}
 
-//		char hashed_newpassword[crypto_pwhash_STRBYTES];
-//		// Conversion from QString to char *
-//		const char *password_newchar = newpass.toLocal8Bit().data();
+		std::string qry = bsoncxx::to_json(*cursor);
+		std::string pass = json::parse(qry)["password"];
 
-//		if (crypto_pwhash_str(hashed_newpassword, password_newchar,
-//							  strlen(password_newchar),
-//							  crypto_pwhash_OPSLIMIT_SENSITIVE,
-//							  crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-//			qDebug() << "Error while hashing...";
-//		}
+		QByteArray ba = oldpass.toUtf8();
+		const char *password_char = ba.constData();
+		const char *hashed_password_char = pass.c_str();
+		if (crypto_pwhash_str_verify(hashed_password_char, password_char,
+									 strlen(password_char)) != 0) {
+			return WRONG_PASSWORD;
+		}
 
-//		QString hashed_password_qstring = QString::fromUtf8(hashed_newpassword);
-//		qry.bindValue(":newpassword",hashed_password_qstring);
+		char hashed_newpassword[crypto_pwhash_STRBYTES];
+		ba = newpass.toUtf8();
+		const char *password_newchar = ba.constData();
 
-//	auto session = conn.start_session();
-//	session.start_transaction();
-//	try {
-//		mongocxx::collection collection = this->conn["editor"]["users"];
-//		bsoncxx::builder::stream::document document{};
+		// Generate hash for the new password
+		if (crypto_pwhash_str(hashed_newpassword, password_newchar,
+							  strlen(password_newchar),
+							  crypto_pwhash_OPSLIMIT_SENSITIVE,
+							  crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+			return CRYPTO_ERROR;
+		}
 
-//		auto cursor = collection.find_one_and_update(
-//					session,
-//					document << "username" << username.toStdString()
-//							 << finalize,
-//					document << "$set" << open_document << "lock"
-//							 << bsoncxx::oid() << close_document << finalize
-//		);
+		collection.update_one(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$set" << open_document << "password"
+							 << hashed_newpassword << close_document
+							 << finalize
+		);
 
-//		if (!cursor) {
-//			return NON_EXISTING_USER;
-//		}
-
-//		std::string qry = bsoncxx::to_json(*cursor);
-//		std::string pass = json::parse(qry)["password"];
-
-//		QByteArray ba = oldpass.toUtf8();
-//		const char *password_char = ba.constData();
-//		const char *hashed_password_char = pass.c_str();
-//		if (crypto_pwhash_str_verify(hashed_password_char, password_char,
-//									 strlen(password_char)) != 0) {
-//			return WRONG_PASSWORD;
-//		}
-
-//		collection.update_one(
-//					session,
-//					document << "username" << username.toStdString()
-//							 << finalize,
-//					document << "$set" << open_document << "nickname"
-//							 << nickname.toStdString() << close_document
-//							 << finalize
-//		);
-
-//		session.commit_transaction();
-//		return SUCCESS;
-//	} catch(const mongocxx::operation_exception& e) {
-//		qDebug() << e.what();
-//		session.abort_transaction();
-//		return QUERY_ERROR;
-//	}
+		session.commit_transaction();
+		return SUCCESS;
+	} catch(const mongocxx::operation_exception& e) {
+		qDebug() << e.what();
+		session.abort_transaction();
+		return QUERY_ERROR;
+	}
 }
 
 // Check if old password provided is correct (used before to update it)
@@ -446,7 +427,6 @@ DatabaseError Mongo::newFile(const QString &username, const QString &filename,
 		);
 
 		if (cursor) {
-			qDebug() << "Already existing";
 			return ALREADY_EXISTING_FILE;
 		}
 
@@ -534,52 +514,37 @@ DatabaseError Mongo::getSharedLink(const QString &author,
 	}
 }
 
-// TODO
 DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 											   QString& filename,
 											   const QString& user) {
+	filename = "ERROR";
 
-//	qry.prepare("SELECT Name, Owner "
-//				"FROM FILE "
-//				"WHERE Link=:link FOR UPDATE");
-//	qry.bindValue(":link", sharedLink);
-
-
-//	} else if (!qry.next()) {
-//		err = NON_EXISTING_FILE;
-//	} else {
-//		filename = qry.value(0).toString() + "," + qry.value(1).toString();
-
-//		// Add file to list of shared files of 'user'
-//		QSqlQuery qry;
-//		qry.prepare("INSERT IGNORE INTO FILE_USER (Link, User, First_access) "
-//					"VALUES (:link, :user, 1)");
-//		qry.bindValue(":link", sharedLink);
-//		qry.bindValue(":user", user);
-//		if (!qry.exec()){
-//			err = QUERY_ERROR;
-//		}
-//	}
-
-	/*
 	auto session = conn.start_session();
 	session.start_transaction();
 	try {
 		mongocxx::collection collection = this->conn["editor"]["users"];
 		bsoncxx::builder::stream::document document{};
 
+		mongocxx::options::find_one_and_update opts{};
+		opts.projection(document << "files" << open_document
+										<< "$elemMatch" << open_document
+											<< "link" << sharedLink.toStdString()
+										<< close_document
+								 << close_document << finalize);
+
 		auto cursor = collection.find_one_and_update(
-				session,
-				document << "files" << open_document
-							<< "$elemMatch" << open_document
-								<< "link"
-								<< sharedLink.toStdString()
-							<< close_document
-						 << close_document << finalize,
-				document << "$set" << open_document
-							<< "lock"
-							<< bsoncxx::oid()
-						 << close_document << finalize
+					session,
+					document << "files" << open_document
+								<< "$elemMatch" << open_document
+									<< "link"
+									<< sharedLink.toStdString()
+								<< close_document
+							 << close_document << finalize,
+					document << "$set" << open_document
+								<< "lock"
+								<< bsoncxx::oid()
+							 << close_document << finalize,
+					opts
 		);
 
 		if (!cursor) {
@@ -587,36 +552,27 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 		}
 
 		std::string qry = bsoncxx::to_json(*cursor);
-		std::string pass = json::parse(qry)["files"][];
+		std::string name = json::parse(qry)["files"][0]["name"];
+		filename = QString::fromStdString(name);
 
-		char hashed_password[crypto_pwhash_STRBYTES];
-		// Conversion from QString to char *
-		QByteArray ba = password.toUtf8();
-		const char *password_char = ba.constData();
-
-		if (crypto_pwhash_str(hashed_password, password_char,
-							  strlen(password_char),
-							  crypto_pwhash_OPSLIMIT_SENSITIVE,
-							  crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
-			return CRYPTO_ERROR;
-		}
-
-		auto builder = bsoncxx::builder::stream::document{};
-		bsoncxx::document::value doc = builder
-				<< "username" << username.toStdString()
-				<< "nickname" << username.toStdString()
-				<< "password" << hashed_password
-				<< finalize;
-		collection.insert_one(doc.view());
+		collection.update_one(
+					session,
+					document << "username" << user.toStdString()
+							 << finalize,
+					document << "$addToSet" << open_document
+								<< "shared_with_me" << open_document
+									<< "link" << sharedLink.toStdString()
+								<< close_document
+							 << close_document << finalize
+		);
 
 		session.commit_transaction();
 		return SUCCESS;
-	} catch(const mongocxx::operation_exception& e) {
+	} catch (std::exception& e) {
 		qDebug() << e.what();
 		session.abort_transaction();
 		return QUERY_ERROR;
 	}
-	*/
 }
 
 QString Mongo::generateRandomString() const

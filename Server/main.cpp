@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 //	qDebug() << db.signup("enrico@gmail.com", "Admin11.");
 
 	QString nick;
-	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
+//	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
 //	qDebug() << nick;
 
 //	qDebug() << db.updateNickname("enrico@gmail.com", "enrico");
@@ -23,12 +23,24 @@ int main(int argc, char *argv[])
 //	qDebug() << db.newFile("enrico@gmail.com", "testfile3", link);
 //	qDebug() << link;
 
-	qDebug() << db.getSharedLink("enrico@gmail.com", "testfile", link);
-	qDebug() << link;
-	qDebug() << db.getSharedLink("enrico@gmail.com", "testfile2", link);
-	qDebug() << link;
-	qDebug() << db.getSharedLink("enrico@gmail.com", "testfile3", link);
-	qDebug() << link;
+//	qDebug() << db.getSharedLink("enrico@gmail.com", "testfile", link);
+//	qDebug() << link;
+//	qDebug() << db.getSharedLink("enrico@gmail.com", "testfile2", link);
+//	qDebug() << link;
+//	qDebug() << db.getSharedLink("enrico@gmail.com", "testfile3", link);
+//	qDebug() << link;
+
+//	qDebug() << db.updatePassword("enrico@gmail.com", "aaa", "bb");
+//	qDebug() << db.updatePassword("enrico@gmail.com", "Admin11.", "password");
+//	qDebug() << db.login("enrico@gmail.com", "Admin11.", nick);
+//	qDebug() << db.login("enrico@gmail.com", "password", nick);
+
+//	qDebug() << db.updatePassword("enrico@gmail.com", "password", "Admin11.");
+
+//	qDebug() << db.getFilenameFromSharedLink("enrico@gmail.com", nick, "user");
+//	qDebug() << nick;
+	qDebug() << db.getFilenameFromSharedLink("shared_editor://file/sb98zc76GYCXv34jMMpzgOZ0ehvRCo", nick, "enrico@gmail.com");
+//	qDebug() << nick;
 
 	QApplication a(argc, argv);
 	quint16 port = PORT;
