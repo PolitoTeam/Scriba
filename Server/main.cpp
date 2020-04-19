@@ -39,9 +39,13 @@ int main(int argc, char *argv[])
 
 //	qDebug() << db.getFilenameFromSharedLink("enrico@gmail.com", nick, "user");
 //	qDebug() << nick;
-	qDebug() << db.getFilenameFromSharedLink("shared_editor://file/sb98zc76GYCXv34jMMpzgOZ0ehvRCo", nick, "enrico@gmail.com");
+//	qDebug() << db.getFilenameFromSharedLink("shared_editor://file/sb98zc76GYCXv34jMMpzgOZ0ehvRCo", nick, "enrico@gmail.com");
 //	qDebug() << nick;
 
+	QVector<QPair<QString, QString>> files;
+	qDebug() << db.getFiles("enrico@gmail.com", files, true);
+	for (auto f : files)
+		qDebug() << f;
 	QApplication a(argc, argv);
 	quint16 port = PORT;
 

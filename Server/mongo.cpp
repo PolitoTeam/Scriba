@@ -315,84 +315,64 @@ DatabaseError Mongo::checkOldPassword(const QString &username,
 	}
 }
 
-// TODO
 DatabaseError Mongo::getFiles(const QString &username,
 							  QVector<QPair<QString,QString>> &files,
-							  bool shared){
-	DatabaseError err = SUCCESS;
-//	if (!db.open())
-//		err = CONNECTION_ERROR;
+							  bool shared) {
+	try {
+		mongocxx::collection collection = this->conn["editor"]["users"];
+		bsoncxx::builder::stream::document document{};
 
-//	QSqlQuery qry;
-//	if (!shared) {
-//		// select own files (DISTINCT because every file can have 2 entries,
-//		// corresponding to the public and private shared link)
-//		qry.prepare("SELECT DISTINCT Name "
-//					"FROM FILE "
-//					"WHERE Owner=:username");
-//	} else {
-//		// select shared files (no distinction between public and private ones)
-//		qry.prepare("SELECT Name, Owner "
-//					"FROM FILE, FILE_USER "
-//					"WHERE FILE.Link = FILE_USER.Link "
-//					"AND User = :username");
-//	}
-//	qry.bindValue(":username", username);
+		if (!shared) {
+			mongocxx::options::find opts{};
+			opts.projection(document << "files.name" << 1 << finalize);
 
-//	if (!qry.exec()) {
-//		err = QUERY_ERROR;
-//	} else {
-//		if (!shared) {
-//			while (qry.next()) {
-//				files.push_back(QPair<QString, QString>(qry.value(0).toString(),
-//														username));
-//			}
-//		} else {
-//			while (qry.next()) {
-//				files.push_back(QPair<QString, QString>(qry.value(0).toString(),
-//														qry.value(1).toString())
-//								);
-//			}
-//		}
+			auto cursor = collection.find_one(document << "username"
+											  << username.toStdString()
+											  << finalize,
+											  opts);
 
-//		//        // add files--> public ones: the files that are public and that the user has already accessed: it means that PUBLIC=true and the fileis in the FILE_USER table
-//		//        qry.prepare("SELECT Name, Owner "
-//		//                    "FROM FILE, FILE_USER "
-//		//                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = TRUE");
-//		//        qry.bindValue(":username", username);
-//		//        if (!qry.exec())
-//		//            err = QUERY_ERROR;
-//		//        else {
-//		//            while (qry.next()) {
-//		//                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
-//		//            }
-//		//        }
+			if (!cursor) {
+				return NON_EXISTING_USER;
+			}
 
-//		//        // add files--> private ones: the files that are privat and that the user has already accessed: it means that PUBLIC=false and the file is in the FILE_USER table with FIRST_ACESS=FALSE
-//		//        qry.prepare("SELECT Name, Owner "
-//		//                    "FROM FILE, FILE_USER "
-//		//                    "WHERE FILE.Link = FILE_USER.Link AND User = :username AND Public = FALSE and First_access = FALSE");
-//		//        qry.bindValue(":username", username);
-//		//        if (!qry.exec())
-//		//            err = QUERY_ERROR;
-//		//        else {
-//		//            while (qry.next()) {
-//		//                files.push_back(QPair<QString, QString>(qry.value(0).toString(), qry.value(1).toString()));
-//		//            }
-//		//        }
+			std::string qry = bsoncxx::to_json(*cursor);
+			json object = json::parse(qry);
 
-//		if (files.isEmpty()) {
-//			err = NO_FILES_AVAILABLE;
-//		}
-//	}
+			for (auto file : object["files"]) {
+				QString file_qstr = QString::fromStdString(file["name"]);
+				files.push_back(QPair<QString, QString>(file_qstr, username));
+			}
+		} else {
+			mongocxx::options::find opts{};
+			opts.projection(document << "shared_with_me" << 1 << finalize);
 
-//	db.close();
-	return err;
+			auto cursor = collection.find_one(document << "username"
+											  << username.toStdString()
+											  << finalize,
+											  opts);
+
+			if (!cursor) {
+				return NON_EXISTING_USER;
+			}
+
+			std::string qry = bsoncxx::to_json(*cursor);
+			json object = json::parse(qry);
+
+			for (auto file : object["shared_with_me"]) {
+				QString file_qstr = QString::fromStdString(file["filename"]);
+				QString owner = QString::fromStdString(file["owner"]);
+				files.push_back(QPair<QString, QString>(file_qstr, owner));
+			}
+		}
+		return SUCCESS;
+	} catch (std::exception& e) {
+		qDebug() << e.what();
+		return QUERY_ERROR;
+	}
 }
 
 DatabaseError Mongo::newFile(const QString &username, const QString &filename,
-							 QString &sharedLink)
-{
+							 QString &sharedLink) {
 	auto session = conn.start_session();
 	session.start_transaction();
 	try {
@@ -475,7 +455,7 @@ DatabaseError Mongo::newFile(const QString &username, const QString &filename,
 
 DatabaseError Mongo::getSharedLink(const QString &author,
 								   const QString &filename,
-								   QString &sharedLink){
+								   QString &sharedLink) {
 	sharedLink = "ERROR";
 	try {
 		mongocxx::collection collection = this->conn["editor"]["users"];
@@ -526,7 +506,9 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 		bsoncxx::builder::stream::document document{};
 
 		mongocxx::options::find_one_and_update opts{};
-		opts.projection(document << "files" << open_document
+		opts.projection(document
+						<< "username" << 1
+						<< "files" << open_document
 										<< "$elemMatch" << open_document
 											<< "link" << sharedLink.toStdString()
 										<< close_document
@@ -553,6 +535,7 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 
 		std::string qry = bsoncxx::to_json(*cursor);
 		std::string name = json::parse(qry)["files"][0]["name"];
+		std::string owner = json::parse(qry)["username"];
 		filename = QString::fromStdString(name);
 
 		collection.update_one(
@@ -561,7 +544,8 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 							 << finalize,
 					document << "$addToSet" << open_document
 								<< "shared_with_me" << open_document
-									<< "link" << sharedLink.toStdString()
+									<< "filename" << name
+									<< "owner" << owner
 								<< close_document
 							 << close_document << finalize
 		);
@@ -575,8 +559,7 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 	}
 }
 
-QString Mongo::generateRandomString() const
-{
+QString Mongo::generateRandomString() const {
 	const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcde"
 									 "fghijklmnopqrstuvwxyz0123456789");
 
