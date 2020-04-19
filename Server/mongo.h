@@ -44,7 +44,7 @@ public:
 							   bool shared);
 	DatabaseError newFile(const QString& username, const QString& filename,
 						  QString& sharedLink);
-	DatabaseError getSharedLink(const QString& author,const QString& password,
+	DatabaseError getSharedLink(const QString& author,const QString& filename,
 								QString& sharedLink);
 	DatabaseError getFilenameFromSharedLink(const QString& sharedLink,
 											QString& filename,

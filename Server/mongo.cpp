@@ -32,7 +32,7 @@ bool Mongo::insertNewFile(const QString filename, const QString username) {
 				<< bsoncxx::builder::stream::finalize;
 		bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collection.insert_one(doc.view());
 		return true;
-	} catch(...) {
+	} catch (...) {
 		return false;
 	}
 }
@@ -143,7 +143,7 @@ DatabaseError Mongo::signup(const QString &username, const QString &password) {
 
 		session.commit_transaction();
 		return SUCCESS;
-	} catch(const mongocxx::operation_exception& e) {
+	} catch (std::exception& e) {
 		qDebug() << e.what();
 		session.abort_transaction();
 		return QUERY_ERROR;
@@ -177,7 +177,8 @@ DatabaseError Mongo::login(const QString &username, const QString password,
 		std::string nick = json::parse(qry)["nickname"];
 		nickname = QString::fromStdString(nick);
 		return SUCCESS;
-	} catch(...) {
+	} catch (std::exception& e) {
+		qDebug() << e.what();
 		return QUERY_ERROR;
 	}
 }
@@ -213,7 +214,7 @@ DatabaseError Mongo::updateNickname(const QString &username,
 
 		session.commit_transaction();
 		return SUCCESS;
-	} catch(const mongocxx::operation_exception& e) {
+	} catch (std::exception& e) {
 		qDebug() << e.what();
 		session.abort_transaction();
 		return QUERY_ERROR;
@@ -318,16 +319,17 @@ DatabaseError Mongo::checkOldPassword(const QString &username,
 		std::string qry = bsoncxx::to_json(*cursor);
 		std::string pass = json::parse(qry)["password"];
 
-		const char *old_password_char = oldpass.toLocal8Bit().data();
+		QByteArray ba = oldpass.toUtf8();
+		const char *old_password_char = ba.constData();
 		QString hashed_old_password = QString::fromStdString(pass);
-		const char *hashed_password_char = hashed_old_password
-										   .toLocal8Bit().data();
+		const char *hashed_password_char = pass.c_str();
 		if (crypto_pwhash_str_verify(hashed_password_char, old_password_char,
 									 strlen(old_password_char)) != 0) {
 			return WRONG_PASSWORD;
 		}
 		return SUCCESS;
-	} catch(...) {
+	} catch (std::exception& e) {
+		qDebug() << e.what();
 		return QUERY_ERROR;
 	}
 }
@@ -407,104 +409,142 @@ DatabaseError Mongo::getFiles(const QString &username,
 	return err;
 }
 
-// TODO
 DatabaseError Mongo::newFile(const QString &username, const QString &filename,
 							 QString &sharedLink)
 {
-	DatabaseError err = SUCCESS;
-//	if (!db.open())
-//		err = CONNECTION_ERROR;
+	auto session = conn.start_session();
+	session.start_transaction();
+	try {
+		mongocxx::collection collection = this->conn["editor"]["users"];
+		bsoncxx::builder::stream::document document{};
 
-//	QSqlDatabase::database().transaction();
-//	QSqlQuery qry;
-//	qry.prepare("SELECT Name "
-//				"FROM FILE "
-//				"WHERE Name=:filename "
-//				"AND Owner=:username FOR UPDATE");
-//	qry.bindValue(":filename", filename);
-//	qry.bindValue(":username", username);
+		auto cursor = collection.find_one_and_update(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$set" << open_document << "lock"
+							 << bsoncxx::oid() << close_document << finalize
+		);
 
-//	if (!qry.exec()) {
-//		err = QUERY_ERROR;
-//	}
-//	else if (qry.next()) {
-//		err = ALREADY_EXISTING_FILE;
-//	} else {
-//		bool alreadyExisitingLink = true;
-//		while (alreadyExisitingLink) {
-//			sharedLink = "shared_editor://file/" + generateRandomString();
-//			QSqlQuery qry;
-//			qry.prepare("SELECT * "
-//						"FROM FILE "
-//						"WHERE Link=:link FOR UPDATE");
-//			qry.bindValue(":link", sharedLink);
-//			if (!qry.exec()) {
-//				err = QUERY_ERROR;
-//			}
+		if (!cursor) {
+			return NON_EXISTING_USER;
+		}
 
-//			if (!qry.next()) {
-//				alreadyExisitingLink = false;
-//			}
-//		}
+		cursor = collection.find_one_and_update(
+					session,
+					document << "username" << username.toStdString()
+							 << "files" << open_document
+								<< "$elemMatch" << open_document
+									<< "name"
+									<< filename.toStdString()
+								<< close_document
+							 << close_document << finalize,
+					document << "$set" << open_document
+								<< "lock"
+								<< bsoncxx::oid()
+							 << close_document << finalize
+		);
 
-//		QSqlQuery qry;
-//		qry.prepare("INSERT INTO FILE (Link, Name, Owner, Public) "
-//					"VALUES (:link, :filename, :username, TRUE)");
-//		qry.bindValue(":link", sharedLink);
-//		qry.bindValue(":filename", filename);
-//		qry.bindValue(":username", username);
-//		if (!qry.exec()){
-//			err = QUERY_ERROR;
-//		}
-//	}
-//	QSqlDatabase::database().commit();
+		if (cursor) {
+			qDebug() << "Already existing";
+			return ALREADY_EXISTING_FILE;
+		}
 
-//	db.close();
-	return err;
+		bool alreadyExisitingLink = true;
+		while (alreadyExisitingLink) {
+			sharedLink = "shared_editor://file/" + generateRandomString();
+			auto cursor = collection.find_one_and_update(
+					session,
+					document << "files" << open_document
+								<< "$elemMatch" << open_document
+									<< "link"
+									<< sharedLink.toStdString()
+								<< close_document
+							 << close_document << finalize,
+					document << "$set" << open_document
+								<< "lock"
+								<< bsoncxx::oid()
+							 << close_document << finalize
+			);
+
+			if (!cursor) {
+				alreadyExisitingLink = false;
+			}
+		}
+
+		collection.update_one(
+					session,
+					document << "username" << username.toStdString()
+							 << finalize,
+					document << "$push" << open_document
+								<< "files" << open_document
+									<< "name" << filename.toStdString()
+									<< "link" << sharedLink.toStdString()
+								<< close_document
+							 << close_document << finalize
+		);
+
+		session.commit_transaction();
+		return SUCCESS;
+	} catch(std::exception& e) {
+		qDebug() << e.what();
+		session.abort_transaction();
+		return QUERY_ERROR;
+	}
 }
 
-// TODO
 DatabaseError Mongo::getSharedLink(const QString &author,
 								   const QString &filename,
 								   QString &sharedLink){
-	DatabaseError err = SUCCESS;
-//	if (!db.open())
-//		err = CONNECTION_ERROR;
+	sharedLink = "ERROR";
+	try {
+		mongocxx::collection collection = this->conn["editor"]["users"];
+		bsoncxx::builder::stream::document document{};
 
-//	QSqlQuery qry;
-//	qry.prepare("SELECT Link "
-//				"FROM FILE "
-//				"WHERE Owner=:owner AND Name=:name");
-//	qry.bindValue(":owner", author);
-//	qry.bindValue(":name", filename);
-//	if (!qry.exec()) {
-//		err = QUERY_ERROR;
-//	} else if (!qry.next()) {
-//		err = NON_EXISTING_FILE;
-//	} else {
-//		sharedLink = qry.value(0).toString();
-//	}
-//	db.close();
-	return err;
+		mongocxx::options::find opts{};
+		opts.projection(document << "files" << open_document
+										<< "$elemMatch" << open_document
+											<< "name" << filename.toStdString()
+										<< close_document
+								 << close_document << finalize);
+
+		auto cursor = collection.find_one(
+					document << "username" << author.toStdString()
+							 << "files" << open_document
+									<< "$elemMatch" << open_document
+										<< "name"
+										<< filename.toStdString()
+									<< close_document
+							 << close_document << finalize,
+					opts
+		);
+
+		if (!cursor) {
+			return NON_EXISTING_FILE;
+		}
+
+		std::string qry = bsoncxx::to_json(*cursor);
+		std::string link = json::parse(qry)["files"][0]["link"];
+
+		sharedLink = QString::fromStdString(link);
+		return SUCCESS;
+	} catch (std::exception& e) {
+		qDebug() << e.what();
+		return QUERY_ERROR;
+	}
 }
 
 // TODO
 DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 											   QString& filename,
 											   const QString& user) {
-	DatabaseError err = SUCCESS;
-//	if (!db.open())
-//		err = CONNECTION_ERROR;
 
-//	QSqlDatabase::database().transaction();
-//	QSqlQuery qry;
 //	qry.prepare("SELECT Name, Owner "
 //				"FROM FILE "
 //				"WHERE Link=:link FOR UPDATE");
 //	qry.bindValue(":link", sharedLink);
 
-//	if (!qry.exec()) {
-//		err = QUERY_ERROR;
+
 //	} else if (!qry.next()) {
 //		err = NON_EXISTING_FILE;
 //	} else {
@@ -520,10 +560,63 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 //			err = QUERY_ERROR;
 //		}
 //	}
-//	QSqlDatabase::database().commit();
 
-//	db.close();
-	return err;
+	/*
+	auto session = conn.start_session();
+	session.start_transaction();
+	try {
+		mongocxx::collection collection = this->conn["editor"]["users"];
+		bsoncxx::builder::stream::document document{};
+
+		auto cursor = collection.find_one_and_update(
+				session,
+				document << "files" << open_document
+							<< "$elemMatch" << open_document
+								<< "link"
+								<< sharedLink.toStdString()
+							<< close_document
+						 << close_document << finalize,
+				document << "$set" << open_document
+							<< "lock"
+							<< bsoncxx::oid()
+						 << close_document << finalize
+		);
+
+		if (!cursor) {
+			return NON_EXISTING_FILE;
+		}
+
+		std::string qry = bsoncxx::to_json(*cursor);
+		std::string pass = json::parse(qry)["files"][];
+
+		char hashed_password[crypto_pwhash_STRBYTES];
+		// Conversion from QString to char *
+		QByteArray ba = password.toUtf8();
+		const char *password_char = ba.constData();
+
+		if (crypto_pwhash_str(hashed_password, password_char,
+							  strlen(password_char),
+							  crypto_pwhash_OPSLIMIT_SENSITIVE,
+							  crypto_pwhash_MEMLIMIT_INTERACTIVE) != 0) {
+			return CRYPTO_ERROR;
+		}
+
+		auto builder = bsoncxx::builder::stream::document{};
+		bsoncxx::document::value doc = builder
+				<< "username" << username.toStdString()
+				<< "nickname" << username.toStdString()
+				<< "password" << hashed_password
+				<< finalize;
+		collection.insert_one(doc.view());
+
+		session.commit_transaction();
+		return SUCCESS;
+	} catch(const mongocxx::operation_exception& e) {
+		qDebug() << e.what();
+		session.abort_transaction();
+		return QUERY_ERROR;
+	}
+	*/
 }
 
 QString Mongo::generateRandomString() const
