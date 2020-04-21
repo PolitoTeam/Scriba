@@ -12,11 +12,12 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 
-#include "database.h"
-//typedef enum {NON_EXISTING_USER, ALREADY_EXISTING_USER, WRONG_PASSWORD,
-//			  QUERY_ERROR, CONNECTION_ERROR, NON_EXISTING_FILE,
-//			  ALREADY_EXISTING_FILE, NO_FILES_AVAILABLE, SUCCESS} DatabaseError;
-//#define SHARE_LINK_LENGTH 30
+//#include "database.h"
+typedef enum {NON_EXISTING_USER, ALREADY_EXISTING_USER, WRONG_PASSWORD,
+			  QUERY_ERROR, CONNECTION_ERROR, NON_EXISTING_FILE,
+			  ALREADY_EXISTING_FILE, NO_FILES_AVAILABLE,
+			  CRYPTO_ERROR, SUCCESS} DatabaseError;
+#define SHARE_LINK_LENGTH 30
 
 class Mongo
 {

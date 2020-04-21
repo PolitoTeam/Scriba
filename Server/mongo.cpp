@@ -22,9 +22,9 @@ void Mongo::connect() {
 }
 
 bool Mongo::insertNewFile(const QString filename, const QString username) {
-	mongocxx::collection collection = db["files"];
-	//qDebug()<<"Trying to insert new file in MongoDB: "<<filename<<","<<username;
 	try {
+		mongocxx::collection collection = db["files"];
+		//qDebug()<<"Trying to insert new file in MongoDB: "<<filename<<","<<username;
 		bsoncxx::builder::stream::document document{};
 		auto builder = bsoncxx::builder::stream::document{};
 		bsoncxx::document::value doc = builder
@@ -32,7 +32,8 @@ bool Mongo::insertNewFile(const QString filename, const QString username) {
 				<< bsoncxx::builder::stream::finalize;
 		bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collection.insert_one(doc.view());
 		return true;
-	} catch (...) {
+	} catch (std::exception& e) {
+		qDebug() << e.what();
 		return false;
 	}
 }
@@ -364,6 +365,11 @@ DatabaseError Mongo::getFiles(const QString &username,
 				files.push_back(QPair<QString, QString>(file_qstr, owner));
 			}
 		}
+
+		if (files.isEmpty()) {
+			return NO_FILES_AVAILABLE;
+		}
+
 		return SUCCESS;
 	} catch (std::exception& e) {
 		qDebug() << e.what();
@@ -536,7 +542,8 @@ DatabaseError Mongo::getFilenameFromSharedLink(const QString& sharedLink,
 		std::string qry = bsoncxx::to_json(*cursor);
 		std::string name = json::parse(qry)["files"][0]["name"];
 		std::string owner = json::parse(qry)["username"];
-		filename = QString::fromStdString(name);
+		filename = QString::fromStdString(name)
+				   + "," + QString::fromStdString(owner);
 
 		collection.update_one(
 					session,
@@ -565,8 +572,8 @@ QString Mongo::generateRandomString() const {
 
 	QString randomString;
 	for(int i = 0; i < SHARE_LINK_LENGTH; i++) {
-		int index = QRandomGenerator::global()->generate()
-				% possibleCharacters.length();
+		int index = (QRandomGenerator::global()->generate()
+					 % possibleCharacters.length());
 		QChar nextChar = possibleCharacters.at(index);
 		randomString.append(nextChar);
 	}

@@ -6,7 +6,7 @@
 ServerWindow::ServerWindow(QWidget *parent, quint16 port)
 	: QWidget(parent)
 	, ui(new Ui::ServerWindow)
-	, m_Server(new Server(this, new Database()))
+	, m_Server(new Server(this))
 {
 	this->port = port;
 	ui->setupUi(this);
@@ -26,12 +26,12 @@ void ServerWindow::toggleStartServer()
 		ui->pushButton_startStop->setText(tr("START"));
 		ui->label_status->setText("Stopped");
 	} else {
-		if (!m_Server->tryConnectionToDatabase()) {
-			QMessageBox::critical(this, tr("Cannot open user database"),
-								  tr("Unable to establish a database "
-									 "connection.\n"), QMessageBox::Close);
-			return;
-		}
+//		if (!m_Server->tryConnectionToDatabase()) {
+//			QMessageBox::critical(this, tr("Cannot open user database"),
+//								  tr("Unable to establish a database "
+//									 "connection.\n"), QMessageBox::Close);
+//			return;
+//		}
 
 		if (!m_Server->tryConnectionToMongo()) {
 			QMessageBox::critical(this, tr("Cannot open file database"),

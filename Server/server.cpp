@@ -10,20 +10,17 @@
 #include <QTimer>
 #include <QSslSocket>
 #include <QSslConfiguration>
-//#include "mongo.h"
+#include <QDir>
 
-Server::Server(QObject *parent,Database* db)
-	: QTcpServer(parent)
-	, m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
-	, db(db)
+Server::Server(QObject *parent)
+	: QTcpServer(parent),
+	  m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
 {
-	/*mongocxx::instance inst{}; */  // instance of the driver should be alive for all the process lifetime
 	m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
 	m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
-	//    //qDebug()<<"Numero di thread: "<<m_idealThreadCount<<endl;
 
 	mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
-    mongo_db.connect();
+	this->db.connect();
 
 	// create folder to store profile images
 	QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
@@ -56,11 +53,6 @@ Server::Server(QObject *parent,Database* db)
 	certFile.close();
 
 	//qDebug()<<'\n Common Name: '<<cert.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<cert.subjectInfo(QSslCertificate::CommonName);
-
-
-	//    DEBUG
-	//    QVector<QPair<QString, QString>> a;
-	//    db->getFiles("b@b", a);
 
 	QTimer *timer = new QTimer(this);
 	connect(timer, &QTimer::timeout, this, &Server::saveFile);
@@ -158,12 +150,12 @@ void Server::sendProfileImage(ServerWorker *destination)
 
 bool Server::tryConnectionToDatabase()
 {
-	return db->checkConnection();
+	return db.checkConnection();
 }
 
 bool Server::tryConnectionToMongo()
 {
-	return mongo_db.checkConnection();
+	return db.checkConnection();
 }
 
 void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
@@ -219,7 +211,7 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-    //qDebug() << "JSON RECEIVDE";
+	qDebug() << json;
 	if (sender->getNickname().isEmpty())
 		return jsonFromLoggedOut(sender, json);
 	else
@@ -236,12 +228,6 @@ void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 		udpateSymbolListAndCommunicateDisconnection(sender->getFilename(), sender);
 	sender->deleteLater();
 }
-
-//void Server::userError(ServerWorker *sender)
-//{
-//    Q_UNUSED(sender) // Indicates to the compiler that the parameter with the specified name is not used in the body of a function.
-//    //qDebug().nospace() << "Error from " << sender->getNickname();
-//}
 
 void Server::stopServer()
 {
@@ -298,7 +284,7 @@ QJsonObject Server::signup(ServerWorker *sender,const QJsonObject &doc){
 		message["reason"] = QStringLiteral("Empty password");
 		return message;
 	}
-	DatabaseError result = this->db->signup(username,password);
+	DatabaseError result = this->db.signup(username,password);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error");
@@ -354,7 +340,7 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
 		return message;
 	}
 	QString nickname;
-	int r=this->db->login(username,password,nickname);
+	int r=this->db.login(username,password,nickname);
 	if (r == SUCCESS){
 		message["success"] = true;
 		message["username"]=username;
@@ -522,7 +508,7 @@ QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc){
 	}
 	sender->setNickname(nickname);
 	//    //qDebug()<<"nickname: "<<nickname;
-	DatabaseError result = this->db->updateNickname(username,nickname);
+	DatabaseError result = this->db.updateNickname(username,nickname);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error");
@@ -582,7 +568,7 @@ QJsonObject Server::updatePass(const QJsonObject &doc){
 		return message;
 	}
 
-	DatabaseError result = this->db->updatePassword(username,oldpassword,newpassword);
+	DatabaseError result = this->db.updatePassword(username,oldpassword,newpassword);
 
 	if (result == NON_EXISTING_USER){
 		message["success"] = false;
@@ -637,7 +623,7 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 		return message;
 	}
 
-	DatabaseError result = this->db->checkOldPassword(username, old_password);
+	DatabaseError result = this->db.checkOldPassword(username, old_password);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error");
@@ -675,7 +661,7 @@ QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
 	}
 
 	QVector<QPair<QString, QString>> files;
-	DatabaseError result = this->db->getFiles(username, files, shared);
+	DatabaseError result = this->db.getFiles(username, files, shared);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error.");
@@ -726,7 +712,7 @@ QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc, const QStr
 	}
 
 	QString filename;
-	DatabaseError result = this->db->getFilenameFromSharedLink(sharedLink, filename, user);
+	DatabaseError result = this->db.getFilenameFromSharedLink(sharedLink, filename, user);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error.");
@@ -777,7 +763,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	}
 
 	QString sharedLink;
-	DatabaseError result = this->db->newFile(username, filename, sharedLink);
+	DatabaseError result = this->db.newFile(username, filename, sharedLink);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error.");
@@ -801,7 +787,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	file.open(QIODevice::WriteOnly);
 
 //	Mongo mongo_db;
-    if (!mongo_db.insertNewFile(filename, username)) {
+	if (!db.insertNewFile(filename, username)) {
        throw new std::runtime_error("File shouldn't already exist.");
     }
     else{
@@ -932,12 +918,12 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
         symbols = document.array();
         qDebug()<<"content: "<<symbols;*/
 
-        flag = mongo_db.retrieveFile(filename,symbols);
+		flag = db.retrieveFile(filename,symbols);
 	}
 
 	// retrieve shared link
 	QString sharedLink;
-	db->getSharedLink(author, file, sharedLink);
+	db.getSharedLink(author, file, sharedLink);
 
 	if (flag==true){
 		message["success"] = true;
@@ -1108,7 +1094,7 @@ void Server::saveFile() {
 			QJsonDocument doc(json_to_store);
 			QString strJson(doc.toJson(QJsonDocument::Compact));
 
-            mongo_db.saveFile(filename,symbols_json);
+			db.saveFile(filename,symbols_json);
 		}
 
 		// Reset value to false

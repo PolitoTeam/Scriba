@@ -6,10 +6,10 @@
 #include <QMap>
 #include <QSslKey>
 #include <QSslCertificate>
-#include "database.h"
-#ifndef Q_MOC_RUN
+//#include "database.h"
+//#ifndef Q_MOC_RUN
 #include "mongo.h"
-#endif
+//#endif
 
 class QThread;
 class ServerWorker;
@@ -25,7 +25,7 @@ class Server : public QTcpServer
 	Q_DISABLE_COPY(Server)
 
 public:
-	Server(QObject *parent = nullptr,Database* db=0);
+	Server(QObject *parent=nullptr);
 	~Server() override;
 	bool tryConnectionToDatabase();
 	bool tryConnectionToMongo();
@@ -41,14 +41,14 @@ private:
 	QVector<QThread *> m_availableThreads;
 	QVector<int> m_threadsLoad;
 	QVector<ServerWorker *> m_clients;
-	Database* db;
+	Mongo db;
 	// <filename, list_of_workers>
 	QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
 	// <filename, map_of_symbols>
 	QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
 	// <filename, changed>
 	QMap<QString, bool> changed;
-    Mongo mongo_db;
+//    Mongo mongo_db;
 
 private slots:
 	void broadcast(const QJsonObject &message, ServerWorker *exclude);

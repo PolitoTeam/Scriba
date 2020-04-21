@@ -34,16 +34,16 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 			this, &Client::error);
 
 	connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{this->m_received_data.clear();this->m_exptected_json_size=0;});
-	connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
+	connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){/*qDebug()<<socketState;*/});
 
-	connect(this,&Client::connected,this, []()->void{qDebug()<<"New client Connected";});
+	connect(this,&Client::connected,this, []()->void{/*qDebug()<<"New client Connected";*/});
 	// connect readyRead() to the slot that will take care of reading the data in
 	connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead);
 
 
 	// Reset the m_loggedIn variable when we disconnec. Since the operation is trivial we use a lambda instead of creating another slot
 
-	connect(m_clientSocket, &QSslSocket::encrypted, this, [](){qDebug()<<"encrypted!";});
+	connect(m_clientSocket, &QSslSocket::encrypted, this, [](){/*qDebug()<<"encrypted!";*/});
 	//    connect(m_clientSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&Client::sslErrors);
 
 
@@ -81,12 +81,6 @@ void Client::sendByteArray(const QByteArray &byteArray){
     socketStream << json_size << byteArray;
 
 }
-
-//void Client::sslErrors(const QList<QSslError> &errors)
-//    {
-//        foreach (const QSslError &error, errors)
-//            qDebug() <<"ERROR :"<< error.errorString();
-//    }
 
 void Client::login(const QString &username, const QString &password)
 {
@@ -234,6 +228,7 @@ void Client::disconnectFromHost()
 
 void Client::jsonReceived(const QJsonObject &docObj)
 {
+	qDebug() << docObj;
 	// actions depend on the type of message
 	const QJsonValue typeVal = docObj.value(QLatin1String("type"));
 	if (typeVal.isNull() || !typeVal.isString())

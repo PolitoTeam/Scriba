@@ -25,7 +25,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        database.cpp \
         main.cpp \
         mongo.cpp \
         server.cpp \
@@ -33,7 +32,6 @@ SOURCES += \
         serverworker.cpp
 
 HEADERS += \
-        database.h \
         mongo.h \
         serializeSize.h \
         server.h \

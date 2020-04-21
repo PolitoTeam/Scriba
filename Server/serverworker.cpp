@@ -16,8 +16,8 @@ ServerWorker::ServerWorker(QObject *parent)
 {
     connect(m_serverSocket, &QSslSocket::readyRead, this, &ServerWorker::onReadyRead);
 	connect(m_serverSocket, &QSslSocket::disconnected, this, &ServerWorker::disconnectedFromClient);
-	connect(m_serverSocket, &QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
-	connect(m_serverSocket, &QSslSocket::encrypted, [](){qDebug()<<"Encrypted   done!";});
+	connect(m_serverSocket, &QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){/*qDebug()<<socketState;*/});
+	connect(m_serverSocket, &QSslSocket::encrypted, [](){/*qDebug()<<"Encrypted   done!";*/});
 	connect(m_serverSocket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),this,&ServerWorker::sslErrors);
 }
 
