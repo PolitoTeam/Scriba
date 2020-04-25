@@ -941,15 +941,20 @@ bool Server::udpateSymbolListAndCommunicateDisconnection(QString filename,
 		return false;
 	}
 
-	if (mapFileWorkers->value(filename)->isEmpty()){
+	// If the only client using the document is the one disconnecting
+	if (mapFileWorkers->value(filename)->isEmpty()) {
+		// Remove file from memory
 		delete mapFileWorkers->value(filename);
 		mapFileWorkers->remove(filename);
+
+		// Save file on disk to avoid missing the last changes
+		this->saveFile();
 
 		// Empty symbol list
 		symbols_list.remove(sender->getFilename());
 		changed.remove(sender->getFilename());
-	}
-	else{ QJsonObject message_broadcast;
+	} else {
+		QJsonObject message_broadcast;
 		message_broadcast["type"] = QStringLiteral("disconnection");
 		message_broadcast["filename"]=filename;
 		message_broadcast["user"]=sender->getUsername();
