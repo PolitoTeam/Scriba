@@ -79,7 +79,7 @@ void ServerWorker::sendProfileImage()
 	}
 
 	// Read Image
-	QPixmap p(image_path);
+	QImage p(image_path);
 	QByteArray bArray;
 	QBuffer buffer(&bArray);
 	buffer.open(QIODevice::WriteOnly);
@@ -224,7 +224,7 @@ bool ServerWorker::parseJson()
         else
             qDebug() << "Invalid message: " + QString::fromUtf8(json_data);
     } else {
-        QPixmap p;
+		QImage p;
         p.loadFromData(json_data);
         //qDebug() << image_name;
         if (image_name.isEmpty() || image_name.isNull())

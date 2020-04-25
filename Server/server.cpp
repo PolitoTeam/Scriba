@@ -854,7 +854,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		QFileInfo file(image_path);
 		if (file.exists()) {
 			//qDebug()<<"added image";
-			QPixmap p(image_path);
+			QImage p(image_path);
 			QByteArray bArray;
 			QBuffer buffer(&bArray);
 			buffer.open(QIODevice::WriteOnly);
@@ -904,7 +904,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 	QByteArray bArray;
 	if (fileImage.exists()) {
 		//qDebug()<<"added image to broadcast "<<image_path;
-		QPixmap p(image_path);
+		QImage p(image_path);
 		//qDebug()<< "Image size pixmpa: "<<p.size();
 		QBuffer buffer(&bArray);
 		buffer.open(QIODevice::WriteOnly);

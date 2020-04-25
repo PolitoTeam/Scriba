@@ -1,18 +1,18 @@
-#include "serverwindow.h"
 #include <QApplication>
 #include <QDebug>
 #include <stdlib.h>
+#include "server.h"
 
 #define PORT 1500
 
 int main(int argc, char *argv[]) {
-	QApplication a(argc, argv);
+	QCoreApplication a(argc, argv);
 	quint16 port = PORT;
 
 	QStringList args = QCoreApplication::arguments();
 	if (args.length() != 1 && args.length() != 2) {
-        //qDebug() << "Usage: ./Server <port_number>";
-        //qDebug() << "If no argument provided port 1500 is used.";
+		qDebug() << "Usage: ./Server <port_number>";
+		qDebug() << "If no argument provided port 1500 is used.";
 		exit(-1);
 	}
 
@@ -24,7 +24,16 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	ServerWindow w(nullptr, port);
-	w.show();
+	Server *m_Server = new Server();
+	if (!m_Server->tryConnectionToMongo()) {
+		qDebug() << "Unable to establish a database connection.\n";
+		a.exit(-1);
+	}
+
+	if (!m_Server->listen(QHostAddress::LocalHost, port)) {
+		qDebug() << "Unable to start the server";
+		a.exit(-1);
+	}
+
 	return a.exec();
 }
