@@ -145,71 +145,79 @@ bool Signup::checkUsername(const QString &username){
 	return true;
 }
 
-void Signup::checkPassword(const QString &password){
-	if (password.size()>0){
-		bool success = true;
-		// Check password length
-		if (password.size()<8 || password.size()>12) {
+bool Signup::isValidPassword(const QString &password, QString& errorMsg,
+							 bool& valid) {
+	bool success = true;
+	// Check password length
+	if (password.size() < 8 || password.size() > 12) {
+		success = false;
+		errorMsg = "Min. 8 characters, Max 12 characters";
+	} else {
+		errorMsg = "";
+		// Set characters not allowed
+		QRegularExpression regex("[^A-Za-z0-9@\\.\\-_]");
+		QRegularExpressionMatchIterator m = regex.globalMatch(password);
+		if (m.hasNext()) {
 			success = false;
-			ui->labelInfoPass->setText("Min. 8 characters, Max 12 characters");
-		} else {
-			QString info("");
-			// Set characters not allowed
-			QRegularExpression r("[^A-Za-z0-9@\\.\\-_]");
-			QRegularExpressionMatchIterator m=r.globalMatch(password);
-			if (m.hasNext()) {
-				success = false;
-				info.append("Characters allowed: A-Z, a-z, 0-9, @ . _ -\n");
-			}
-
-			// At least an upper case letter
-			r.setPattern("[A-Z]");
-			m=r.globalMatch(password);
-			if (!m.hasNext()) {
-				success = false;
-				info.append("Use at least 1 upper case letter\n");
-			}
-
-			// At least a lower case letter
-			r.setPattern("[a-z]");
-			m=r.globalMatch(password);
-			if (!m.hasNext()) {
-				success = false;
-				info.append("Use at least 1 lower case letter\n");
-			}
-
-			// At least a digit
-			r.setPattern("[0-9]");
-			m=r.globalMatch(password);
-			if (!m.hasNext()) {
-				success = false;
-				info.append("Use at least 1 digit\n");
-			}
-
-			// At least a special character
-			r.setPattern("[@\\.\\-_]");
-			m=r.globalMatch(password);
-			if (!m.hasNext()) {
-				success = false;
-				info.append("Use at least 1 special character");
-			}
-			ui->labelInfoPass->setText(info);
+			errorMsg.append("Characters allowed: A-Z, a-z, 0-9, @ . _ -\n");
 		}
-		valid = success;
+
+		// At least an upper case letter
+		regex.setPattern("[A-Z]");
+		m = regex.globalMatch(password);
+		if (!m.hasNext()) {
+			success = false;
+			errorMsg.append("Use at least 1 upper case letter\n");
+		}
+
+		// At least a lower case letter
+		regex.setPattern("[a-z]");
+		m = regex.globalMatch(password);
+		if (!m.hasNext()) {
+			success = false;
+			errorMsg.append("Use at least 1 lower case letter\n");
+		}
+
+		// At least a digit
+		regex.setPattern("[0-9]");
+		m = regex.globalMatch(password);
+		if (!m.hasNext()) {
+			success = false;
+			errorMsg.append("Use at least 1 digit\n");
+		}
+
+		// At least a special character
+		regex.setPattern("[@\\.\\-_]");
+		m = regex.globalMatch(password);
+		if (!m.hasNext()) {
+			success = false;
+			errorMsg.append("Use at least 1 special character");
+		}
+	}
+	valid = success;
+	return success;
+}
+
+void Signup::checkPassword(const QString &password){
+	if (password.size() > 0) {
+		QString msg;
+		bool success = isValidPassword(password, msg, valid);
+		if (!success) {
+			ui->labelInfoPass->setText(msg);
+		}
 	}
 }
 
 bool Signup::checkConfirmation(const QString &pass,const QString &conf){
-	if (conf.size()>0 && valid==true){
-		int x = QString::compare(pass, conf, Qt::CaseSensitive);
-		if (x!=0) {
+	if (conf.size() > 0 && valid == true){
+		int res = QString::compare(pass, conf, Qt::CaseSensitive);
+		if (res != 0) {
 			ui->labelInfoPass->setText("Passwords don't match");
 			return false;
 		}
 	}
 	return true;
 }
-
 
 void Signup::on_pushButtonBackLogin_clicked()
 {

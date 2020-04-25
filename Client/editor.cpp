@@ -156,8 +156,8 @@ Editor::Editor(QWidget *parent,Client* client) :
 
 
 	//show assigned text
-	const QIcon assigned = QIcon::fromTheme("cursor", QIcon(":/images/cursor.png"));
-	actionShowAssigned = new QAction(assigned, tr("cursor"), this);
+	const QIcon assigned = QIcon::fromTheme("Cursor", QIcon(":/images/cursor.png"));
+	actionShowAssigned = new QAction(assigned, tr("Cursor"), this);
 	actionShowAssigned->setCheckable(true);
 	actionShowAssigned->setChecked(false);
 	ui->toolBar->addAction(actionShowAssigned);

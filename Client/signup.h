@@ -23,6 +23,8 @@ public:
 	~Signup();
 	void enableAllButtons();
 	QPixmap* getProfile();
+	static bool isValidPassword(const QString &password, QString& errorMsg,
+								bool& valid);
 
 private slots:
 	void on_pushButtonClear_clicked();

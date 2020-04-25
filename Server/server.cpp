@@ -259,7 +259,7 @@ QJsonObject Server::signup(ServerWorker *sender,const QJsonObject &doc){
 	const QString username = user.toString().simplified();
 	if (username.isEmpty()){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Empty username");
+		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 	const QJsonValue pass = doc.value(QLatin1String("password"));
@@ -304,7 +304,7 @@ QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
 	const QString username = user.toString().simplified();
 	if (username.isEmpty()){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Empty username");
+		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 
@@ -481,7 +481,7 @@ QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc){
 	const QString username = user.toString().simplified();
 	if (username.isEmpty()){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Empty username");
+		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 	const QJsonValue nick = doc.value(QLatin1String("nickname"));
@@ -528,7 +528,7 @@ QJsonObject Server::updatePass(const QJsonObject &doc){
 	const QString username = user.toString().simplified();
 	if (username.isEmpty()){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Empty username");
+		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 
@@ -596,7 +596,7 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 	const QString username = user.toString().simplified();
 	if (username.isEmpty()){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Empty username");
+		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 

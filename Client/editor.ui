@@ -87,7 +87,6 @@
     <addaction name="separator"/>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
-    <addaction name="actionFont"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
