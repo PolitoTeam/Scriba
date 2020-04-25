@@ -6,17 +6,13 @@
 #include <QMap>
 #include <QSslKey>
 #include <QSslCertificate>
-//#include "database.h"
-//#ifndef Q_MOC_RUN
 #include "mongo.h"
-//#endif
 
 class QThread;
 class ServerWorker;
 class QJsonObject;
 
 #define IMAGES_PATH "/profile_images"
-#define DOCUMENTS_PATH "/user_documents"
 #define SAVE_INTERVAL_SEC 5 // saving interval in seconds
 
 class Server : public QTcpServer

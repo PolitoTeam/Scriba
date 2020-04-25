@@ -25,20 +25,10 @@ Server::Server(QObject *parent)
 	// create folder to store profile images
 	QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
 	QDir dir_images(profile_images_path);
-	if (!dir_images.exists()){
+	if (!dir_images.exists()) {
 		//qDebug().nospace() << "Folder " << profile_images_path << " created";
 		dir_images.mkpath(".");
 	}
-
-	// create folder to store documents
-	QString user_documents_path = QDir::currentPath() + DOCUMENTS_PATH;
-	//    //qDebug() << "document path: " << user_documents_path;
-	QDir dir_documents(user_documents_path);
-	if (!dir_documents.exists()){
-		//qDebug().nospace() << "Folder " << user_documents_path << " created";
-		dir_documents.mkpath(".");
-	}
-
 
 	//TO CHANGE WITH YOUR LOCAL DIRECTORY
 
@@ -780,7 +770,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 
 	// Create empty file for the specified user
 	if (!db.insertNewFile(filename, username)) {
-       throw new std::runtime_error("File shouldn't already exist.");
+	   throw std::runtime_error("File shouldn't already exist.");
 	}
 
 	// add current worker to the map <file, list_of_workers>
