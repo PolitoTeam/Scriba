@@ -8,7 +8,7 @@
 #include "symbol.h"
 #include "remotecursor.h"
 #include <QProgressDialog>
-#include "serializesize.h"
+#include "../Utility/serializesize.h"
 
 class QHostAddress;
 class QJsonDocument;
