@@ -21,8 +21,10 @@ Signup::Signup(QWidget *parent,Client* client) :
 
 	connect(client, &Client::signedUp, this, &Signup::signedUp);
 	connect(client, &Client::signupError, this, &Signup::signupFailed);
+	// Enable signup but pressing 'enter' on confirm password textfield
+	connect(ui->lineEditConfirmPassword, &QLineEdit::returnPressed,
+			this, &Signup::on_pushButtonSignup_clicked);
 }
-
 
 Signup::~Signup()
 {
@@ -73,7 +75,7 @@ void Signup::on_pushButtonSignup_clicked()
 	QString confirm=ui->lineEditConfirmPassword->text();
 
 	if (checkUsername(username) && valid
-			&& checkConfirmation(password,confirm)){
+			&& checkConfirmation(password,confirm)) {
 		// Disable buttons before receiving server reply
 		ui->pushButtonSignup->setEnabled(false);
 		ui->pushButtonClear->setEnabled(false);
