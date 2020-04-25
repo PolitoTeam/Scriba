@@ -778,21 +778,10 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	// save the name of the file used by the worker
 	sender->setFilename(filename + "," + username);
 
-	// create empty file for the specified user
-	QString documents_path = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename + "," + username;
-	QFile file(documents_path);
-	if (file.exists()) {
-		throw new std::runtime_error("File shouldn't already exist.");
-	}
-	file.open(QIODevice::WriteOnly);
-
-//	Mongo mongo_db;
+	// Create empty file for the specified user
 	if (!db.insertNewFile(filename, username)) {
        throw new std::runtime_error("File shouldn't already exist.");
-    }
-    else{
-       //qDebug()<<"saving OK";
-    }
+	}
 
 	// add current worker to the map <file, list_of_workers>
 	QList<ServerWorker*>* list=new QList<ServerWorker*>();
@@ -868,9 +857,9 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 
 		array_users.push_back(QJsonValue(data));
 
-
-
-		image_path = QDir::currentPath() + IMAGES_PATH + "/" + QJsonValue(list->at(i)->getUsername()).toString() + ".png";
+		image_path = QDir::currentPath() + IMAGES_PATH + "/"
+					 + QJsonValue(list->at(i)->getUsername()).toString()
+					 + ".png";
 
 		QFileInfo file(image_path);
 		if (file.exists()) {
@@ -885,47 +874,20 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 	}
 
 	QJsonArray symbols;
-	bool flag=true;
-	if (symbols_list.contains(filename)){
-		for (QJsonObject o: symbols_list.value(filename)->values())
+	bool success = true;
+	if (symbols_list.contains(filename)) {
+		for (QJsonObject o: symbols_list.value(filename)->values()) {
 			symbols.append(o);
-	}else{
-        /*
-		// read symbols from file...
-		QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
-		QFile f(filePath);
-		if (!f.exists()) {
-			message["success"] = false;
-			message["reason"] = QStringLiteral("File does not exist");
-			return message;
 		}
-		f.open(QIODevice::ReadOnly | QIODevice::Text);
-		QByteArray json_data = f.readAll();
-		f.close();
-		// ...and check for errors in the format
-		//    QJsonParseError parseError;
-		//    QJsonDocument document = QJsonDocument::fromBinaryData(json_data);
-		QJsonDocument document = QJsonDocument::fromJson(json_data);
-
-		//    if (parseError.error != QJsonParseError::NoError) {
-		//        message["success"] = false;
-		//        message["reason"] = QStringLiteral("Json parsing error");
-		//    }
-		if (!document.isArray()) {
-			flag=false;
-
-		}
-        symbols = document.array();
-        qDebug()<<"content: "<<symbols;*/
-
-		flag = db.retrieveFile(filename,symbols);
+	} else{
+		success = db.retrieveFile(filename,symbols);
 	}
 
 	// retrieve shared link
 	QString sharedLink;
 	db.getSharedLink(author, file, sharedLink);
 
-	if (flag==true){
+	if (success == true) {
 		message["success"] = true;
 		message["content"] = symbols;
 		message["filename"]= filename;
@@ -1066,12 +1028,7 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
 void Server::saveFile() {
 	for (QString filename : symbols_list.keys()) {
 		if (changed.value(filename) == true) {
-            //qDebug() << "I'm saving " << filename;
-			QString filePath = QDir::currentPath() + DOCUMENTS_PATH + "/" + filename;
-
-			QFile file(filePath);
-			bool flag = file.open(QIODevice::ReadWrite | QIODevice::Truncate);
-
+			// Save from main memory to QJsonArray
 			QJsonArray symbols_json;
 			std::vector<std::string> vector = {};
 			for (QJsonObject symbol : symbols_list.value(filename)->values()) {
@@ -1081,22 +1038,9 @@ void Server::saveFile() {
 				std::string a = strJson.toUtf8().constData();
 				vector.push_back(a);
 			}
-			//  qDebug()<<"Symbols_json size for "<<filename<<" = "<<symbols_json.size();
-
-			// file.write(QJsonDocument(symbols_json).toBinaryData());
-			file.write(QJsonDocument(symbols_json).toJson());
-			file.close();
-
-			QJsonObject json_to_store;
-			json_to_store["filename"] = filename;
-			json_to_store["content"] = symbols_json;
-
-			QJsonDocument doc(json_to_store);
-			QString strJson(doc.toJson(QJsonDocument::Compact));
-
+			// Save resulting QJsonArray to db
 			db.saveFile(filename,symbols_json);
 		}
-
 		// Reset value to false
 		changed.insert(filename, false);
 	}
