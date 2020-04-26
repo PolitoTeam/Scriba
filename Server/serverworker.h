@@ -42,7 +42,7 @@ signals:
 	void disconnectedFromClient();
 	void error();
 	void logMessage(const QString &msg);
-    void signingUp(const QByteArray &jsonDoc);
+    void signingUp_updatingImage(const QByteArray &jsonDoc);
 
 private:
 	QSslSocket *m_serverSocket;

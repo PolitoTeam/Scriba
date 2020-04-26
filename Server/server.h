@@ -58,7 +58,7 @@ public slots:
 
 private:
 	void jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &doc);
-    void signup(ServerWorker *sender,const QByteArray &doc);
+    void signup_updateImage(ServerWorker *sender,const QByteArray &doc);
 	QJsonObject login(ServerWorker *sender,const QJsonObject &doc);
 	QJsonObject updateNick(ServerWorker *sender,const QJsonObject &doc);
 	QJsonObject updatePass(const QJsonObject &doc);

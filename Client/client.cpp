@@ -132,7 +132,7 @@ void Client::signup(const QString &username, const QString &password, QPixmap* i
     buffer.open(QIODevice::WriteOnly);
     image->save(&buffer, "PNG");
     quint32 size_img = bArray.size();
-    qDebug()<<"Img size: "<<size_img<<" imag size sent: "<<bArray;
+
     QByteArray p((const char *)&size_img, sizeof(size_img));
     p.append(bArray);
     ba.append(p);
@@ -753,14 +753,28 @@ void Client::sendProfileImage()
 	// if (m_clientSocket->waitForEncrypted()) {
     /*QDataStream clientStream(m_clientSocket);
     clientStream.setVersion(QDataStream::Qt_5_7);*/
+    QJsonObject message;
+    message["type"] = QStringLiteral("update_image");
+    message["username"] = username;
+    // send the JSON using QDataStream
+    //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
+    QByteArray obj =QJsonDocument(message).toJson(QJsonDocument::Compact);
+    // }
+    quint32 size_json = obj.size();
+    QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
+    ba.append(obj);
 
-	QByteArray bArray;
-	QBuffer buffer(&bArray);
-	buffer.open(QIODevice::WriteOnly);
-	profile->save(&buffer, "PNG");
-    //clientStream << bArray;
-    sendByteArray(bArray);
-	// }
+    QByteArray bArray;
+    QBuffer buffer(&bArray);
+    buffer.open(QIODevice::WriteOnly);
+    profile->save(&buffer, "PNG");
+    quint32 size_img = bArray.size();
+
+    QByteArray p((const char *)&size_img, sizeof(size_img));
+    p.append(bArray);
+    ba.append(p);
+
+    sendByteArray(ba);
 }
 
 /*

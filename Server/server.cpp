@@ -91,7 +91,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
 	//    connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
 
 	connect(worker, &ServerWorker::jsonReceived, this, std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
-    connect(worker, &ServerWorker::signingUp, this, std::bind(&Server::signup,this, worker, std::placeholders::_1));
+    connect(worker, &ServerWorker::signingUp_updatingImage, this, std::bind(&Server::signup_updateImage,this, worker, std::placeholders::_1));
 
 	connect(this, &Server::stopAllClients, worker, &ServerWorker::disconnectFromClient);
 	m_clients.append(worker);
@@ -249,7 +249,9 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 	}
 }
 
-void Server::signup(ServerWorker *sender,const QByteArray &json_data){
+
+
+void Server::signup_updateImage(ServerWorker *sender,const QByteArray &json_data){
     QJsonObject message;
     quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(json_data.left(4).data()));
     //quint32 size = reinterpret_cast<quint32>(doc.left(4));
@@ -269,6 +271,7 @@ void Server::signup(ServerWorker *sender,const QByteArray &json_data){
     // we try to create a json document with the data we received
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(json, &parseError);
     QString username;
+    QString typeValS;
 
     //qDebug()<<"Parse error: "<<parseError.error;
     if (parseError.error == QJsonParseError::NoError && jsonDoc.isObject()) {
@@ -282,52 +285,59 @@ void Server::signup(ServerWorker *sender,const QByteArray &json_data){
                 this->sendJson(sender,message);
                 return;
             }
+            typeValS=typeVal.toString();
 
-            if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0) {
+            if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0 || typeValS.compare(QLatin1String("update_image"), Qt::CaseInsensitive) == 0) {
+
                 const QJsonValue user = docObj.value(QLatin1String("username"));
-
-                message["type"] = QStringLiteral("signup");
-
-                if (user.isNull() || !user.isString()){
-                    message["success"] = false;
-                    message["reason"] = QStringLiteral("Wrong username format");
-                    this->sendJson(sender,message);
-                    return;
-                }
                 username = user.toString().simplified();
                 if (username.isEmpty()){
-                    message["success"] = false;
-                    message["reason"] = QStringLiteral("Empty email");
-                    this->sendJson(sender,message);
+                    if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+                        message["success"] = false;
+                        message["reason"] = QStringLiteral("Empty email");
+                        this->sendJson(sender,message);
+                    }
                     return;
                 }
-                const QJsonValue pass = docObj.value(QLatin1String("password"));
-                if (pass.isNull() || !pass.isString()){
-                    message["success"] = false;
-                    message["reason"] = QStringLiteral("Wrong password format");
-                    this->sendJson(sender,message);
-                    return;
-                }
-                const QString password = pass.toString().simplified();
-                if (password.isEmpty()){
-                    message["success"] = false;
-                    message["reason"] = QStringLiteral("Empty password");
-                   this->sendJson(sender,message);
-                    return;
-                }
-                DatabaseError result = this->db.signup(username,password);
-                if (result == CONNECTION_ERROR || result == QUERY_ERROR){
-                    message["success"] = false;
-                    message["reason"] = QStringLiteral("Database error");
-                   this->sendJson(sender,message);
-                    return;
-                }
-                if (result == ALREADY_EXISTING_USER){
-                    message["success"] = false;
-                    message["reason"] = QStringLiteral("The username already exists");
-                    this->sendJson(sender,message);
-                    return;
-                }
+               if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+
+                    message["type"] = QStringLiteral("signup");
+
+                    if (user.isNull() || !user.isString()){
+                        message["success"] = false;
+                        message["reason"] = QStringLiteral("Wrong username format");
+                        this->sendJson(sender,message);
+                        return;
+                    }
+
+                    const QJsonValue pass = docObj.value(QLatin1String("password"));
+                    if (pass.isNull() || !pass.isString()){
+                        message["success"] = false;
+                        message["reason"] = QStringLiteral("Wrong password format");
+                        this->sendJson(sender,message);
+                        return;
+                    }
+                    const QString password = pass.toString().simplified();
+                    if (password.isEmpty()){
+                        message["success"] = false;
+                        message["reason"] = QStringLiteral("Empty password");
+                       this->sendJson(sender,message);
+                        return;
+                    }
+                    DatabaseError result = this->db.signup(username,password);
+                    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+                        message["success"] = false;
+                        message["reason"] = QStringLiteral("Database error");
+                       this->sendJson(sender,message);
+                        return;
+                    }
+                    if (result == ALREADY_EXISTING_USER){
+                        message["success"] = false;
+                        message["reason"] = QStringLiteral("The username already exists");
+                        this->sendJson(sender,message);
+                        return;
+                    }
+               }
             }
     }
     else{
@@ -347,9 +357,10 @@ void Server::signup(ServerWorker *sender,const QByteArray &json_data){
     p.save(&file, "PNG");
     //qDebug().nospace() << "Overriding image " << image_path;
 
-
-	message["success"] = true;
-    this->sendJson(sender,message);
+     if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+        message["success"] = true;
+        this->sendJson(sender,message);
+     }
 
 }
 
