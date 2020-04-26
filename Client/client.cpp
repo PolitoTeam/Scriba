@@ -105,7 +105,7 @@ void Client::login(const QString &username, const QString &password)
 	//  }
 }
 
-void Client::signup(const QString &username, const QString &password)
+void Client::signup(const QString &username, const QString &password, QPixmap* image)
 {
 	connectToServer(QHostAddress(this->addr), this->port);
 	// if (m_clientSocket->waitForEncrypted()) {
@@ -121,8 +121,24 @@ void Client::signup(const QString &username, const QString &password)
 	message["password"] = password;
 	// send the JSON using QDataStream
     //clientStream << QJsonDocument(message).toJson(QJsonDocument::Compact);
-    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
+    QByteArray obj =QJsonDocument(message).toJson(QJsonDocument::Compact);
 	// }
+    quint32 size_json = obj.size();
+    QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
+    ba.append(obj);
+
+    QByteArray bArray;
+    QBuffer buffer(&bArray);
+    buffer.open(QIODevice::WriteOnly);
+    image->save(&buffer, "PNG");
+    quint32 size_img = bArray.size();
+    qDebug()<<"Img size: "<<size_img<<" imag size sent: "<<bArray;
+    QByteArray p((const char *)&size_img, sizeof(size_img));
+    p.append(bArray);
+    ba.append(p);
+
+    sendByteArray(ba);
+
 }
 
 void Client::getFiles(bool shared){
@@ -747,6 +763,7 @@ void Client::sendProfileImage()
 	// }
 }
 
+/*
 void Client::sendProfileImage(const QString& name,QPixmap* image )
 {
 	// if (m_clientSocket->waitForEncrypted()) {
@@ -766,6 +783,7 @@ void Client::sendProfileImage(const QString& name,QPixmap* image )
     sendByteArray(bArray);
 	// }
 }
+*/
 
 void Client::overrideProfileImage(const QPixmap& pixmap)
 {

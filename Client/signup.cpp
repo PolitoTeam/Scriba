@@ -81,7 +81,7 @@ void Signup::on_pushButtonSignup_clicked()
 		ui->pushButtonClear->setEnabled(false);
 		ui->pushButtonBackLogin->setEnabled(false);
 
-		client->signup(username,password);
+        client->signup(username,password,profile);
         //client->sendProfileImage(username,profile);
 	}
 }

@@ -47,7 +47,7 @@ public:
 public slots:
 	void connectToServer(const QHostAddress &address, quint16 port);
 	void login(const QString &username, const QString &password);
-	void signup(const QString &username, const QString &password);
+    void signup(const QString &username, const QString &password, QPixmap* pixmap);
 	void updateNickname(const QString &nickname);
 	void updatePassword(const QString &oldpassword,const QString &newpassword);
 	void checkOldPassword(const QString &old_password);
