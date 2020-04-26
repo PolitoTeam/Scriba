@@ -3,4 +3,5 @@
         <file>certificates/server.crt</file>
         <file>certificates/server.key</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

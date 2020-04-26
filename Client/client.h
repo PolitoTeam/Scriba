@@ -24,7 +24,7 @@ public:
 	QString getUsername();
 	void setNickname(const QString& nickname);
 	QPixmap* getProfile();
-	void setProfileImage(const QString& filename);
+
 	void sendProfileImage();
 	void sendProfileImage(const QString& name,QPixmap* pixmap);
 	void overrideProfileImage(const QPixmap& pixmap);

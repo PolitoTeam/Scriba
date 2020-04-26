@@ -111,7 +111,8 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteAr
 		quint32 size_img = a.size();
 		//qDebug()<<"Img size: "<<size_img;
 		QByteArray p((const char *)&size_img, sizeof(size_img));
-		p.append(a);
+        if (size_img!=0)
+            p.append(a);
 		ba.append(p);
 	}
 
@@ -184,7 +185,6 @@ void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bAr
 		//qDebug()<<"Img size connection else: "<<size_img;
 		QByteArray p((const char *)&size_img, sizeof(size_img));
 		ba.append(p);
-
 	}
 
 	QString filename = exclude->getFilename();
@@ -257,15 +257,7 @@ void Server::signup_updateImage(ServerWorker *sender,const QByteArray &json_data
     //quint32 size = reinterpret_cast<quint32>(doc.left(4));
     //qDebug()<<"Byte Array, size json: "<<size;
     QByteArray json = json_data.mid(4,size);
-    QByteArray image_array = json_data.mid(4+size,-1);
-    quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
-    //qDebug()<<"Img size: "<<img_size;
-    QByteArray img = image_array.mid(4,img_size);
-    image_array=image_array.mid(img_size+4);
-    //qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
-    QImage p;
-    p.loadFromData(img);
-    qDebug()<<"Image size: "<<img_size<<" img size received: "<<img.size()<<" QImage size: "<<p.size();
+
 
     QJsonParseError parseError;
     // we try to create a json document with the data we received
@@ -347,15 +339,26 @@ void Server::signup_updateImage(ServerWorker *sender,const QByteArray &json_data
         return;
     }
 
-    QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + username + ".png";
-    qDebug()<<image_path;
-    QFile file(image_path);
-    if (file.exists()) // WriteOnly doesn't seem to override as it should be
-        file.remove(); // according to the documentation, need to remove manually
-    if (!file.open(QIODevice::WriteOnly))
-        qDebug() << "Unable to open the file specified";
-    p.save(&file, "PNG");
-    //qDebug().nospace() << "Overriding image " << image_path;
+    QByteArray image_array = json_data.mid(4+size,-1);
+    quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
+    if (img_size!=0){
+            //qDebug()<<"Img size: "<<img_size;
+            QByteArray img = image_array.mid(4,img_size);
+            image_array=image_array.mid(img_size+4);
+            //qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
+            QImage p;
+            p.loadFromData(img);
+
+            QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + username + ".png";
+            qDebug()<<image_path;
+            QFile file(image_path);
+            if (file.exists()) // WriteOnly doesn't seem to override as it should be
+                file.remove(); // according to the documentation, need to remove manually
+            if (!file.open(QIODevice::WriteOnly))
+                qDebug() << "Unable to open the file specified";
+            p.save(&file, "PNG");
+            //qDebug().nospace() << "Overriding image " << image_path;
+    }
 
      if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
         message["success"] = true;
@@ -935,6 +938,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 			p.save(&buffer, "PNG");
 			v.append(bArray);
 		}
+        else{
+            QByteArray bArray;
+            v.append(bArray);
+        }
 	}
 
 	QJsonArray symbols;
@@ -984,9 +991,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		buffer.open(QIODevice::WriteOnly);
 		p.save(&buffer, "PNG");
 	}
-	else{
-		//qDebug()<<"File not exist: "<<image_path;
-	}
+
 	//qDebug()<<"bArray size: "<<bArray.size();
 	this->broadcastByteArray(message_broadcast,bArray,sender);
 

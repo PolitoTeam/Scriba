@@ -12,6 +12,7 @@ Signup::Signup(QWidget *parent,Client* client) :
 {
 	ui->setupUi(this);
 	profile=new QPixmap(":/images/anonymous");
+    photo=false;
 
 	ui->profile_image->setPixmap(profile->scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
 												 Qt::KeepAspectRatioByExpanding)
@@ -36,6 +37,7 @@ void Signup::on_pushButtonClear_clicked()
 	this->clearLineEdit();
 	this->clearLabel();
 	QPixmap pix(":/images/anonymous");
+    photo=false;
 	ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
 											Qt::KeepAspectRatioByExpanding));
 	ui->lineEditConfirmPassword->setDisabled(true);
@@ -56,6 +58,7 @@ void Signup::signedUp()
 	QPixmap pix(":/images/anonymous"); //cercare .png
 	ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
 											Qt::KeepAspectRatioByExpanding));
+    photo=false;
     client->disconnectFromHost();
 }
 
@@ -80,8 +83,10 @@ void Signup::on_pushButtonSignup_clicked()
 		ui->pushButtonSignup->setEnabled(false);
 		ui->pushButtonClear->setEnabled(false);
 		ui->pushButtonBackLogin->setEnabled(false);
-
-        client->signup(username,password,profile);
+        if (photo==false)
+             client->signup(username,password,nullptr);
+        else
+             client->signup(username,password,profile);
         //client->sendProfileImage(username,profile);
 	}
 }
@@ -226,6 +231,7 @@ void Signup::on_pushButtonBackLogin_clicked()
 	QPixmap image(":/images/anonymous");
 	ui->profile_image->setPixmap(image.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
 											  Qt::KeepAspectRatioByExpanding));
+    photo=false;
 	emit changeWidget(LOGIN);
 }
 
@@ -262,6 +268,7 @@ void Signup::on_pushButtonUpload_clicked()
 											IMAGE_WIDTH,
 											IMAGE_HEIGHT,
 											Qt::KeepAspectRatioByExpanding));
+        photo=true;
 	}
 }
 

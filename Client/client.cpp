@@ -127,15 +127,24 @@ void Client::signup(const QString &username, const QString &password, QPixmap* i
     QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
     ba.append(obj);
 
-    QByteArray bArray;
-    QBuffer buffer(&bArray);
-    buffer.open(QIODevice::WriteOnly);
-    image->save(&buffer, "PNG");
-    quint32 size_img = bArray.size();
+    if (image!=nullptr){
 
-    QByteArray p((const char *)&size_img, sizeof(size_img));
-    p.append(bArray);
-    ba.append(p);
+        QByteArray bArray;
+        QBuffer buffer(&bArray);
+        buffer.open(QIODevice::WriteOnly);
+        image->save(&buffer, "PNG");
+        quint32 size_img = bArray.size();
+
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        p.append(bArray);
+        ba.append(p);
+    }
+    else {
+        quint32 size_img=0;
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        ba.append(p);
+
+    }
 
     sendByteArray(ba);
 
@@ -663,13 +672,18 @@ void Client::byteArrayReceived(const QByteArray &doc){
 
 					foreach (const QJsonValue& v, array_users){
 						quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
-						//qDebug()<<"Img size: "<<img_size;
-						QByteArray img = image_array.mid(4,img_size);
-						image_array=image_array.mid(img_size+4);
+                        QPixmap p;
+                        if (img_size!=0){
+                            //qDebug()<<"Img size: "<<img_size;
+                            QByteArray img = image_array.mid(4,img_size);
+                            image_array=image_array.mid(img_size+4);
+                            p.loadFromData(img);
+                        }
+                        else{
+                            p.load(":/images/anonymous");
+                        }
 
 						//qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
-						QPixmap p;
-						p.loadFromData(img);
 						connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()),p));
 					}
 					//                emit contentReceived(cont.toString()); TODO: remove comment
@@ -721,7 +735,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
 	}else{
 
 		profile->loadFromData(doc);
-        //qDebug() << "Profile image loaded";
+        qDebug() << "Profile image loaded";
 
 	}
 
@@ -743,10 +757,7 @@ QPixmap* Client::getProfile(){
 	return profile;
 }
 
-void Client::setProfileImage(const QString& filename)
-{
-	profile->load(filename);
-}
+
 
 void Client::sendProfileImage()
 {
@@ -801,6 +812,7 @@ void Client::sendProfileImage(const QString& name,QPixmap* image )
 
 void Client::overrideProfileImage(const QPixmap& pixmap)
 {
+    qDebug()<<"qui";
 	*this->profile = pixmap;
 }
 

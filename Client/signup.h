@@ -48,6 +48,7 @@ private:
 	bool valid;
 	Client* client;
 	QPixmap* profile;
+    bool photo;
 
 	bool checkUsername(const QString &username);
 	void checkPassword(const QString &password);
