@@ -250,6 +250,7 @@ void Client::disconnectFromHost()
         this->nickname.clear();
         this->files.clear();
         this->m_loggedIn=false;
+        this->profile->load(":/images/anonymous");
     }
 	m_clientSocket->disconnectFromHost();
     if (m_clientSocket->state() == QAbstractSocket::UnconnectedState
@@ -676,12 +677,13 @@ void Client::byteArrayReceived(const QByteArray &doc){
                         if (img_size!=0){
                             //qDebug()<<"Img size: "<<img_size;
                             QByteArray img = image_array.mid(4,img_size);
-                            image_array=image_array.mid(img_size+4);
                             p.loadFromData(img);
                         }
                         else{
+                            qDebug()<<"empty added size: "<<img_size;
                             p.load(":/images/anonymous");
                         }
+                        image_array=image_array.mid(img_size+4);
 
 						//qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
 						connected.append(QPair<QPair<QString,QString>,QPixmap>(QPair<QString,QString>(v.toObject().value("username").toString(),v.toObject().value("nickname").toString()),p));

@@ -209,7 +209,7 @@ bool ServerWorker::parseJson()
         else
             qDebug() << "Invalid message: " + QString::fromUtf8(json_data);
     } else {
-        qDebug()<<"qui";
+
         emit signingUp_updatingImage(json_data);
 
 
@@ -219,66 +219,6 @@ bool ServerWorker::parseJson()
 
 }
 
-/*void ServerWorker::receiveJson()
-{
-	QByteArray jsonData;
-	QDataStream socketStream(m_serverSocket);
-
-	// //qDebug()<<"Thread: "<<QThread::currentThreadId()<<endl;
-	socketStream.setVersion(QDataStream::Qt_5_7);
-	for (;;) {
-		socketStream.startTransaction();
-		socketStream >> jsonData;
-		if (socketStream.commitTransaction()) {
-			QJsonParseError parseError;
-			const QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
-			if (parseError.error == QJsonParseError::NoError) {
-				if (jsonDoc.isObject()){
-					//qDebug().noquote() << QString::fromUtf8(jsonDoc.toJson(QJsonDocument::Compact));
-					QJsonObject docObj=jsonDoc.object();
-					const QJsonValue typeVal = docObj.value(QLatin1String("type"));
-					if (!typeVal.isNull() && typeVal.isString() && typeVal.toString().compare(QLatin1String("image_signup"), Qt::CaseInsensitive) == 0){
-						const QJsonValue imageName = docObj.value(QLatin1String("image_name"));
-						if (!imageName.isNull() && imageName.isString()){
-							QString im_name = imageName.toString().simplified();
-							//qDebug()<<im_name;
-							if (!im_name.isEmpty())
-								image_name=im_name;
-							//qDebug()<<image_name;
-						}
-
-					}
-
-					else
-						emit jsonReceived(jsonDoc.object());
-				}
-				else
-					qDebug() << "Invalid message: " + QString::fromUtf8(jsonData);
-			} else {
-				QPixmap p;
-				p.loadFromData(jsonData);
-				//qDebug() << image_name;
-				if (image_name.isEmpty() || image_name.isNull())
-					image_name=username;
-				QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + image_name + ".png";
-				image_name.clear();
-
-				QFile file(image_path);
-				if (file.exists()) // WriteOnly doesn't seem to override as it should be
-					file.remove(); // according to the documentation, need to remove manually
-				if (!file.open(QIODevice::WriteOnly))
-					//qDebug() << "Unable to open the file specified";
-
-					p.save(&file, "PNG");
-				//qDebug().nospace() << "Overriding image " << image_path;
-			}
-		} else {
-			//qDebug()<<"break";
-			break;
-		}
-	}
-}
-*/
 
 QString ServerWorker::getFilename(){
 	return filename;

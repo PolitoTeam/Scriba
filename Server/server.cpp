@@ -114,6 +114,7 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteAr
         if (size_img!=0)
             p.append(a);
 		ba.append(p);
+        qDebug()<<"Added element size: "<<size_img;
 	}
 
 
