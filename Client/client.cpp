@@ -34,7 +34,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 			this, &Client::error);
 
 	connect(m_clientSocket, &QSslSocket::disconnected, this, [this]()->void{this->m_received_data.clear();this->m_exptected_json_size=0;});
-	connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){/*qDebug()<<socketState;*/});
+    connect(m_clientSocket,&QSslSocket::stateChanged,this,[](QAbstractSocket::SocketState socketState){qDebug()<<socketState;});
 
 	connect(this,&Client::connected,this, []()->void{/*qDebug()<<"New client Connected";*/});
 	// connect readyRead() to the slot that will take care of reading the data in
@@ -219,12 +219,22 @@ void Client::checkOldPassword(const QString &old_password)
 //Attempts to close the socket. If there is pending data waiting to be written, QAbstractSocket will enter ClosingState and wait until all data has been written.
 void Client::disconnectFromHost()
 {
-	this->username.clear();
-	this->nickname.clear();
-	this->files.clear();
-	this->m_loggedIn=false;
+    qDebug()<<m_clientSocket->bytesAvailable();
+    if  (this->m_loggedIn==true){
+        this->username.clear();
+        this->nickname.clear();
+        this->files.clear();
+        this->m_loggedIn=false;
+    }
 	m_clientSocket->disconnectFromHost();
+    if (m_clientSocket->state() == QAbstractSocket::UnconnectedState
+        || m_clientSocket->waitForDisconnected(1000)) {
+            qDebug("Disconnected!");
+    }
+
 }
+
+
 
 void Client::jsonReceived(const QJsonObject &docObj)
 {

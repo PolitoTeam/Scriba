@@ -94,7 +94,9 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
 		// RemoteHostClosedError) only when the button stop
 		// is pressed in the server GUI
 	case QAbstractSocket::ProxyConnectionClosedError: // stop
+
 		this->on_logOut();
+
 		QMessageBox::warning(this, tr("Disconnected"),
 							 tr("The host terminated the connection"));
 		on_changeWidget(LOGIN);

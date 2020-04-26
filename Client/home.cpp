@@ -30,7 +30,7 @@ Home::~Home()
 void Home::on_pushButtonLogOut_clicked()
 {
 	emit logOut();
-	emit changeWidget(LOGIN);
+    emit changeWidget(LOGIN);
 }
 
 void Home::on_pushButtonNewFile_clicked()

@@ -56,11 +56,11 @@ void Signup::signedUp()
 	QPixmap pix(":/images/anonymous"); //cercare .png
 	ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
 											Qt::KeepAspectRatioByExpanding));
-	client->disconnectFromHost();
+    client->disconnectFromHost();
 }
 
 void Signup::signupFailed(const QString &reason){
-	client->disconnectFromHost();
+    client->disconnectFromHost();
 	ui->labelInfoPass->setText(reason);
 
 	ui->pushButtonSignup->setEnabled(true);
@@ -82,7 +82,7 @@ void Signup::on_pushButtonSignup_clicked()
 		ui->pushButtonBackLogin->setEnabled(false);
 
 		client->signup(username,password);
-		client->sendProfileImage(username,profile);
+        //client->sendProfileImage(username,profile);
 	}
 }
 

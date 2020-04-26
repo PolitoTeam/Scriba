@@ -51,7 +51,7 @@ public slots:
 	void updateNickname(const QString &nickname);
 	void updatePassword(const QString &oldpassword,const QString &newpassword);
 	void checkOldPassword(const QString &old_password);
-	void disconnectFromHost();
+    void disconnectFromHost();
 	void openFile(const QString& filename);
 	//    void sslErrors(const QList<QSslError> &errors);
 
