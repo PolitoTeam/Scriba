@@ -38,20 +38,9 @@ RUN git clone https://github.com/mongodb/mongo-cxx-driver.git \
     && make -j8 \
     && make install
 
-# RUN apt-get install -y gnupg \
-#     && wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add - \
-#     && echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.2.list \
-#     && apt-get update \
-#     && apt-get install -y mongodb-org \
-#     && mkdir -p /data/db
-
+# Copy server release
 COPY ./Server /home/user/Server
 
-# EXPOSE 1500
-# EXPOSE 27017
-
-# CMD ["/bin/bash"]
-# CMD ["sleep", "infinity"]
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
