@@ -474,9 +474,8 @@ void Client::createNewFile(QString filename)
 
 void Client::connectToServer(const QHostAddress &address, quint16 port)
 {
-	QHostAddress localhost = QHostAddress::LocalHost;
 	//qDebug()<<"coNNECTING TO: "<<localhost;
-	m_clientSocket->connectToHost(localhost,port);
+	m_clientSocket->connectToHost(address, port);
 	if (m_clientSocket->waitForConnected()){
 		//qDebug()<<"start handshake";
 		m_clientSocket->startClientEncryption();

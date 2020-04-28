@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 	if (args.length() != 1 && args.length() != 2) {
 		qDebug() << "Usage: ./Server <port_number>";
 		qDebug() << "If no argument provided port 1500 is used.";
-		exit(-1);
+		return -1;
 	}
 
 	if (args.length() == 2) {
@@ -27,12 +27,12 @@ int main(int argc, char *argv[]) {
 	Server *m_Server = new Server();
 	if (!m_Server->tryConnectionToMongo()) {
 		qDebug() << "Unable to establish a database connection.\n";
-		a.exit(-1);
+		return -1;
 	}
 
-	if (!m_Server->listen(QHostAddress::LocalHost, port)) {
+	if (!m_Server->listen(QHostAddress::Any, port)) {
 		qDebug() << "Unable to start the server";
-		a.exit(-1);
+		return -1;
 	}
 
 	return a.exec();

@@ -95,7 +95,8 @@ bool Mongo::checkConnection() {
 	auto collection = this->conn["editor"]["files"];
 	try {
 		auto result = collection.find_one({});
-	} catch (...) {
+	} catch (std::exception& e) {
+		qDebug() << e.what();
 		return false;
 	}
 	return true;
