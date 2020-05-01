@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network sql
+QT       += core network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -24,7 +24,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 CONFIG += console
-QT -= gui
 
 SOURCES += \
         main.cpp \
