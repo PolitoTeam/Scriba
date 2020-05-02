@@ -11,10 +11,10 @@ Login::Login(QWidget *parent,Client* client) :
 	client(client)
 {
 	ui->setupUi(this);
-	QPixmap pix(":/images/bold.png");
-	int w=ui->label->width();
-	int h=ui->label->height();
-	ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+//	QPixmap pix(":/images/bold.png");
+//	int w=ui->label->width();
+//	int h=ui->label->height();
+//	ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 
 	connect(client, &Client::loggedIn, this, &Login::loggedIn);
 	connect(client, &Client::loginError, this, &Login::loginFailed);

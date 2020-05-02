@@ -14,6 +14,8 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 	ui(new Ui::Index),
 	client(c)
 {
+	this->setFixedSize(this->size());
+
 	ui->setupUi(this);
 	client->setParent(this);
 

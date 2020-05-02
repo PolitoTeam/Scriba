@@ -226,6 +226,11 @@ font-style:italic;</string>
      </item>
      <item row="3" column="4" rowspan="2">
       <widget class="QPushButton" name="pushButtonSignup">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(0, 131, 206);</string>
+       </property>
        <property name="text">
         <string>DONE</string>
        </property>
@@ -239,6 +244,11 @@ font-style:italic;</string>
      </item>
      <item row="3" column="3" rowspan="2">
       <widget class="QPushButton" name="pushButtonClear">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(0, 131, 206);</string>
+       </property>
        <property name="text">
         <string>Clear</string>
        </property>
@@ -252,6 +262,11 @@ font-style:italic;</string>
      </item>
      <item row="3" column="2" rowspan="2">
       <widget class="QPushButton" name="pushButtonBackLogin">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(0, 131, 206);</string>
+       </property>
        <property name="text">
         <string>Cancel</string>
        </property>

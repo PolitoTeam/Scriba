@@ -17,19 +17,6 @@
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>97</width>
-         <height>17</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="0" column="1">
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -39,8 +26,14 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>300</width>
-         <height>250</height>
+         <width>360</width>
+         <height>300</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>360</width>
+         <height>300</height>
         </size>
        </property>
        <property name="title">
@@ -130,19 +123,6 @@
         </item>
        </layout>
       </widget>
-     </item>
-     <item row="0" column="2">
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>98</width>
-         <height>17</height>
-        </size>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>

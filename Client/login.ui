@@ -67,6 +67,9 @@ background-color: rgb(0, 131, 206);</string>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
