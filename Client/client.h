@@ -67,10 +67,9 @@ signals:
 	void signupError(const QString &reason);
 	void loginError(const QString &reason);
 	void disconnected();
-	void messageReceived(const QString &sender, const QString &text);
 	void error(QAbstractSocket::SocketError socketError);
-	void userJoined(const QString &username);
-	void userLeft(const QString &username);
+
+
 	void wrongOldPassword();
 	void correctOldPassword();
 

@@ -272,47 +272,7 @@ void Client::jsonReceived(const QJsonObject &docObj)
 		return; // a message with no type was received so we just ignore it
     //qDebug().noquote() << QString::fromUtf8(QJsonDocument(docObj).toJson(QJsonDocument::Compact));
 
-	if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0) { //It's a login message
-		if (m_loggedIn)
-			return; // if we are already logged in we ignore
-		// the success field will contain the result of our attempt to login
-
-		const QJsonValue resultVal = docObj.value(QLatin1String("success"));
-		if (resultVal.isNull() || !resultVal.isBool())
-			return; // the message had no success field so we ignore
-		const bool loginSuccess = resultVal.toBool();
-		if (loginSuccess) {
-			const QJsonValue user = docObj.value(QLatin1String("username"));
-
-			if (user.isNull() || !user.isString())
-				return;
-
-			const QString username = user.toString().simplified();
-			if (username.isEmpty()){
-				return;
-			}
-			const QJsonValue nick = docObj.value(QLatin1String("nickname"));
-
-			if (nick.isNull() || !nick.isString())
-				return;
-
-			const QString nickname = nick.toString().simplified();
-			if (nickname.isEmpty()){
-				return;
-			}
-			this->username=username;
-			this->nickname=nickname;
-
-			m_loggedIn=true;// we logged in succesfully and we notify it via the loggedIn signal
-			emit loggedIn();
-			return;
-		}
-		// the login attempt failed, we extract the reason of the failure from the JSON
-		// and notify it via the loginError signal
-		const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
-		emit loginError(reasonVal.toString());
-	}
-	else if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0) { //It's a login message
+    if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0) { //It's a signup message
 		if (m_loggedIn)
 			return; // if we are already logged in we ignore
 		// the success field will contain the result of our attempt to login

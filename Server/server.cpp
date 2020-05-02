@@ -107,6 +107,13 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteAr
 	ba.append(byte_array);
 	//qDebug()<<"v.size(): "<<v.size();
 
+    if(v.size()==0){
+        quint32 size_img = 0;
+        //qDebug()<<"Img size: "<<size_img;
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        ba.append(p);
+    }
+
 	for (QByteArray a: v){
 		quint32 size_img = a.size();
 		//qDebug()<<"Img size: "<<size_img;
@@ -226,38 +233,26 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 	const QJsonValue typeVal = docObj.value(QLatin1String("type"));
 	if (typeVal.isNull() || !typeVal.isString())
 		return;
-
-    /*if (typeVal.toString().compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
-		QJsonObject message=this->signup(sender,docObj);
-		this->sendJson(sender,message);
-	}
-    else */
     if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
-		QJsonObject message=this->login(sender,docObj);
+        QJsonObject message=this->checkCredentials(sender,docObj);
+        QVector<QByteArray> tmp;
         if (message.value(QLatin1String("success"))==true){
 
                 QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
                         + sender->getUsername() + ".png";
                 QFileInfo file(image_path);
-                if (!file.exists()) {
-                    this->sendJson(sender,message);
-                    return;
-                }
+                if (file.exists()) {
+                    // Read Image
+                    QImage p(image_path);
+                    QByteArray bArray;
+                    QBuffer buffer(&bArray);
+                    buffer.open(QIODevice::WriteOnly);
+                    p.save(&buffer, "PNG");
 
-                // Read Image
-                QImage p(image_path);
-                QByteArray bArray;
-                QBuffer buffer(&bArray);
-                buffer.open(QIODevice::WriteOnly);
-                p.save(&buffer, "PNG");
-                QVector<QByteArray> tmp;
-                tmp.push_back(bArray);
-                this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
-                qDebug()<<"should I sent";
-        }else
-            //qDebug()<<"sendingJsonLogin";
-            this->sendJson(sender,message);
-            //qDebug()<<"sentJsonLogin";
+                    tmp.push_back(bArray);
+                }
+        }
+        this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
 	}
 }
 
@@ -381,7 +376,7 @@ void Server::signup_updateImage(ServerWorker *sender,const QByteArray &json_data
 }
 
 
-QJsonObject Server::login(ServerWorker *sender,const QJsonObject &doc){
+QJsonObject Server::checkCredentials(ServerWorker *sender,const QJsonObject &doc){
 	const QJsonValue user = doc.value(QLatin1String("username"));
 	QJsonObject message;
 	message["type"] = QStringLiteral("login");
