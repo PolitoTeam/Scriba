@@ -205,6 +205,13 @@ background-color: rgb(24, 139, 208);</string>
            </layout>
           </item>
           <item>
+           <widget class="QLabel" name="labelInfoOldPassword">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
              <widget class="QLabel" name="labelNewPass">

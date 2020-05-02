@@ -11,6 +11,7 @@ Modify::Modify(QWidget *parent,Client* client) :
 	client(client)
 {
 	ui->setupUi(this);
+
 	ui->lineEditConfirmPass->setDisabled(true);
 	profile_photo_temp = new QPixmap();
 
@@ -158,20 +159,29 @@ void Modify::on_pushSaveNickname_clicked()
 void Modify::on_pushButtonSavePassword_clicked()
 {
 	QString oldpass = ui->lineEditOldPass->text();
-	QString newpass = ui->lineEditNewPass->text();
-	QString confirm = ui->lineEditConfirmPass->text();
+
+    status=1;
+    client->checkOldPassword(oldpass);
 
 
-	if (valid_new_password && correct_old_password
-			&& checkConfirmation(newpass,confirm)){
-		QMessageBox msgbox;
-		msgbox.setText("Are you sure?");
-		msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-		msgbox.setDefaultButton(QMessageBox::Save);
-		if (msgbox.exec()==QMessageBox::Save) {
-			client->updatePassword(oldpass,newpass);
-		}
-	}
+}
+
+void Modify::continueSaving(){
+    status=0;
+    QString newpass = ui->lineEditNewPass->text();
+    QString confirm = ui->lineEditConfirmPass->text();
+    QString oldpass = ui->lineEditOldPass->text();
+    checkPassword(newpass);
+    if (valid_new_password && correct_old_password
+            && checkConfirmation(newpass,confirm)){
+        QMessageBox msgbox;
+        msgbox.setText("Are you sure?");
+        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        msgbox.setDefaultButton(QMessageBox::Save);
+        if (msgbox.exec()==QMessageBox::Save) {
+            client->updatePassword(oldpass,newpass);
+        }
+    }
 }
 
 void Modify::on_pushButtonResetNickname_clicked()
@@ -214,25 +224,34 @@ void Modify::on_pushButtonCancel_clicked()
 	ui->lineEditNewPass->clear();
 	ui->lineEditConfirmPass->clear();
 	ui->labelInfoPass->clear();
+    ui->labelInfoOldPassword->clear();
 }
 
 void Modify::on_lineEditOldPass_editingFinished()
 {
 	QString old_password = ui->lineEditOldPass->text();
+
 	client->checkOldPassword(old_password);
 }
 
 void Modify::on_wrongOldPasswordEntered()
 {
-	correct_old_password = false;
+    correct_old_password = false;
 	// Print message only if modify window is visible
+
+
 	if (ui->groupBox->isVisible()) {
-		ui->labelInfoPass->setText("Wrong old password");
+        ui->labelInfoOldPassword->setText("Wrong old password");
 	}
+    if (status==1)
+        continueSaving();
 }
 
 void Modify::on_correctOldPasswordEntered()
 {
-	correct_old_password = true;
-	ui->labelInfoPass->clear();
+    correct_old_password= true;
+    status=1;
+    ui->labelInfoOldPassword->clear();
+    if (status==1)
+        continueSaving();
 }
