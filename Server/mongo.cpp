@@ -91,10 +91,13 @@ bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
 }
 
 bool Mongo::checkConnection() {
-	// Do a fake query to check for the connection
-	auto collection = this->conn["editor"]["files"];
+	// Check connection: if exception raised, no connection can be established
+	// Also create the collection 'users' (otherwise exception raised when
+	// trying to create collection during transaction, e.g. in signup())
 	try {
-		auto result = collection.find_one({});
+		if (!this->db.has_collection("users")) {
+			this->db.create_collection("users");
+		}
 	} catch (std::exception& e) {
 		qDebug() << e.what();
 		return false;
@@ -141,7 +144,7 @@ DatabaseError Mongo::signup(const QString &username, const QString &password) {
 				<< "nickname" << username.toStdString()
 				<< "password" << hashed_password
 				<< finalize;
-		collection.insert_one(doc.view());
+		collection.insert_one(session, doc.view());
 
 		session.commit_transaction();
 		return SUCCESS;
