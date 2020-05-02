@@ -74,8 +74,9 @@ private:
 
 	void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
 	void sendJson(ServerWorker *destination, const QJsonObject &message);
+
 	void sendByteArray(ServerWorker *sender,const QByteArray &toSend);
-	void sendProfileImage(ServerWorker *destination);
+
 	void saveFile();
 
 signals:

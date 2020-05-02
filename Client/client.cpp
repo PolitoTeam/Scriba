@@ -69,7 +69,8 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 	m_clientSocket->addCaCertificates(":/resources/certificates/rootCA.crt");
 	m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
 
-	profile=new QPixmap(":/images/anonymous");
+    profile=new QPixmap();
+    profile->load(":/images/anonymous");
 }
 
 void Client::sendByteArray(const QByteArray &byteArray){
@@ -587,7 +588,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
 	quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(doc.left(4).data()));
 	//quint32 size = reinterpret_cast<quint32>(doc.left(4));
 
-	//qDebug()<<"Byte Array, size json: "<<size;
+    qDebug()<<"Byte Array, size json: "<<size;
 
 	QByteArray json = doc.mid(4,size);
 	QByteArray image_array = doc.mid(4+size,-1);
@@ -726,7 +727,54 @@ void Client::byteArrayReceived(const QByteArray &doc){
 				}
 
 
-			}
+            }else if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0) { //It's a login message
+                if (m_loggedIn)
+                    return; // if we are already logged in we ignore
+                // the success field will contain the result of our attempt to login
+
+                const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+                if (resultVal.isNull() || !resultVal.isBool())
+                    return; // the message had no success field so we ignore
+                const bool loginSuccess = resultVal.toBool();
+                if (loginSuccess) {
+                    const QJsonValue user = docObj.value(QLatin1String("username"));
+
+                    if (user.isNull() || !user.isString())
+                        return;
+
+                    const QString username = user.toString().simplified();
+                    if (username.isEmpty()){
+                        return;
+                    }
+                    const QJsonValue nick = docObj.value(QLatin1String("nickname"));
+
+                    if (nick.isNull() || !nick.isString())
+                        return;
+
+                    const QString nickname = nick.toString().simplified();
+                    if (nickname.isEmpty()){
+                        return;
+                    }
+                    this->username=username;
+                    this->nickname=nickname;
+
+                    quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
+                    //qDebug()<<"Img size: "<<img_size;
+                    if (img_size!=0){
+                        QByteArray img = image_array.mid(4);
+                        profile->loadFromData(img);
+                    }
+
+
+                    m_loggedIn=true;// we logged in succesfully and we notify it via the loggedIn signal
+                    emit loggedIn();
+                    return;
+                }
+                // the login attempt failed, we extract the reason of the failure from the JSON
+                // and notify it via the loginError signal
+                const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
+                emit loginError(reasonVal.toString());
+            }
 
 		}
 		else {
@@ -735,8 +783,7 @@ void Client::byteArrayReceived(const QByteArray &doc){
 
 	}else{
 
-		profile->loadFromData(doc);
-        qDebug() << "Profile image loaded";
+        qDebug() << "Error json: "<<parseError.error;
 
 	}
 

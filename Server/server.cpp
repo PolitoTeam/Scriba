@@ -134,14 +134,6 @@ void Server::sendByteArray(ServerWorker *destination,const QByteArray &toSend){
 }
 
 
-
-
-void Server::sendProfileImage(ServerWorker *destination)
-{
-	Q_ASSERT(destination);
-	QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendProfileImage, destination));
-}
-
 bool Server::tryConnectionToDatabase()
 {
 	return db.checkConnection();
@@ -242,13 +234,33 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
     else */
     if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
 		QJsonObject message=this->login(sender,docObj);
-		if (message.value(QLatin1String("success")).toBool() == true)
-			this->sendProfileImage(sender);
-        //qDebug()<<"sendingJsonLogin";
-		this->sendJson(sender,message);
-        //qDebug()<<"sentJsonLogin";
+        if (message.value(QLatin1String("success"))==true){
+
+                QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
+                        + sender->getUsername() + ".png";
+                QFileInfo file(image_path);
+                if (!file.exists()) {
+                    this->sendJson(sender,message);
+                    return;
+                }
+
+                // Read Image
+                QImage p(image_path);
+                QByteArray bArray;
+                QBuffer buffer(&bArray);
+                buffer.open(QIODevice::WriteOnly);
+                p.save(&buffer, "PNG");
+                QVector<QByteArray> tmp;
+                tmp.push_back(bArray);
+                this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
+                qDebug()<<"should I sent";
+        }else
+            //qDebug()<<"sendingJsonLogin";
+            this->sendJson(sender,message);
+            //qDebug()<<"sentJsonLogin";
 	}
 }
+
 
 
 

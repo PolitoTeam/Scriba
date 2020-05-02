@@ -257,7 +257,7 @@ void Editor::closeEvent(QCloseEvent *)
 void Editor::peerYou()
 {
 	QListWidgetItem* item = new QListWidgetItem();
-	item->setIcon(QIcon(*this->client->getProfile()));
+    item->setIcon(QIcon(*client->getProfile()));
 	item->setText(this->client->getNickname() + " (You)");
 	item->setData(Qt::UserRole,this->client->getUsername());
 	//item->setTextAlignment(Qt::AlignHCenter);

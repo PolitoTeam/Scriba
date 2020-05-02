@@ -70,24 +70,7 @@ void ServerWorker::sendJson(const QJsonObject &json)
 	sendByteArray(jsonData);
 }
 
-void ServerWorker::sendProfileImage()
-{
-	QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
-			+ username + ".png";
-	QFileInfo file(image_path);
-	if (!file.exists()) {
-		return;
-	}
 
-	// Read Image
-	QImage p(image_path);
-	QByteArray bArray;
-	QBuffer buffer(&bArray);
-	buffer.open(QIODevice::WriteOnly);
-	p.save(&buffer, "PNG");
-
-	sendByteArray(bArray);
-}
 
 QString ServerWorker::getNickname()
 {
@@ -231,9 +214,3 @@ void ServerWorker::setFilename(const QString& filename){
 void ServerWorker::closeFile(){
 	this->filename.clear();
 }
-/*
-void ServerWorker::setColor(int color)
-{
-	this->color_rgb = color;
-}
-*/
