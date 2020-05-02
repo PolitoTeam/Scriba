@@ -39,10 +39,11 @@ RUN git clone https://github.com/mongodb/mongo-cxx-driver.git \
     && make -j8 \
     && make install
 
-# Create build directory and copy project directory
+# Create build directory
 RUN mkdir /home/user/build
-COPY . /home/user/SharedEditor
 
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
+COPY . /home/user/SharedEditor
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
