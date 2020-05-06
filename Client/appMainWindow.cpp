@@ -14,6 +14,12 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 	ui(new Ui::Index),
 	client(c)
 {
+	// Center window
+	this->setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter,
+										  this->size(),
+										  qApp->desktop()->availableGeometry())
+					  );
+	// Set fixed window size
 	this->setFixedSize(this->size());
 
 	ui->setupUi(this);
@@ -43,6 +49,11 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 	editor = new Editor(this, client);
 	connect(editor, &Editor::changeWidget,
 			this, &AppMainWindow::on_changeWidget);
+	// Center
+	editor->setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter,
+										  editor->size(),
+										  qApp->desktop()->availableGeometry())
+					  );
 
 	modify = new Modify(stackedWidget,client);
 	stackedWidget->addWidget(modify);
