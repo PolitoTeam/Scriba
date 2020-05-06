@@ -58,8 +58,13 @@ private:
 	// it must be created before using the driver and
 	// must remain alive for as long as the driver is in use.
 	mongocxx::instance inst{};
+
+#ifdef DOCKER
 	mongocxx::client conn{mongocxx::uri{"mongodb://shared_editor_db:27017"}};
-//	mongocxx::client conn{mongocxx::uri{}};
+#else
+	mongocxx::client conn{mongocxx::uri{}};
+#endif
+
     mongocxx::database db;
 };
 
