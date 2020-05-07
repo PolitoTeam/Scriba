@@ -6,12 +6,10 @@
 #include <random>
 #include "symbol.h"
 #include "client.h"
+#include "../Utility/common.h"
 
 #define BASE 32
 #define BOUNDARY 10
-
-typedef enum {INSERT, DELETE, CHANGE, ALIGN, PASTE, CURSOR} OperationType;
-
 
 class CRDT : public QObject
 {

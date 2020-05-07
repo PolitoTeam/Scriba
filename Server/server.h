@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QSslKey>
 #include <QSslCertificate>
+#include "../Utility/common.h"
 #include "mongo.h"
 
 class QThread;
@@ -26,9 +27,22 @@ public:
 	bool tryConnectionToDatabase();
 	bool tryConnectionToMongo();
 
-
 protected:
 	void incomingConnection(qintptr socketDescriptor) override;
+
+private slots:
+	void broadcast(const QJsonObject &message, ServerWorker *exclude);
+	void broadcastByteArray(const QJsonObject &message_broadcast,
+							const QByteArray &bArray, ServerWorker *sender);
+	void jsonReceived(ServerWorker *sender, const QJsonObject &doc);
+	void userDisconnected(ServerWorker *sender, int threadIdx);
+
+public slots:
+	void stopServer();
+
+signals:
+	void logMessage(const QString &msg);
+	void stopAllClients();
 
 private:
 	QSslKey key;
@@ -44,19 +58,7 @@ private:
 	QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
 	// <filename, changed>
 	QMap<QString, bool> changed;
-//    Mongo mongo_db;
 
-private slots:
-	void broadcast(const QJsonObject &message, ServerWorker *exclude);
-	void broadcastByteArray(const QJsonObject &message_broadcast,const QByteArray &bArray,ServerWorker *sender);
-	void jsonReceived(ServerWorker *sender, const QJsonObject &doc);
-	void userDisconnected(ServerWorker *sender, int threadIdx);
-	//    void userError(ServerWorker *sender);
-
-public slots:
-	void stopServer();
-
-private:
 	void jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &doc);
     void signup_updateImage(ServerWorker *sender,const QByteArray &doc);
     QJsonObject checkCredentials(ServerWorker *sender,const QJsonObject &doc);
@@ -64,24 +66,21 @@ private:
 	QJsonObject updatePass(const QJsonObject &doc);
 	QJsonObject checkOldPass(const QJsonObject &doc);
 	QJsonObject getFiles(const QJsonObject &doc, bool shared);
-	QJsonObject getFilenameFromSharedLink(const QJsonObject& doc, const QString& user);
+	QJsonObject getFilenameFromSharedLink(const QJsonObject& doc,
+										  const QString& user);
 	QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
-	QJsonObject sendFile(const QJsonObject &doc, ServerWorker *sender, QVector<QByteArray>& v);
+	QJsonObject sendFile(const QJsonObject &doc,
+						 ServerWorker *sender, QVector<QByteArray>& v);
 	QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
-	QByteArray createByteArrayJsonImage(QJsonObject &message,QVector<QByteArray> &v);
-	bool udpateSymbolListAndCommunicateDisconnection(QString filename, ServerWorker* sender);
+	QByteArray createByteArrayJsonImage(QJsonObject &message,
+										QVector<QByteArray> &v);
+	bool udpateSymbolListAndCommunicateDisconnection(QString filename,
+													 ServerWorker* sender);
 	static QString fromJsonArraytoString(const QJsonArray& data);
-
 	void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
 	void sendJson(ServerWorker *destination, const QJsonObject &message);
-
 	void sendByteArray(ServerWorker *sender,const QByteArray &toSend);
-
 	void saveFile();
-
-signals:
-	void logMessage(const QString &msg);
-	void stopAllClients();
 };
 
 #endif // SERVER_H

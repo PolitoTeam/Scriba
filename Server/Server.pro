@@ -29,13 +29,11 @@ SOURCES += \
         main.cpp \
         mongo.cpp \
         server.cpp \
-        serverwindow.cpp \
         serverworker.cpp
 
 HEADERS += \
         mongo.h \
         server.h \
-        serverwindow.h \
         serverworker.h
 
 FORMS += \

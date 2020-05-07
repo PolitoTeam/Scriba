@@ -1,7 +1,3 @@
-#include "server.h"
-#include "serverworker.h"
-//#include "colors.h"
-#include "../Client/CRDT.h"
 #include <QThread>
 #include <functional>
 #include <QJsonDocument>
@@ -12,27 +8,34 @@
 #include <QSslConfiguration>
 #include <QDir>
 #include <QtEndian>
+#include "server.h"
+#include "serverworker.h"
+
+#include <QImage>
+//#include "../Client/CRDT.h"
 
 Server::Server(QObject *parent)
 	: QTcpServer(parent),
-	  m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))  //numero ideale di thread in  base al numero di core del processore
+	  // Ideal number of threads based on the number of processor cores
+	  m_idealThreadCount(qMax(QThread::idealThreadCount(), 1))
 {
-	m_availableThreads.reserve(m_idealThreadCount); //pool di thread disponibili: ogni thread gestisce un certo numero di client
-	m_threadsLoad.reserve(m_idealThreadCount);     //vettore parallelo al pool di thread per ...
+	// Pool of available threads:
+	// each thread handles a certain number of clients
+	m_availableThreads.reserve(m_idealThreadCount);
+	m_threadsLoad.reserve(m_idealThreadCount);
 
 	mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
 	this->db.connect();
 
-	// create folder to store profile images
+	// Create folder to store profile images
 	QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
 	QDir dir_images(profile_images_path);
 	if (!dir_images.exists()) {
-		//qDebug().nospace() << "Folder " << profile_images_path << " created";
+		qDebug().nospace() << "Folder " << profile_images_path << " created";
 		dir_images.mkpath(".");
 	}
 
-	//TO CHANGE WITH YOUR LOCAL DIRECTORY
-
+	// TODO: TO CHANGE WITH YOUR LOCAL DIRECTORY
 	QFile keyFile(":/resources/certificates/server.key");
 	keyFile.open(QIODevice::ReadOnly);
 	key = QSslKey(keyFile.readAll(), QSsl::Rsa);
@@ -42,9 +45,9 @@ Server::Server(QObject *parent)
 	certFile.open(QIODevice::ReadOnly);
 	cert = QSslCertificate(certFile.readAll());
 	certFile.close();
-
 	//qDebug()<<'\n Common Name: '<<cert.issuerInfo(QSslCertificate::CommonName)<<" SubjectName: "<<cert.subjectInfo(QSslCertificate::CommonName);
 
+	// Timer to periodically save the open files
 	QTimer *timer = new QTimer(this);
 	connect(timer, &QTimer::timeout, this, &Server::saveFile);
 	timer->start(1000 * SAVE_INTERVAL_SEC);
@@ -58,86 +61,89 @@ Server::~Server()
 	}
 }
 
-//Override from QTcpServer. This gets executed every time a client attempts a connection with the server
+//Override from QTcpServer.
+// This gets executed every time a client attempts a connection with the server
 void Server::incomingConnection(qintptr socketDescriptor)
 {
 	ServerWorker *worker = new ServerWorker;
-	//Sets the socket descriptor this server should use when listening for incoming connections to socketDescriptor. Returns true if the socket is set successfully; otherwise returns false.
+	//Sets the socket descriptor this server should use when listening
+	// for incoming connections to socketDescriptor.
+	// Returns true if the socket is set successfully; otherwise returns false.
 	if (!worker->setSocketDescriptor(socketDescriptor,key,cert)) {
 		worker->deleteLater();
 		return;
 	}
 
 	int threadIdx = m_availableThreads.size();
-	if (threadIdx < m_idealThreadCount) { //we can add a new thread
+	if (threadIdx < m_idealThreadCount) { // We can add a new thread
 		m_availableThreads.append(new QThread(this));
 		m_threadsLoad.append(1);
 		m_availableThreads.last()->start();
 	} else {
-		// find the thread with the least amount of clients and use it
-		threadIdx = std::distance(m_threadsLoad.cbegin(), std::min_element(m_threadsLoad.cbegin(), m_threadsLoad.cend()));
+		// Find the thread with the least amount of clients and use it
+		threadIdx = std::distance(m_threadsLoad.cbegin(),
+								  std::min_element(m_threadsLoad.cbegin(),
+												   m_threadsLoad.cend()));
 		++m_threadsLoad[threadIdx];
 	}
-	//    //qDebug()<<"Client assegnato al thread: "<<threadIdx<<endl;
-	worker->moveToThread(m_availableThreads.at(threadIdx)); //asssegnazione client al thread scelto.
+	// Assign to the chosen thread
+	worker->moveToThread(m_availableThreads.at(threadIdx));
 
-	connect(m_availableThreads.at(threadIdx), &QThread::finished,[=]() {  qDebug()<<"Thread: "<<threadIdx<<" terminato!"<<endl;});
-	//appena il thread finisce, inserisce nella coda degli eventi la cancellazione del worker...domanda:viene tolto anche dal vettore?
-	connect(m_availableThreads.at(threadIdx), &QThread::finished, worker, &QObject::deleteLater);
-	//viene invocata userDIsconnected quando la connessione viene chiusa dal client.
-	connect(worker, &ServerWorker::disconnectedFromClient, this, std::bind(&Server::userDisconnected, this, worker, threadIdx));
+	// When the thread finished, insert in the event queue the worker deletion
+	connect(m_availableThreads.at(threadIdx), &QThread::finished,
+			worker, &QObject::deleteLater);
+	// userDisconnected called when connection closed by the client
+	connect(worker, &ServerWorker::disconnectedFromClient, this,
+			std::bind(&Server::userDisconnected, this, worker, threadIdx));
 
-	//ONLY FOR NOTIFICATION
-	//    connect(worker, &ServerWorker::error, this, std::bind(&Server::userError, this, worker));
-
-	connect(worker, &ServerWorker::jsonReceived, this, std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
-    connect(worker, &ServerWorker::signingUp_updatingImage, this, std::bind(&Server::signup_updateImage,this, worker, std::placeholders::_1));
-
-	connect(this, &Server::stopAllClients, worker, &ServerWorker::disconnectFromClient);
+	connect(worker, &ServerWorker::jsonReceived, this,
+			std::bind(&Server::jsonReceived,
+					  this, worker, std::placeholders::_1));
+	connect(worker, &ServerWorker::signingUp_updatingImage, this,
+			std::bind(&Server::signup_updateImage,
+					  this, worker, std::placeholders::_1));
+	connect(this, &Server::stopAllClients,
+			worker, &ServerWorker::disconnectFromClient);
 	m_clients.append(worker);
-	//qDebug() << "New client Connected";
 }
 
-QByteArray Server::createByteArrayJsonImage(QJsonObject &message,QVector<QByteArray> &v){
+QByteArray Server::createByteArrayJsonImage(QJsonObject &message,
+											QVector<QByteArray> &v){
 	QByteArray byte_array = QJsonDocument(message).toJson();
 	quint32 size_json = byte_array.size();
 
-	QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
-
+	// Depends on the endliness of the machine
+	QByteArray ba((const char *)&size_json, sizeof(size_json));
 	ba.append(byte_array);
-	//qDebug()<<"v.size(): "<<v.size();
 
     if(v.size()==0){
         quint32 size_img = 0;
-        //qDebug()<<"Img size: "<<size_img;
         QByteArray p((const char *)&size_img, sizeof(size_img));
         ba.append(p);
     }
 
 	for (QByteArray a: v){
 		quint32 size_img = a.size();
-		//qDebug()<<"Img size: "<<size_img;
 		QByteArray p((const char *)&size_img, sizeof(size_img));
         if (size_img!=0)
             p.append(a);
 		ba.append(p);
-        qDebug()<<"Added element size: "<<size_img;
 	}
-
-
 	return ba;
-
 }
 
 void Server::sendJson(ServerWorker *destination, const QJsonObject &message)
 {
 	Q_ASSERT(destination);
-	QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendJson, destination, message));
+	QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendJson,
+												 destination, message));
 }
 
 void Server::sendByteArray(ServerWorker *destination,const QByteArray &toSend){
 	Q_ASSERT(destination);
-	QTimer::singleShot(0, destination, std::bind(&ServerWorker::sendByteArray, destination, toSend));
+	QTimer::singleShot(0, destination,
+					   std::bind(&ServerWorker::sendByteArray,
+								 destination, toSend));
 }
 
 
@@ -155,62 +161,56 @@ void Server::broadcast(const QJsonObject &message, ServerWorker *exclude)
 {
 	QString filename = exclude->getFilename();
 	QList<ServerWorker*>* active_clients = mapFileWorkers->value(filename);
-	//qDebug() << "BROADCAST from: "<<exclude->getUsername();
 	for (ServerWorker *worker : *active_clients) {
 		Q_ASSERT(worker);
 		if (worker == exclude)
 			continue;
-		//qDebug() << "BROADCAST to: "<<worker->getUsername();
 		sendJson(worker, message);
 	}
 }
 
-void Server::broadcastByteArray(const QJsonObject &message,const QByteArray &bArray,ServerWorker *exclude){
+void Server::broadcastByteArray(const QJsonObject &message,
+								const QByteArray &bArray,
+								ServerWorker *exclude){
 	QByteArray byte_array = QJsonDocument(message).toJson();
 	quint32 size_json = byte_array.size();
 
-	QByteArray ba((const char *)&size_json, sizeof(size_json)); //depends on the endliness of the machine
-
+	// Depends on the endliness of the machine
+	QByteArray ba((const char *)&size_json, sizeof(size_json));
 	ba.append(byte_array);
 
-	if (bArray.size()!=0){
+	if (bArray.size()!=0) {
 		quint32 size_img = bArray.size();
-		//qDebug()<<"Img size connection: "<<size_img;
 		QByteArray p((const char *)&size_img, sizeof(size_img));
 		p.append(bArray);
 		ba.append(p);
-	}
-	else {
+	} else {
 		quint32 size_img = 0;
-		//qDebug()<<"Img size connection else: "<<size_img;
 		QByteArray p((const char *)&size_img, sizeof(size_img));
 		ba.append(p);
 	}
 
 	QString filename = exclude->getFilename();
 	QList<ServerWorker*>* active_clients = mapFileWorkers->value(filename);
-	//qDebug() << "BROADCAST from: "<<exclude->getUsername();
 	for (ServerWorker *worker : *active_clients) {
 		Q_ASSERT(worker);
 		if (worker == exclude)
 			continue;
-		//qDebug() << "BROADCAST to: "<<worker->getUsername();
 		sendByteArray(worker, ba);
 	}
-
-
 }
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
 	qDebug() << json;
-	if (sender->getNickname().isEmpty())
+	if (sender->getNickname().isEmpty()) {
 		return jsonFromLoggedOut(sender, json);
-	else
+	} else {
 		jsonFromLoggedIn(sender, json);
+	}
 }
 
-//rimuove client disconnesso e notifica
+// Remove disconnected client and notify
 void Server::userDisconnected(ServerWorker *sender, int threadIdx)
 {
 	--m_threadsLoad[threadIdx];
@@ -229,154 +229,155 @@ void Server::stopServer()
 
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
-	//qDebug()<<"Json from loggeoud thread: "<<QThread::currentThreadId()<<endl;
 	const QJsonValue typeVal = docObj.value(QLatin1String("type"));
 	if (typeVal.isNull() || !typeVal.isString())
 		return;
-    if (typeVal.toString().compare(QLatin1String("login"), Qt::CaseInsensitive) == 0){
-        QJsonObject message=this->checkCredentials(sender,docObj);
-        QVector<QByteArray> tmp;
-        if (message.value(QLatin1String("success"))==true){
+	if (typeVal.toString().compare(QLatin1String("login"),
+								   Qt::CaseInsensitive) == 0){
+		QJsonObject message=this->checkCredentials(sender,docObj);
+		QVector<QByteArray> tmp;
+		if (message.value(QLatin1String("success"))==true){
+			QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
+								 + sender->getUsername() + ".png";
+			QFileInfo file(image_path);
+			if (file.exists()) {
+				// Read Image
+				QImage p(image_path);
+				QByteArray bArray;
+				QBuffer buffer(&bArray);
+				buffer.open(QIODevice::WriteOnly);
+				p.save(&buffer, "PNG");
 
-                QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
-                        + sender->getUsername() + ".png";
-                QFileInfo file(image_path);
-                if (file.exists()) {
-                    // Read Image
-                    QImage p(image_path);
-                    QByteArray bArray;
-                    QBuffer buffer(&bArray);
-                    buffer.open(QIODevice::WriteOnly);
-                    p.save(&buffer, "PNG");
-
-                    tmp.push_back(bArray);
-                }
-        }
-        this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
+				tmp.push_back(bArray);
+			}
+		}
+		this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
 	}
 }
 
-
-
-
-void Server::signup_updateImage(ServerWorker *sender,const QByteArray &json_data){
+void Server::signup_updateImage(ServerWorker *sender,
+								const QByteArray &json_data){
     QJsonObject message;
-    quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(json_data.left(4).data()));
-    //quint32 size = reinterpret_cast<quint32>(doc.left(4));
-    //qDebug()<<"Byte Array, size json: "<<size;
-    QByteArray json = json_data.mid(4,size);
+	quint32 size = qFromLittleEndian<qint32>(
+				reinterpret_cast<const uchar *>(json_data.left(4).data())
+	);
+	QByteArray json = json_data.mid(4, size);
 
 
     QJsonParseError parseError;
-    // we try to create a json document with the data we received
+	// We try to create a json document with the data we received
     const QJsonDocument jsonDoc = QJsonDocument::fromJson(json, &parseError);
     QString username;
     QString typeValS;
 
-    //qDebug()<<"Parse error: "<<parseError.error;
     if (parseError.error == QJsonParseError::NoError && jsonDoc.isObject()) {
-             // and is a JSON object
-            // actions depend on the type of message
-            QJsonObject docObj = jsonDoc.object();
-            const QJsonValue typeVal = docObj.value(QLatin1String("type"));
-            if (typeVal.isNull() || !typeVal.isString()){
-                message["success"] = false;
-                message["reason"] = QStringLiteral("Wrong format");
-                this->sendJson(sender,message);
-                return;
-            }
-            typeValS=typeVal.toString();
+		// and is a JSON object
+		// actions depend on the type of message
+		QJsonObject docObj = jsonDoc.object();
+		const QJsonValue typeVal = docObj.value(QLatin1String("type"));
+		if (typeVal.isNull() || !typeVal.isString()) {
+			message["success"] = false;
+			message["reason"] = QStringLiteral("Wrong format");
+			this->sendJson(sender,message);
+			return;
+		}
+		typeValS=typeVal.toString();
 
-            if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0 || typeValS.compare(QLatin1String("update_image"), Qt::CaseInsensitive) == 0) {
+		if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0
+				|| typeValS.compare(QLatin1String("update_image"),
+									Qt::CaseInsensitive) == 0) {
 
-                const QJsonValue user = docObj.value(QLatin1String("username"));
-                username = user.toString().simplified();
-                if (username.isEmpty()){
-                    if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
-                        message["success"] = false;
-                        message["reason"] = QStringLiteral("Empty email");
-                        this->sendJson(sender,message);
-                    }
-                    return;
-                }
-               if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+			const QJsonValue user = docObj.value(QLatin1String("username"));
+			username = user.toString().simplified();
+			if (username.isEmpty()) {
+				if (typeValS.compare(QLatin1String("signup"),
+									 Qt::CaseInsensitive) == 0) {
+					message["success"] = false;
+					message["reason"] = QStringLiteral("Empty email");
+					this->sendJson(sender,message);
+				}
+				return;
+			}
+			if (typeValS.compare(QLatin1String("signup"),
+								 Qt::CaseInsensitive) == 0) {
+				message["type"] = QStringLiteral("signup");
+				if (user.isNull() || !user.isString()) {
+					message["success"] = false;
+					message["reason"] = QStringLiteral("Wrong username format");
+					this->sendJson(sender,message);
+					return;
+				}
 
-                    message["type"] = QStringLiteral("signup");
-
-                    if (user.isNull() || !user.isString()){
-                        message["success"] = false;
-                        message["reason"] = QStringLiteral("Wrong username format");
-                        this->sendJson(sender,message);
-                        return;
-                    }
-
-                    const QJsonValue pass = docObj.value(QLatin1String("password"));
-                    if (pass.isNull() || !pass.isString()){
-                        message["success"] = false;
-                        message["reason"] = QStringLiteral("Wrong password format");
-                        this->sendJson(sender,message);
-                        return;
-                    }
-                    const QString password = pass.toString().simplified();
-                    if (password.isEmpty()){
-                        message["success"] = false;
-                        message["reason"] = QStringLiteral("Empty password");
-                       this->sendJson(sender,message);
-                        return;
-                    }
-                    DatabaseError result = this->db.signup(username,password);
-                    if (result == CONNECTION_ERROR || result == QUERY_ERROR){
-                        message["success"] = false;
-                        message["reason"] = QStringLiteral("Database error");
-                       this->sendJson(sender,message);
-                        return;
-                    }
-                    if (result == ALREADY_EXISTING_USER){
-                        message["success"] = false;
-                        message["reason"] = QStringLiteral("The username already exists");
-                        this->sendJson(sender,message);
-                        return;
-                    }
-               }
-            }
-    }
-    else{
-        message["success"] = false;
-        message["reason"] = QStringLiteral("JSON error");
-        this->sendJson(sender,message);
-        return;
-    }
+				const QJsonValue pass = docObj.value(QLatin1String("password"));
+				if (pass.isNull() || !pass.isString()) {
+					message["success"] = false;
+					message["reason"] = QStringLiteral("Wrong password format");
+					this->sendJson(sender,message);
+					return;
+				}
+				const QString password = pass.toString().simplified();
+				if (password.isEmpty()) {
+					message["success"] = false;
+					message["reason"] = QStringLiteral("Empty password");
+					this->sendJson(sender,message);
+					return;
+				}
+				DatabaseError result = this->db.signup(username,password);
+				if (result == CONNECTION_ERROR || result == QUERY_ERROR) {
+					message["success"] = false;
+					message["reason"] = QStringLiteral("Database error");
+					this->sendJson(sender,message);
+					return;
+				}
+				if (result == ALREADY_EXISTING_USER) {
+					message["success"] = false;
+					message["reason"] = QStringLiteral("The username "
+													   "already exists");
+					this->sendJson(sender,message);
+					return;
+				}
+			}
+		}
+	} else {
+		message["success"] = false;
+		message["reason"] = QStringLiteral("JSON error");
+		this->sendJson(sender,message);
+		return;
+	}
 
     QByteArray image_array = json_data.mid(4+size,-1);
-    quint32 img_size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(image_array.left(4).data()));
-    if (img_size!=0){
-            //qDebug()<<"Img size: "<<img_size;
-            QByteArray img = image_array.mid(4,img_size);
-            image_array=image_array.mid(img_size+4);
-            //qDebug()<<"username: "<<v.toObject().value("username").toString()<<" nickname: "<< v.toObject().value("nickname").toString()<<endl;
+	quint32 img_size = qFromLittleEndian<qint32>(
+				reinterpret_cast<const uchar *>(image_array.left(4).data())
+	);
+	if (img_size != 0) {
+			QByteArray img = image_array.mid(4, img_size);
+			image_array = image_array.mid(img_size + 4);
             QImage p;
             p.loadFromData(img);
 
-            QString image_path = QDir::currentPath() + IMAGES_PATH + "/" + username + ".png";
+			QString image_path = QDir::currentPath() + IMAGES_PATH
+								 + "/" + username + ".png";
             qDebug()<<image_path;
             QFile file(image_path);
-            if (file.exists()) // WriteOnly doesn't seem to override as it should be
-                file.remove(); // according to the documentation, need to remove manually
+			if (file.exists()) { // WriteOnly doesn't seem to
+								 // override as it should be
+				file.remove();	// according to the documentation,
+								// need to remove manually
+			}
             if (!file.open(QIODevice::WriteOnly))
                 qDebug() << "Unable to open the file specified";
-            p.save(&file, "PNG");
-            //qDebug().nospace() << "Overriding image " << image_path;
-    }
+			p.save(&file, "PNG");
+	}
 
-     if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+	if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
         message["success"] = true;
         this->sendJson(sender,message);
-     }
-
+	}
 }
 
 
-QJsonObject Server::checkCredentials(ServerWorker *sender,const QJsonObject &doc){
+QJsonObject Server::checkCredentials(ServerWorker *sender,
+									 const QJsonObject &doc) {
 	const QJsonValue user = doc.value(QLatin1String("username"));
 	QJsonObject message;
 	message["type"] = QStringLiteral("login");
@@ -394,47 +395,44 @@ QJsonObject Server::checkCredentials(ServerWorker *sender,const QJsonObject &doc
 	}
 
 	for (ServerWorker *client : m_clients) {
-		//qDebug() << client->getUsername();
 		if (client->getUsername() == username) {
 			message["success"] = false;
-			message["reason"] = QStringLiteral("Already connected from another device");
+			message["reason"] = QStringLiteral("Already connected "
+											   "from another device");
 			return message;
 		}
 	}
 
 	const QJsonValue pass = doc.value(QLatin1String("password"));
-	if (pass.isNull() || !pass.isString()){
+	if (pass.isNull() || !pass.isString()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong password format");
 		return message;
 	}
 	const QString password = pass.toString().simplified();
-	if (password.isEmpty()){
+	if (password.isEmpty()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Empty password");
 		return message;
 	}
 	QString nickname;
-	int r=this->db.login(username,password,nickname);
-	if (r == SUCCESS){
+	int r = this->db.login(username,password,nickname);
+	if (r == SUCCESS) {
 		message["success"] = true;
 		message["username"]=username;
 		message["nickname"]=nickname;
 		sender->setUsername(username);
 		sender->setNickname(nickname);
 		return message;
-	}
-	else if (r == NON_EXISTING_USER){
+	} else if (r == NON_EXISTING_USER) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("No account found for this username");
 		return message;
-	}
-	else if (r == WRONG_PASSWORD){
+	} else if (r == WRONG_PASSWORD) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong password");
 		return message;
-	}
-	else { // QUERY_ERROR or CONNECTION_ERROR
+	} else {  // QUERY_ERROR or CONNECTION_ERROR
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error");
 		return message;
@@ -447,86 +445,80 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 	if (typeVal.isNull() || !typeVal.isString())
 		return;
 
-	if (typeVal.toString().compare(QLatin1String("nickname"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("nickname"),
+								   Qt::CaseInsensitive) == 0){
 		QJsonObject message=this->updateNick(sender,docObj);
 		this->sendJson(sender,message);
 	}
-	if (typeVal.toString().compare(QLatin1String("password"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("password"),
+								   Qt::CaseInsensitive) == 0){
 		QJsonObject message=this->updatePass(docObj);
 		this->sendJson(sender,message);
 	}
-	if (typeVal.toString().compare(QLatin1String("check_old_password"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("check_old_password"),
+								   Qt::CaseInsensitive) == 0){
 		QJsonObject message = this->checkOldPass(docObj);
 		this->sendJson(sender,message);
 	}
 
-	if (typeVal.toString().compare(QLatin1String("list_files"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("list_files"),
+								   Qt::CaseInsensitive) == 0){
 		QJsonObject message = this->getFiles(docObj, false);
 		this->sendJson(sender,message);
 	}
 
-	if (typeVal.toString().compare(QLatin1String("list_shared_files"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("list_shared_files"),
+								   Qt::CaseInsensitive) == 0){
 		QJsonObject message = this->getFiles(docObj, true);
 		this->sendJson(sender,message);
 	}
 
-
-	if (typeVal.toString().compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("operation"),
+								   Qt::CaseInsensitive) == 0){
 
 		int operation_type = docObj["operation_type"].toInt();
 
-		// update symbols in server memory and broadcast operation to other editors
+		// Update symbols in server memory
+		// and broadcast operation to other editors
 		if (operation_type == INSERT) {
-			//qDebug() << "insertion";
 			QJsonObject symbol = docObj["symbol"].toObject();
 			QString position = fromJsonArraytoString(symbol["position"].toArray());
 			symbols_list.value(sender->getFilename())->insert(position, symbol);
 		} else if (operation_type == DELETE) {
-
 			QJsonArray symbols = docObj["symbols"].toArray();
-            //qDebug() << "TO DELETE: "<<symbols.size();
 			for (int i = 0; i < symbols.size(); i++) {
-                //qDebug()<<"deleting "<<i;
 				QJsonObject symbol = symbols[i].toObject();
 				QString position = fromJsonArraytoString(symbol["position"].toArray());
 				symbols_list.value(sender->getFilename())->remove(position);
 			}
 		} else if (operation_type == CHANGE) {
-			//qDebug() << "change";
 			QJsonObject symbol = docObj["symbol"].toObject();
 			QString position = fromJsonArraytoString(symbol["position"].toArray());
 			symbols_list.value(sender->getFilename())->insert(position, symbol);
 		} else if (operation_type == ALIGN) {
-			//qDebug() << "change alignment";
 			QJsonObject symbol = docObj["symbol"].toObject();
 			QString position = fromJsonArraytoString(symbol["position"].toArray());
 			symbols_list.value(sender->getFilename())->insert(position, symbol);
 		} else if (operation_type == PASTE) {
-			//qDebug() << "change alignment";
 			QJsonArray symbols = docObj["symbols"].toArray();
 			for (int i = 0; i < symbols.size(); i++) {
 				QJsonObject symbol = symbols[i].toObject();
-
 				QString position = fromJsonArraytoString(symbol["position"].toArray());
-				Symbol s = Symbol::fromJson(symbol);
-
 				symbols_list.value(sender->getFilename())->insert(position, symbol);
 			}
-		} else{
-			// if CURSOR operation just broadcast it
-			// TODO: now saving after every cursor change (code right after), but this shouldn't be
-			// a problem once we set the saving every X seconds
 		}
 
 		changed.insert(sender->getFilename(), true);
 		broadcast(docObj, sender);
 	}
 
-	if (typeVal.toString().compare(QLatin1String("new_file"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("new_file"),
+								   Qt::CaseInsensitive) == 0) {
 		QJsonObject message = this->createNewFile(docObj,sender);
 		this->sendJson(sender,message);
 	}
-	if (typeVal.toString().compare(QLatin1String("file_to_open"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("file_to_open"),
+								   Qt::CaseInsensitive) == 0) {
 		// Send symbols in file to client
 		QVector<QByteArray> v;
 		QJsonObject message = this->sendFile(docObj,sender,v);
@@ -537,59 +529,64 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 		// Store symbols in server memory
 		foreach (const QJsonValue & symbol, message["content"].toArray()) {
 			QString position = fromJsonArraytoString(symbol["position"].toArray());
-			if (!symbols_list.contains(sender->getFilename()))
-				symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
+			if (!symbols_list.contains(sender->getFilename())) {
+				symbols_list.insert(sender->getFilename(),
+									new QMap<QString,QJsonObject>());
+			}
 			symbols_list.value(sender->getFilename())->insert(position, symbol.toObject());
 			changed.insert(sender->getFilename(), false);
 		}
 	}
-	if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) == 0){
+	if (typeVal.toString().compare(QLatin1String("close"),
+								   Qt::CaseInsensitive) == 0){
 		QJsonObject message = this->closeFile(docObj,sender);
 		this->sendJson(sender,message);
 	}
-	if (typeVal.toString().compare(QLatin1String("filename_from_sharedLink"), Qt::CaseInsensitive) == 0){
-		QJsonObject message = this->getFilenameFromSharedLink(docObj, sender->getUsername());
+	if (typeVal.toString().compare(QLatin1String("filename_from_sharedLink"),
+								   Qt::CaseInsensitive) == 0){
+		QJsonObject message = this->getFilenameFromSharedLink(
+					docObj, sender->getUsername()
+		);
 		this->sendJson(sender,message);
 	}
 }
 
-QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc){
+QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc) {
 	const QJsonValue user = doc.value(QLatin1String("username"));
 	QJsonObject message;
 	message["type"] = QStringLiteral("nickname");
 
-	if (user.isNull() || !user.isString()){
+	if (user.isNull() || !user.isString()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong username format");
 		return message;
 	}
 	const QString username = user.toString().simplified();
-	if (username.isEmpty()){
+	if (username.isEmpty()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 	const QJsonValue nick = doc.value(QLatin1String("nickname"));
-	if (nick.isNull() || !nick.isString()){
+	if (nick.isNull() || !nick.isString()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong nickname format");
 		return message;
 	}
 	const QString nickname = nick.toString().simplified();
-	if (nickname.isEmpty()){
+	if (nickname.isEmpty()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Empty nickname");
 		return message;
 	}
 	sender->setNickname(nickname);
-	//    //qDebug()<<"nickname: "<<nickname;
 	DatabaseError result = this->db.updateNickname(username,nickname);
-	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
+	if (result == CONNECTION_ERROR || result == QUERY_ERROR) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error");
 		return message;
 	}
-	if (result == NON_EXISTING_USER){
+	if (result == NON_EXISTING_USER) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("The username doens't exists");
 		return message;
@@ -600,71 +597,68 @@ QJsonObject Server::updateNick(ServerWorker *sender,const QJsonObject &doc){
 }
 
 
-QJsonObject Server::updatePass(const QJsonObject &doc){
+QJsonObject Server::updatePass(const QJsonObject &doc) {
 	const QJsonValue user = doc.value(QLatin1String("username"));
 	QJsonObject message;
 	message["type"] = QStringLiteral("password");
 
-	if (user.isNull() || !user.isString()){
+	if (user.isNull() || !user.isString()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong username format");
 		return message;
 	}
 	const QString username = user.toString().simplified();
-	if (username.isEmpty()){
+	if (username.isEmpty()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Empty email");
 		return message;
 	}
 
 	const QJsonValue oldpass = doc.value(QLatin1String("oldpass"));
-	if (oldpass.isNull() || !oldpass.isString()){
+	if (oldpass.isNull() || !oldpass.isString()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong oldpassword format");
 		return message;
 	}
 	const QString oldpassword = oldpass.toString().simplified();
-	if (oldpassword.isEmpty()){
+	if (oldpassword.isEmpty()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Empty old password");
 		return message;
 	}
 
 	const QJsonValue newpass = doc.value(QLatin1String("newpass"));
-	if (newpass.isNull() || !newpass.isString()){
+	if (newpass.isNull() || !newpass.isString()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong new password format");
 		return message;
 	}
 	const QString newpassword = newpass.toString().simplified();
-	if (newpassword.isEmpty()){
+	if (newpassword.isEmpty()) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Empty new password");
 		return message;
 	}
 
-	DatabaseError result = this->db.updatePassword(username,oldpassword,newpassword);
+	DatabaseError result = this->db.updatePassword(username,
+												   oldpassword, newpassword);
 
-	if (result == NON_EXISTING_USER){
+	if (result == NON_EXISTING_USER) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("The username doens't exists");
 		return message;
-	}
-	else if (result == NON_EXISTING_USER){
+	} else if (result == NON_EXISTING_USER) {
 		message["success"] = false;
-		message["reason"] = QStringLiteral("No account found for this username");
+		message["reason"] = QStringLiteral("No account found "
+										   "for this username");
 		return message;
-	}
-	else if (result == WRONG_PASSWORD){
+	} else if (result == WRONG_PASSWORD) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Wrong password");
 		return message;
-	}
-	else{
-
+	} else {
 		message["success"] = true;
 		return message;
-
 	}
 }
 
@@ -718,7 +712,7 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 }
 
 
-QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
+QJsonObject Server::getFiles(const QJsonObject &doc, bool shared) {
 	const QJsonValue user = doc.value(QLatin1String("username"));
 	QJsonObject message;
 	message["type"] = QStringLiteral("list_files");
@@ -752,11 +746,11 @@ QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
 
 	QVector<QPair<QString, QString>>::iterator i;
 	for (i = files.begin(); i != files.end(); ++i){
-		// use initializer list to construct QJsonObject
+		// Use initializer list to construct QJsonObject
 		auto data = QJsonObject({
-									qMakePair(QString("name"), QJsonValue(i->first)),
-									qMakePair(QString("owner"), QJsonValue(i->second))
-								});
+						qMakePair(QString("name"), QJsonValue(i->first)),
+						qMakePair(QString("owner"), QJsonValue(i->second))
+		});
 
 		array_files.push_back(QJsonValue(data));
 	}
@@ -764,12 +758,11 @@ QJsonObject Server::getFiles(const QJsonObject &doc, bool shared){
 	message["shared"] = shared;
 	message["success"] = true;
 	message["files"]=array_files;
-	auto d = QJsonDocument(message);
-	//    //qDebug()<< d.toJson().constData()<<endl;
 	return message;
 }
 
-QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc, const QString& user){
+QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc,
+											  const QString& user) {
 	QJsonObject message;
 	message["type"] = QStringLiteral("filename_from_sharedLink");
 
@@ -787,7 +780,8 @@ QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc, const QStr
 	}
 
 	QString filename;
-	DatabaseError result = this->db.getFilenameFromSharedLink(sharedLink, filename, user);
+	DatabaseError result = this->db.getFilenameFromSharedLink(sharedLink,
+															  filename, user);
 	if (result == CONNECTION_ERROR || result == QUERY_ERROR){
 		message["success"] = false;
 		message["reason"] = QStringLiteral("Database error.");
@@ -795,14 +789,13 @@ QJsonObject Server::getFilenameFromSharedLink(const QJsonObject& doc, const QStr
 	}
 	if (result == NON_EXISTING_FILE){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("No file corresponding to shared link.");
+		message["reason"] = QStringLiteral("No file corresponding "
+										   "to shared link.");
 		return message;
 	}
 
 	message["success"] = true;
 	message["filename"] = filename;
-	//    auto d = QJsonDocument(message);
-	//    //qDebug()<< d.toJson().constData()<<endl;
 	return message;
 }
 
@@ -846,11 +839,12 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	}
 	if (result == ALREADY_EXISTING_FILE){
 		message["success"] = false;
-		message["reason"] = QStringLiteral("This file already exists. Please enter a new filename.");
+		message["reason"] = QStringLiteral("This file already exists. "
+										   "Please enter a new filename.");
 		return message;
 	}
 
-	// save the name of the file used by the worker
+	// Save the name of the file used by the worker
 	sender->setFilename(filename + "," + username);
 
 	// Create empty file for the specified user
@@ -858,14 +852,14 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	   throw std::runtime_error("File shouldn't already exist.");
 	}
 
-	// add current worker to the map <file, list_of_workers>
+	// Add current worker to the map <file, list_of_workers>
 	QList<ServerWorker*>* list=new QList<ServerWorker*>();
 	list->append(sender);
 	mapFileWorkers->insert(filename + "," + username,list);
-	//qDebug() << mapFileWorkers;
 
 	if (!symbols_list.contains(sender->getFilename())) {
-		symbols_list.insert(sender->getFilename(),new QMap<QString,QJsonObject>());
+		symbols_list.insert(sender->getFilename(),
+							new QMap<QString,QJsonObject>());
 		changed.insert(sender->getFilename(), true);
 	}
 
@@ -874,7 +868,8 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	return message;
 }
 
-QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVector<QByteArray> &v){
+QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
+							 QVector<QByteArray> &v){
 	QJsonObject message;
 	message["type"] = QStringLiteral("file_to_open");
 
@@ -897,38 +892,35 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 
 	sender->setFilename(filename);
 	int index = 0;
-	//    //qDebug()<<"sender->setFilename() "<<file<<endl;
 
-	if (mapFileWorkers->contains(filename)){
+	if (mapFileWorkers->contains(filename)) {
 		index = mapFileWorkers->value(filename)->size();
 		mapFileWorkers->value(filename)->append(sender);
-	}
-	else{
+	} else {
 		QList<ServerWorker*>* list=new QList<ServerWorker*>();
 		list->append(sender);
 		mapFileWorkers->insert(filename,list);
 	}
 
-	//    //qDebug() << "index " << index;
-//	int color = color_palette[index % color_palette.size()];
-    //sender->setColor(color);
-
 	QList<ServerWorker*>* list=mapFileWorkers->value(filename);
 	QJsonArray array_users;
 
-	//per ora manda il contenuto del file insieme alla lista di chi è connesso;
+	// TODO: per ora manda il contenuto del file insieme alla lista di chi è connesso;
 	//d agestire il caso in cui le connessioni cambiano mentre o dopo il messaggio è inviato
 
 	QString image_path;
 
 	for (int i = 0; i <list->count(); i++){
-		// use initializer list to construct QJsonObject
-		if (sender->getUsername()==list->at(i)->getUsername())
+		// Use initializer list to construct QJsonObject
+		if (sender->getUsername()==list->at(i)->getUsername()) {
 			continue;
+		}
 		auto data = QJsonObject({
-									qMakePair(QString("username"), QJsonValue(list->at(i)->getUsername())),
-									qMakePair(QString("nickname"), QJsonValue(list->at(i)->getNickname()))
-								});
+				qMakePair(QString("username"),
+						  QJsonValue(list->at(i)->getUsername())),
+				qMakePair(QString("nickname"),
+						  QJsonValue(list->at(i)->getNickname()))
+		});
 
 		array_users.push_back(QJsonValue(data));
 
@@ -938,7 +930,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 
 		QFileInfo file(image_path);
 		if (file.exists()) {
-			//qDebug()<<"added image";
 			QImage p(image_path);
 			QByteArray bArray;
 			QBuffer buffer(&bArray);
@@ -962,7 +953,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		success = db.retrieveFile(filename,symbols);
 	}
 
-	// retrieve shared link
+	// Retrieve shared link
 	QString sharedLink;
 	db.getSharedLink(author, file, sharedLink);
 
@@ -973,38 +964,32 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender, QVect
 		message["users"] = array_users;
 		message["shared_link"] = sharedLink;
 /*		message["color"] = color;*/
-	}
-	else{
+	} else {
 		message["success"] = false;
-		message["reason"] = QStringLiteral("File content different form json array");
+		message["reason"] = QStringLiteral("File content "
+										   "different form json array");
 	}
 
-	//inform all the connected clients of the new connection
-
+	// Inform all the connected clients of the new connection
 	QJsonObject message_broadcast;
 	message_broadcast["type"] = QStringLiteral("connection");
 	message_broadcast["filename"]=filename;
 	message_broadcast["username"]= sender->getUsername();
 	message_broadcast["nickname"]= sender->getNickname();
 
-	image_path = QDir::currentPath() + IMAGES_PATH + "/" + sender->getUsername() + ".png";
+	image_path = QDir::currentPath() + IMAGES_PATH + "/"
+				 + sender->getUsername() + ".png";
 
 	QFileInfo fileImage(image_path);
 	QByteArray bArray;
 	if (fileImage.exists()) {
-		//qDebug()<<"added image to broadcast "<<image_path;
 		QImage p(image_path);
-		//qDebug()<< "Image size pixmpa: "<<p.size();
 		QBuffer buffer(&bArray);
 		buffer.open(QIODevice::WriteOnly);
 		p.save(&buffer, "PNG");
 	}
 
-	//qDebug()<<"bArray size: "<<bArray.size();
 	this->broadcastByteArray(message_broadcast,bArray,sender);
-
-	auto d = QJsonDocument(message);
-	//    //qDebug()<< d.toJson().constData()<<endl;
 	return message;
 }
 
