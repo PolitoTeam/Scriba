@@ -19,7 +19,6 @@ public:
 	void freeAll();
 	void setCRDT(CRDT* crdt);
 
-
 private:
 	void highlightBlock(const QString &text) override;
 	QMap<int,int> users;

@@ -3,7 +3,6 @@
 
 #include <QWidget>
 #include <QPixmap>
-
 #include "appMainWindow.h"
 #include "client.h"
 

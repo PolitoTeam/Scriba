@@ -28,15 +28,12 @@ public:
 	Qt::Alignment alignmentConversion(SymbolFormat::Alignment a);
 	void peerYou();
 
-
 signals:
 	void changeWidget(int);
-	//    void formatChange();
 
 private slots:
 	void printPdf();
 	void exit();
-
 	void copy();
 	void cut();
 	void paste();
@@ -48,9 +45,7 @@ private slots:
 	void setFontItalic(bool italic);
 	void textAlign(QAction *a);
 	void sharedLink();
-
 	void textChange();
-
 	void on_contentsChange(int position, int charsRemoved, int charsAdded);
 	void on_insert(int line, int index, const Symbol& s);
 	void on_insertGroup(int line, int index, const QString& s,QTextCharFormat newFormat);
@@ -62,7 +57,6 @@ private slots:
 	void removeUser(const QString& username,const QString& nickname);
 	void saveCursorPosition();
 	void on_currentCharFormatChanged(const QTextCharFormat &format);
-
 	void textColor();
 	void clipboardDataChanged();
 	void textFamily(const QString &f);
@@ -70,7 +64,6 @@ private slots:
 	void moveCursorToEnd();
 	void on_addCRDTterminator();
 	void on_remoteCursor(int editor_id, Symbol s);
-	// void correct_position(int& line, int& index);
 
 private:
 	Ui::Editor *ui;
@@ -78,10 +71,7 @@ private:
 	CRDT *crdt;
 	int line = 0, index = 0;
 	Highlighter *highlighter;
-
-
-
-
+	QMessageBox* popUp;
 
 	QFontComboBox *comboFont;
 	QComboBox *comboSize;
@@ -90,9 +80,6 @@ private:
 	QAction *actionAlignCenter;
 	QAction *actionAlignRight;
 	QAction *actionShowAssigned;
-
-
-	QMessageBox* popUp;
 
 	void showEvent(QShowEvent* event);
 	int fromStringToIntegerHash(QString str);
