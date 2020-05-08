@@ -426,11 +426,11 @@ QJsonObject Server::checkCredentials(ServerWorker *sender,
 		return message;
 	} else if (r == NON_EXISTING_USER) {
 		message["success"] = false;
-		message["reason"] = QStringLiteral("No account found for this username");
+		message["reason"] = QStringLiteral("Invalid username and/or password");
 		return message;
 	} else if (r == WRONG_PASSWORD) {
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Wrong password");
+		message["reason"] = QStringLiteral("Invalid username and/or password");
 		return message;
 	} else {  // QUERY_ERROR or CONNECTION_ERROR
 		message["success"] = false;
