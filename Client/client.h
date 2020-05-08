@@ -5,9 +5,9 @@
 #include <QTcpSocket>
 #include <QSslSocket>
 #include <QBuffer>
+#include <QProgressDialog>
 #include "symbol.h"
 #include "remotecursor.h"
-#include <QProgressDialog>
 #include "../Utility/serializesize.h"
 
 class QHostAddress;
@@ -24,21 +24,16 @@ public:
 	QString getUsername();
 	void setNickname(const QString& nickname);
 	QPixmap* getProfile();
-
 	void sendProfileImage();
 	void sendProfileImage(const QString& name,QPixmap* pixmap);
 	void overrideProfileImage(const QPixmap& pixmap);
-
 	void getFiles(bool shared);
 	void getFilenameFromLink(const QString& sharedLink);
 	QList<QPair<QString,QString>> getActiveFiles();
-
 	void sendJson(const QJsonObject& message);
 	void createNewFile(QString filename);
 	void closeFile();
-
     void sendByteArray(const QByteArray &byteArray);
-
 	QString getSharedLink();
 	QString getOpenedFile();
 	void setOpenedFile(const QString& name);
@@ -53,9 +48,6 @@ public slots:
 	void checkOldPassword(const QString &old_password);
     void disconnectFromHost();
 	void openFile(const QString& filename);
-	//    void sslErrors(const QList<QSslError> &errors);
-
-
 
 private slots:
 	void onReadyRead();
@@ -68,7 +60,6 @@ signals:
 	void loginError(const QString &reason);
 	void disconnected();
 	void error(QAbstractSocket::SocketError socketError);
-
 
 	void wrongOldPassword();
 	void correctOldPassword();
@@ -97,24 +88,21 @@ private:
 	quint16 port;
 	QSslSocket *m_clientSocket;
 	bool m_loggedIn;
-	QString username;   //valutare se puntatore o no!
+	QString username;
 	QString nickname;
 	QPixmap* profile;
 	QList<QPair<QString,QString>> files;
 	QString openfile;
 	QString sharedLink;
-
-
-	void jsonReceived(const QJsonObject &doc);
-	void byteArrayReceived(const QByteArray &doc);
-	void extract_content_size();
-	bool parseJson();
-
 	quint64 m_exptected_json_size = 0;
 	QByteArray m_received_data;
 	QBuffer m_buffer;
 	QProgressDialog *progress;
 
+	void jsonReceived(const QJsonObject &doc);
+	void byteArrayReceived(const QByteArray &doc);
+	void extract_content_size();
+	bool parseJson();
 };
 
 #endif // CLIENT_H

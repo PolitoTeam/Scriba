@@ -1,7 +1,4 @@
 #include <QFontDialog>
-#include "editor.h"
-#include "ui_editor.h"
-#include "client.h"
 #include <QDateTime>
 #include <QIcon>
 #include <QMessageBox>
@@ -24,6 +21,9 @@
 #endif
 #endif
 #endif
+#include "editor.h"
+#include "ui_editor.h"
+#include "client.h"
 
 Editor::Editor(QWidget *parent,Client* client) :
 	QMainWindow(parent),
@@ -31,13 +31,7 @@ Editor::Editor(QWidget *parent,Client* client) :
 	client(client)
 {
 	ui->setupUi(this);
-
 	this->popUp = new QMessageBox(this);
-	// this->setCentralWidget(ui->textEdit);
-	//    QTextDocument *document = ui->textEdit->document(); //cursore
-	//    QTextCursor cursor(document);
-	//    cursor.insertText(tr("Hello world!"));
-	//    cursor.movePosition(QTextCursor::End);
 
 	connect(ui->actionPrint, &QAction::triggered, this, &Editor::printPdf);
 	connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
@@ -824,7 +818,6 @@ void Editor::removeUser(const QString& username, const QString& nickname){
 			break;
 		}
 	}
-
 }
 
 void Editor::saveCursorPosition()
@@ -844,26 +837,6 @@ void Editor::saveCursorPosition()
 	//qDebug() << "cursor position before" << this->line << this->index;
 	//correct_position(this->line, this->index);
 	crdt->cursorPositionChanged(this->line, this->index);
-
-	// select format icon of the first char before the remote cursor
-
-	//    int pos = cursor.position();
-	//    while (pos >= 0) {
-	//        bool not_found = true;
-	//        for (RemoteCursor *c : ui->textEdit->remote_cursors.values()) {
-	////            //qDebug() << "pos" <<  c->getPosition() << pos;
-	//            if (c->getPosition() == pos)
-	//                not_found = false;
-	//        }
-	//        if (not_found)
-	//            break;
-	//        pos--;
-	//    }
-	//    if (pos<0)
-	//        cursor.setPosition(0);
-	//    cursor.setPosition(pos);
-	//    ui->textEdit->setCurrentCharFormat(cursor.charFormat());
-
 }
 
 void Editor::showEvent(QShowEvent *)
@@ -879,47 +852,6 @@ void Editor::on_currentCharFormatChanged(const QTextCharFormat &format)
 	fontChanged(format.font());
 	colorChanged(format.foreground().color());
 	void on_remoteCursor(int editor_id, Symbol s);
-
-	//    //qDebug() << "***FORMAT CHANGED***";
-	//    //qDebug() << "changed" << ui->textEdit->textCursor().selectedText();
-	//    QString changed = ui->textEdit->textCursor().selectedText();
-	//    if (changed.isEmpty()) {
-	//        //qDebug() << "nothing to do";
-	//        return;
-	//    }
-	////    int a = ui->textEdit->textCursor().selectionStart();
-	////    ui->textEdit->textCursor().selection().
-	////    this->line = cursor.blockNumber();
-	////    this->index = cursor.positionInBlock();
-	//    // change multiple chars
-	////    for (int i = 0; i < changed.length(); i++) {
-	////        //qDebug() << "Changed " << changed.at(i) << "in position (" << this->line << "," << this->index << ")";
-	//////        crdt->localErase(line, index);
-	////    }
-
-	//    int start = ui->textEdit->textCursor().selectionStart();
-	//    int end = ui->textEdit->textCursor().selectionEnd();
-	//    //qDebug() << "start/end selection" << start << end;
-	//    QTextCursor cursor = ui->textEdit->textCursor();
-	//    for (int i = start; i < end; i++) {
-	//        cursor.setPosition(i);
-	//        int line = cursor.blockNumber();
-	//        int index = cursor.positionInBlock();
-	//        //qDebug() << "line/index/char" << line << index << changed.at(i - start) << QChar(0x2029);
-	////        //qDebug() << "aaa" << (changed.at(i - start).toInt()=='\u2029');
-	//        QString a =  changed.at(i - start);
-	//        QChar c = a.data()[0];
-	//        if (changed.at(i - start) == QChar(0x2029))
-	//            //qDebug() << "NEWLINE";
-	//    }
-	////    QTextCursor cursor = ui->textEdit->textCursor();
-	////    int start = cursor.selectionStart();
-	////    int end = cursor.selectionEnd();
-
-	////    cursor.setPosition(end, QTextCursor::KeepAnchor);
-	////    QTextBlock endBlock = cursor.block();
-	////    cursor.setPosition(start, QTextCursor::KeepAnchor);
-	////    QTextBlock block = cursor.block();
 }
 
 void Editor::textColor()

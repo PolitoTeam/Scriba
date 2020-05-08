@@ -1,9 +1,9 @@
-#include "login.h"
-#include "ui_login.h"
 #include <QtWidgets>
 #include <QPixmap>
 #include <QRegularExpression>
 #include <QHostAddress>
+#include "login.h"
+#include "ui_login.h"
 
 Login::Login(QWidget *parent,Client* client) :
 	QWidget (parent),
@@ -11,10 +11,6 @@ Login::Login(QWidget *parent,Client* client) :
 	client(client)
 {
 	ui->setupUi(this);
-//	QPixmap pix(":/images/bold.png");
-//	int w=ui->label->width();
-//	int h=ui->label->height();
-//	ui->label->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 
 	connect(client, &Client::loggedIn, this, &Login::loggedIn);
 	connect(client, &Client::loginError, this, &Login::loginFailed);
@@ -24,11 +20,6 @@ Login::Login(QWidget *parent,Client* client) :
 			this, &Login::try_to_log);
 	connect(ui->lineEditPassword, &QLineEdit::returnPressed,
 			this, &Login::try_to_log);
-
-	// TODO: remove this line, used for DEBUG, allowing automatic login
-	//    ui->lineEditUsername->setText("enrico@gmail.com");
-	//    ui->lineEditPassword->setText("Admin11.");
-	//    try_to_log();
 }
 
 Login::~Login()

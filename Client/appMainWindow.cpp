@@ -83,11 +83,9 @@ void AppMainWindow::on_changeWidget(int widget) {
 	if (widget == EDITOR ) {
 		this->hide();
 		editor->peerYou();  // Set 'You' in the listWidget
-		// with the last nickname
+							// with the last nickname
 		editor->show();
-	}
-	else
-	{
+	} else {
 		editor->hide();
 		stackedWidget->setCurrentIndex(widget);
 		this->show();

@@ -58,18 +58,20 @@ private:
 	Client *client;
 	int size = 0;
 
-	QVector<Identifier> generatePositionBetween(QVector<Identifier>& pos1, QVector<Identifier> pos2, QVector<Identifier>& newPos, int level=0);
+	QVector<Identifier> generatePositionBetween(QVector<Identifier>& pos1,
+												const QVector<Identifier>& pos2,
+												QVector<Identifier>& newPos,
+												int level=0);
 	int generateIdBetween(int id1, int id2, int level);
 	bool generateRandomBool();
 	int generateRandomNumBetween(int n1,int n2);
 
-	bool findPosition(Symbol s, int& line, int& index); // TODO: use reference
+	bool findPosition(Symbol s, int& line, int& index);
 	int findIndexInLine(Symbol s, QVector<Symbol> line);
 	void findInsertPosition(Symbol s, int& line, int& index);
 	int findInsertIndexInLine(Symbol s, QVector<Symbol> line);
 	void findEndPosition(Symbol lastChar, QVector<Symbol> lastLine, int totalLines, int& line, int& index);
 	void insertChar(Symbol s, int line, int index);
-
 
 	QVector<Identifier> findPosBefore(int line, int index);
 	QVector<Identifier> findPosAfter(int line, int index);

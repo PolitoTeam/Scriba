@@ -1,9 +1,9 @@
-#include "modify.h"
-#include "signup.h"
-#include "ui_modify.h"
 #include <QFileDialog>
 #include <QRegularExpression>
 #include <QMessageBox>
+#include "modify.h"
+#include "signup.h"
+#include "ui_modify.h"
 
 Modify::Modify(QWidget *parent,Client* client) :
 	QWidget(parent),
@@ -162,8 +162,6 @@ void Modify::on_pushButtonSavePassword_clicked()
 
     status=1;
     client->checkOldPassword(oldpass);
-
-
 }
 
 void Modify::continueSaving(){
@@ -237,9 +235,8 @@ void Modify::on_lineEditOldPass_editingFinished()
 void Modify::on_wrongOldPasswordEntered()
 {
     correct_old_password = false;
+
 	// Print message only if modify window is visible
-
-
 	if (ui->groupBox->isVisible()) {
         ui->labelInfoOldPassword->setText("Wrong old password");
 	}

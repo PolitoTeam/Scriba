@@ -10,7 +10,6 @@ private:
 	QSet<int> colors;
 	QList<QColor> list_colors;
 
-
 public:
 	Colors(){
 		colors = QSet<int>();
@@ -229,46 +228,39 @@ public:
 									});
 	}
 
-	void clear(){
+	void clear() {
 		colors.clear();
 	}
 
-	int getIndex(){
-		// gestire il fatto di nessun colore disponibile
-		int n=0; //number of iterations
-		int i=0;
-		while(n<list_colors.size()){
+	int getIndex() {
+		int n = 0; // Number of iterations
+		int i = 0;
+		while (n<list_colors.size()) {
 			n++;
 			i = rand() % list_colors.size();
 
 			if (!colors.contains(i))
 				return i;
 		}
-		//if no colors are free, assign a random busy color
+		// If no colors are free, assign a random busy color
 		return i;
 	}
 
-	void freeColor(int x){
-
+	void freeColor(int x) {
 		colors.remove(x);
-
 	}
 
-	QColor getColor(int index){
-		if (index>=0 && index <list_colors.size())
+	QColor getColor(int index) {
+		if (index>=0 && index <list_colors.size()) {
 			return list_colors[index];
-		else if (index==-1){   //locale
+		} else if (index == -1) {   // local
 			return QColor(124,252,0,255);
-		}
-		else if (index==-2){   //remote but offline
+		} else if (index == -2) {   // remote but offline
 			return QColor(192,192,192,255);
-		}
-		else{
+		} else {
 			return QColor("white");
 		}
 	}
-
-
 };
 
 #endif // COLORS_H

@@ -1,7 +1,6 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QFileDialog>
-
 #include "signup.h"
 #include "ui_signup.h"
 

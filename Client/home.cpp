@@ -1,10 +1,10 @@
+#include <QInputDialog>
+#include <QDir>
+#include <QMessageBox>
 #include "home.h"
 #include "ui_home.h"
 #include "client.h"
 #include "CRDT.h"
-#include <QInputDialog>
-#include <QDir>
-#include <QMessageBox>
 
 Home::Home(QWidget *parent,Client* client) :
 	QWidget(parent),

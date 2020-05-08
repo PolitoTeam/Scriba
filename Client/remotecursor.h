@@ -16,7 +16,6 @@ public:
 	QTextCursor getCursor(){return remoteCursor;};
 	QColor getColor(){return color;};
 
-
 private:
 	QString cursorHtml;
 	QTextCursor remoteCursor;

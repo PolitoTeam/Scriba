@@ -2,12 +2,12 @@
 #define EDITOR_H
 
 #include <QMainWindow>
+#include <QTextCursor>
+#include <QtWidgets>
 #include "appMainWindow.h"
 #include "client.h"
 #include "CRDT.h"
 #include "highlighter.h"
-#include <QTextCursor>
-#include <QtWidgets>
 
 namespace Ui {
 class Editor;

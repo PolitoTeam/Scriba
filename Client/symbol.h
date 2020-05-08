@@ -77,13 +77,11 @@ public:
 		format.size = json["size"].toInt();
 		format.color = json["color"].toString();
 		format.align = static_cast<Alignment>(json["alignment"].toInt());
-		//        //qDebug() << "from json" << format.italic << format.bold << format.underline;
 		return format;
 	}
 
 	QTextCharFormat getQTextCharFormat() const {
 		QTextCharFormat format;
-		//        //qDebug() << "Format class" << italic << bold << underline;
 		QFont font;
 		font.setItalic(this->italic);
 		font.setBold(this->bold);
@@ -92,11 +90,6 @@ public:
 		font.setPointSize(this->size);
 		format.setFont(font);
 		format.setForeground(QColor(color));
-		//        //qDebug() << "Format class2" << format.font().italic() << format.font().bold() << format.font().underline();
-
-		//            charFormat.setFont(QFont("Times", 15, QFont::Bold));
-		//        charFormat.setFontWeight(QFont::Bold);
-		//        charFormat.setForeground(QBrush(QColor(0xff0000)));
 		return format;
 	}
 };
@@ -110,9 +103,11 @@ private:
 	SymbolFormat format;
 
 public:
-	Symbol() {} // empty constructor needed, otherwise compile error
-	Symbol(ushort value, QVector<Identifier> position, int counter) : value(value), position(position), counter(counter) {}
-	Symbol(ushort value, QVector<Identifier> position, int counter, QFont font, QColor color) : value(value),
+	Symbol() {} // Empty constructor needed, otherwise compile error
+	Symbol(ushort value, QVector<Identifier> position, int counter)
+		: value(value), position(position), counter(counter) {}
+	Symbol(ushort value, QVector<Identifier> position, int counter, QFont font,
+		   QColor color) : value(value),
 		position(position), counter(counter) {
 		format.italic = font.italic();
 		format.bold = font.bold();
@@ -120,11 +115,12 @@ public:
 		format.size = font.pointSize();
 		format.font = font.family();
 		format.color = color.name();
-
-		//        //qDebug() << "constructor" << format.italic << format.bold << format.underline;
 	}
-	Symbol(ushort value, QVector<Identifier> position, int counter, SymbolFormat format) : value(value),
-		position(position), counter(counter), format(format) {}
+
+	Symbol(ushort value, QVector<Identifier> position, int counter,
+		   SymbolFormat format) : value(value), position(position),
+								  counter(counter), format(format) {}
+
 	ushort getValue() const { return value; }
 	QVector<Identifier> getPosition() const { return position; }
 	int getCounter() const { return counter; }
@@ -142,8 +138,6 @@ public:
 		format.align = a;
 	}
 
-
-
 	int getUsername(){
 		return this->position[this->position.size()-1].site;
 	}
@@ -152,7 +146,9 @@ public:
 		return format.align;
 	}
 
-	QTextCharFormat getQTextCharFormat() const { return format.getQTextCharFormat(); }
+	QTextCharFormat getQTextCharFormat() const {
+		return format.getQTextCharFormat();
+	}
 
 	static int compare(const Symbol& s1, const Symbol& s2) {
 		QVector<Identifier> p1 = s1.getPosition();
@@ -227,8 +223,6 @@ public:
 
 		SymbolFormat format = SymbolFormat::fromJson(json["format"].toObject());
 		Symbol s(value, position, counter, format);
-
-
 		return s;
 	}
 };
