@@ -49,6 +49,7 @@ public:
 	DatabaseError getFilenameFromSharedLink(const QString& sharedLink,
 											QString& filename,
 											const QString& user);
+    DatabaseError checkAlreadyExistingUsername(const QString &username);
 
 private:
 	QString generateRandomString() const;

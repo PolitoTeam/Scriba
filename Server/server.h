@@ -68,6 +68,7 @@ private:
 	QJsonObject getFiles(const QJsonObject &doc, bool shared);
 	QJsonObject getFilenameFromSharedLink(const QJsonObject& doc,
 										  const QString& user);
+    QJsonObject checkAlreadyExistingUsername(const QJsonObject &doc);
 	QJsonObject createNewFile(const QJsonObject &doc, ServerWorker *sender);
 	QJsonObject sendFile(const QJsonObject &doc,
 						 ServerWorker *sender, QVector<QByteArray>& v);

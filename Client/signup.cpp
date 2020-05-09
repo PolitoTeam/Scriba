@@ -1,6 +1,7 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QFileDialog>
+#include <QTimer>
 #include "signup.h"
 #include "ui_signup.h"
 
@@ -17,6 +18,7 @@ Signup::Signup(QWidget *parent,Client* client) :
 												 Qt::KeepAspectRatioByExpanding)
 								 );
 	ui->lineEditConfirmPassword->setDisabled(true);
+    this->popUp = new QMessageBox(this);
 	valid=false;
 
 	connect(client, &Client::signedUp, this, &Signup::signedUp);
@@ -24,6 +26,13 @@ Signup::Signup(QWidget *parent,Client* client) :
 	// Enable signup but pressing 'enter' on confirm password textfield
 	connect(ui->lineEditConfirmPassword, &QLineEdit::returnPressed,
 			this, &Signup::on_pushButtonSignup_clicked);
+
+    connect(client, &Client::existingUsername,
+            this, &Signup::on_failedUsernameCheck);
+    connect(client, &Client::successUsernameCheck,
+            this, &Signup::on_successUsernameCheck);
+
+
 }
 
 Signup::~Signup()
@@ -48,23 +57,46 @@ void Signup::signedUp()
 	// Enable buttons after receiving server reply
 	ui->pushButtonSignup->setEnabled(true);
 	ui->pushButtonClear->setEnabled(true);
-	ui->pushButtonBackLogin->setEnabled(true);
+    ui->pushButtonBackLogin->setEnabled(true);
 
 	ui->lineEditUsername->clear();
 	ui->lineEditPassword->clear();
-	ui->labelInfoPass->setText("Correclty signed up");
+    ui->labelInfoPass->clear();
 
 	QPixmap pix(":/images/anonymous"); //cercare .png
 	ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
 											Qt::KeepAspectRatioByExpanding));
     photo=false;
     client->disconnectFromHost();
+    // Show popup for 1 second
+    this->popUp->setText("Correclty signed up.");
+    this->popUp->setWindowTitle("Sign up");
+    this->popUp->setStandardButtons(this->popUp->NoButton);
+    this->popUp->setModal(false);
+    QTimer::singleShot(1500, this->popUp, &QMessageBox::hide);  // 1000 ms
+    this->popUp->show();
+    changeWidget(LOGIN);
 }
 
 void Signup::signupFailed(const QString &reason){
+    qDebug()<<"signup failed";
     client->disconnectFromHost();
-	ui->labelInfoPass->setText(reason);
+    if (reason.contains("username")){
+        ui->labelInfoUser->setText(reason);
+        inuse_username=USED;
+    }
+    else
+        ui->labelInfoPass->setText(reason);
+    // Show popup for 1 second
+    this->popUp->setText("Failed sign up");
+    this->popUp->setWindowTitle("Sign up");
+    this->popUp->setStandardButtons(this->popUp->NoButton);
+    this->popUp->setModal(false);
+    QTimer::singleShot(1500, this->popUp, &QMessageBox::hide);  // 1000 ms
+    this->popUp->show();
 
+    clearLabel();
+    clearLineEdit();
 	ui->pushButtonSignup->setEnabled(true);
 	ui->pushButtonClear->setEnabled(true);
 	ui->pushButtonBackLogin->setEnabled(true);
@@ -76,7 +108,10 @@ void Signup::on_pushButtonSignup_clicked()
 	QString password=ui->lineEditPassword->text();
 	QString confirm=ui->lineEditConfirmPassword->text();
 
-	if (checkUsername(username) && valid
+    if(inuse_username==UNCHECKED)
+        client->checkExistingOrNotUsername(username);
+
+    if (checkUsername(username) && valid && inuse_username!=USED
 			&& checkConfirmation(password,confirm)) {
 		// Disable buttons before receiving server reply
 		ui->pushButtonSignup->setEnabled(false);
@@ -94,44 +129,66 @@ void Signup::on_lineEditUsername_editingFinished()
 {
 	QString username = ui->lineEditUsername->text();
 	checkUsername(username);
+    if (username.size()>0 && inuse_username==UNCHECKED){
+        qDebug()<<"ahia";
+        client->checkExistingOrNotUsername(username);
+    }
 }
 
 
 void Signup::on_lineEditPassword_editingFinished()
 {
-	QString password = ui->lineEditPassword->text();
-	checkPassword(password);
+    QString password = ui->lineEditPassword->text();
+    checkPassword(password);
+    if (valid == true) {
+        if (ui->lineEditConfirmPassword->text().size()>0)
+            checkConfirmation(password,ui->lineEditConfirmPassword->text());
+        else
+             ui->labelInfoPass->clear();
+    }
 }
 
 void Signup::on_lineEditConfirmPassword_editingFinished()
 {
-	QString password1 = ui->lineEditPassword->text();
-	QString password2 = ui->lineEditConfirmPassword->text();
 
-	checkConfirmation(password1,password2);
+    QString password1 = ui->lineEditPassword->text();
+    QString password2 = ui->lineEditConfirmPassword->text();
+
+    checkConfirmation(password1,password2);
 }
 
 void Signup::on_lineEditUsername_textChanged(const QString&)
 {
+    inuse_username=UNCHECKED;
 	ui->labelInfoUser->clear();
 }
 
 void Signup::on_lineEditPassword_textChanged(const QString& arg)
 {
-	ui->labelInfoPass->setText("");
-	if (arg.size() > 0) {
-		ui->lineEditConfirmPassword->setDisabled(false);
-	} else {
-		ui->lineEditConfirmPassword->setDisabled(true);
-		ui->lineEditConfirmPassword->clear();
-	}
+    QString conf=ui->lineEditConfirmPassword->text();
+    ui->labelInfoPass->setText("");
+    if (conf.size()==0){
+        if (arg.size()>0) {
+            ui->lineEditConfirmPassword->setDisabled(false);
+
+        } else {
+            ui->lineEditConfirmPassword->setDisabled(true);
+            ui->lineEditConfirmPassword->clear();
+        }
+    }else{
+        checkPassword(arg);
+        checkConfirmation(arg,conf);
+    }
 }
 
 void Signup::on_lineEditConfirmPassword_textChanged(const QString&)
 {
-	if(valid == true) {
-		ui->labelInfoPass->setText("");
-	}
+    if(ui->labelInfoPass->text().contains("match"))
+        ui->labelInfoPass->clear();
+    QString password1 = ui->lineEditPassword->text();
+    QString password2 = ui->lineEditConfirmPassword->text();
+
+    checkConfirmation(password1,password2);
 }
 
 bool Signup::checkUsername(const QString &username){
@@ -274,3 +331,22 @@ void Signup::on_pushButtonUpload_clicked()
 QPixmap* Signup::getProfile() {
 	return profile;
 }
+
+
+void Signup::on_failedUsernameCheck(const QString &username)
+{
+
+    if (!ui->lineEditUsername->text().compare(username)){
+        inuse_username=USED;
+            ui->labelInfoUser->setText("Username already in use");
+    }
+}
+
+void Signup::on_successUsernameCheck(const QString &username)
+{
+
+    if (!ui->lineEditUsername->text().compare(username)){
+        inuse_username=FREE;
+        }
+}
+

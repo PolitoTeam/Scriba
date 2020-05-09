@@ -16,8 +16,21 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="5">
-      <spacer name="horizontalSpacer_2">
+     <item row="5" column="2" colspan="3">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="2" column="0">
+      <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -41,6 +54,24 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="3" column="4" rowspan="2">
+      <widget class="QPushButton" name="pushButtonSignup">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(33, 190, 43);
+background-color: rgb(0, 131, 206);</string>
+       </property>
+       <property name="text">
+        <string>Signup</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item row="2" column="2" colspan="3">
       <widget class="QGroupBox" name="groupBox">
@@ -185,8 +216,8 @@ font-style:italic;</string>
        </layout>
       </widget>
      </item>
-     <item row="2" column="0">
-      <spacer name="horizontalSpacer">
+     <item row="2" column="5">
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -194,19 +225,6 @@ font-style:italic;</string>
         <size>
          <width>40</width>
          <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="5" column="2" colspan="3">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
         </size>
        </property>
       </spacer>
@@ -221,24 +239,6 @@ font-style:italic;</string>
        </property>
        <property name="margin">
         <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="4" rowspan="2">
-      <widget class="QPushButton" name="pushButtonSignup">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 255);
-border-color: rgb(33, 190, 43);
-background-color: rgb(0, 131, 206);</string>
-       </property>
-       <property name="text">
-        <string>DONE</string>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -268,7 +268,7 @@ border-color: rgb(33, 190, 43);
 background-color: rgb(0, 131, 206);</string>
        </property>
        <property name="text">
-        <string>Cancel</string>
+        <string>Back</string>
        </property>
       </widget>
      </item>

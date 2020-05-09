@@ -28,9 +28,9 @@ private slots:
 	void on_lineEditNickname_editingFinished();
 	void on_lineEditNickname_textChanged(const QString &arg1);
 	void on_lineEditNewPass_textChanged(const QString &arg1);
-	void on_lineEditConfirmPass_textChanged(const QString &arg1);
 	void on_lineEditNewPass_editingFinished();
 	void on_lineEditConfirmPass_editingFinished();
+    void on_lineEditConfirmPass_textChanged();
 	void on_pushSaveNickname_clicked();
 	void on_pushButtonSavePassword_clicked();
 	void on_pushButtonResetNickname_clicked();
@@ -38,10 +38,12 @@ private slots:
 	void on_pushButtonSavephoto_clicked();
 	void on_pushButtonFinish_clicked();
 	void on_pushButtonCancel_clicked();
-	void on_lineEditOldPass_editingFinished();
-	void on_wrongOldPasswordEntered();
+    void on_lineEditOldPass_editingFinished();
+    void on_wrongOldPasswordEntered(const QString &reason);
 	void on_correctOldPasswordEntered();
-    void continueSaving();
+    void on_failedUpdatePassword(const QString &reason);
+    void on_successUpdatePassword();
+    void on_lineEditOldPass_textChanged();
 
 public slots:
 	void upload();
@@ -51,8 +53,7 @@ private:
 	Client* client;
 	QPixmap *profile_photo_temp;
 	bool valid_new_password = false;
-    bool correct_old_password;
-    int status=0;
+    enum OldPassStatus {CORRECT,WRONG,UNCHECKED} correct_old_password=UNCHECKED;
 
 	void clearLabels();
 	void checkPassword(const QString &password);

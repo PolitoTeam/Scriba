@@ -38,6 +38,8 @@ public:
 	QString getOpenedFile();
 	void setOpenedFile(const QString& name);
 	int getColor();
+    void checkOldPassword(const QString &old_password);
+    void checkExistingOrNotUsername(const QString &username);
 
 public slots:
 	void connectToServer(const QHostAddress &address, quint16 port);
@@ -45,7 +47,7 @@ public slots:
     void signup(const QString &username, const QString &password, QPixmap* pixmap);
 	void updateNickname(const QString &nickname);
 	void updatePassword(const QString &oldpassword,const QString &newpassword);
-	void checkOldPassword(const QString &old_password);
+
     void disconnectFromHost();
 	void openFile(const QString& filename);
 
@@ -61,8 +63,10 @@ signals:
 	void disconnected();
 	void error(QAbstractSocket::SocketError socketError);
 
-	void wrongOldPassword();
+    void wrongOldPassword(const QString &reason);
 	void correctOldPassword();
+    void successUpdatePassword();
+    void failedUpdatePassword(const QString& reason);
 
 	void filesReceived(bool shared);
 	void openFilesError(const QString& reason);
@@ -82,6 +86,8 @@ signals:
 	void wrongSharedLink(const QString& filename);
 	void addCRDTterminator();
 	void remoteCursor(int editor_id, Symbol s);
+    void existingUsername(const QString &username);
+    void successUsernameCheck(const QString &username);
 
 private:
 	QString addr;

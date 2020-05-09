@@ -252,7 +252,49 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 			}
 		}
 		this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
-	}
+    } else if (typeVal.toString().compare(QLatin1String("check_username"),
+                                          Qt::CaseInsensitive) == 0){
+        QJsonObject message = this->checkAlreadyExistingUsername(docObj);
+        this->sendJson(sender,message);
+
+    }
+}
+
+QJsonObject Server::checkAlreadyExistingUsername(
+                                     const QJsonObject &doc) {
+    const QJsonValue user = doc.value(QLatin1String("username"));
+    QJsonObject message;
+    message["type"] = QStringLiteral("check_username");
+
+    if (user.isNull() || !user.isString()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Wrong username format");
+        return message;
+    }
+    const QString username = user.toString().simplified();
+    if (username.isEmpty()){
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Empty username");
+        return message;
+    }
+
+    DatabaseError result = this->db.checkAlreadyExistingUsername(username);
+    if (result == CONNECTION_ERROR || result == QUERY_ERROR) {
+        message["success"] = false;
+        message["reason"] = QStringLiteral("Database error");
+        return message;
+    }
+    if (result == ALREADY_EXISTING_USER) {
+        message["success"] = false;
+        message["username"]=username;
+        message["reason"] = QStringLiteral("The username already exists");
+        return message;
+    }
+    if (result == SUCCESS) {
+        message["success"] = true;
+        message["username"]=username;
+        return message;
+    }
 }
 
 void Server::signup_updateImage(ServerWorker *sender,
@@ -439,6 +481,8 @@ QJsonObject Server::checkCredentials(ServerWorker *sender,
 	}
 }
 
+
+
 void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 {
 	const QJsonValue typeVal = docObj.value(QLatin1String("type"));
@@ -617,7 +661,7 @@ QJsonObject Server::updatePass(const QJsonObject &doc) {
 	const QJsonValue oldpass = doc.value(QLatin1String("oldpass"));
 	if (oldpass.isNull() || !oldpass.isString()) {
 		message["success"] = false;
-		message["reason"] = QStringLiteral("Wrong oldpassword format");
+        message["reason"] = QStringLiteral("Wrong old password format");
 		return message;
 	}
 	const QString oldpassword = oldpass.toString().simplified();
@@ -643,11 +687,7 @@ QJsonObject Server::updatePass(const QJsonObject &doc) {
 	DatabaseError result = this->db.updatePassword(username,
 												   oldpassword, newpassword);
 
-	if (result == NON_EXISTING_USER) {
-		message["success"] = false;
-		message["reason"] = QStringLiteral("The username doens't exists");
-		return message;
-	} else if (result == NON_EXISTING_USER) {
+    if (result == NON_EXISTING_USER) {
 		message["success"] = false;
 		message["reason"] = QStringLiteral("No account found "
 										   "for this username");
@@ -703,7 +743,7 @@ QJsonObject Server::checkOldPass(const QJsonObject &doc){
 		return message;
 	} else if (result == WRONG_PASSWORD) {
 		message["success"] = false;
-		message["reason"] = QStringLiteral("The old password doens't match");
+        message["reason"] = QStringLiteral("Wrong password");
 		return message;
 	}
 

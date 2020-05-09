@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPixmap>
+#include <qmessagebox.h>
 #include "appMainWindow.h"
 #include "client.h"
 
@@ -38,6 +39,8 @@ private slots:
 	void signedUp();
 	void signupFailed(const QString &reason);
 	void on_pushButtonUpload_clicked();
+    void on_failedUsernameCheck(const QString& username);
+    void on_successUsernameCheck(const QString &username);
 
 signals:
 	void changeWidget(int i);
@@ -48,6 +51,8 @@ private:
 	Client* client;
 	QPixmap* profile;
     bool photo;
+    QMessageBox* popUp;
+    enum UsernameStatus {FREE,USED,UNCHECKED} inuse_username=UNCHECKED;
 
 	bool checkUsername(const QString &username);
 	void checkPassword(const QString &password);

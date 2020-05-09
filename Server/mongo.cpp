@@ -579,3 +579,29 @@ QString Mongo::generateRandomString() const {
 	}
 	return randomString;
 }
+
+DatabaseError Mongo::checkAlreadyExistingUsername(const QString &username) {
+    auto session = conn.start_session();
+    session.start_transaction();
+    try {
+        mongocxx::collection collection = this->conn["editor"]["users"];
+        bsoncxx::builder::stream::document document{};
+
+        auto cursor = collection.find_one_and_update(
+                    session,
+                    document << "username" << username.toStdString()
+                             << finalize,
+                    document << "$set" << open_document << "lock"
+                             << bsoncxx::oid() << close_document << finalize
+        );
+
+        if (cursor) {
+            return ALREADY_EXISTING_USER;
+        }
+        return SUCCESS;
+    } catch (std::exception& e) {
+        qDebug() << e.what();
+        session.abort_transaction();
+        return QUERY_ERROR;
+    }
+}

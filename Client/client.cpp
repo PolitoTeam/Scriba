@@ -96,7 +96,7 @@ void Client::login(const QString &username, const QString &password)
 void Client::signup(const QString &username, const QString &password, QPixmap* image)
 {
 	connectToServer(QHostAddress(this->addr), this->port);
-
+    qDebug()<<"In signup";
 	// Create the JSON we want to send
 	QJsonObject message;
 	message["type"] = QStringLiteral("signup");
@@ -180,6 +180,14 @@ void Client::checkOldPassword(const QString &old_password)
     sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 }
 
+void Client::checkExistingOrNotUsername(const QString &username){
+    connectToServer(QHostAddress(this->addr), this->port);
+    QJsonObject message;
+    message["type"] = QStringLiteral("check_username");
+    message["username"] = username;
+    sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
+}
+
 //Attempts to close the socket.
 // If there is pending data waiting to be written, QAbstractSocket will enter C
 // losingState and wait until all data has been written.
@@ -232,11 +240,26 @@ void Client::jsonReceived(const QJsonObject &docObj)
 		if (resultVal.isNull() || !resultVal.isBool())
 			return;
 		const bool oldPasswordCheckSuccess = resultVal.toBool();
+        const QString reason = docObj.value(QLatin1String("reason")).toString();
 		if (!oldPasswordCheckSuccess)
-			emit wrongOldPassword();
+            emit wrongOldPassword(reason);
 		else
 			emit correctOldPassword();
-	} else if (typeVal.toString().compare(QLatin1String("operation"),
+    }  else if (typeVal.toString().compare(QLatin1String("check_username"),
+                                           Qt::CaseInsensitive) == 0) {
+         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+         if (resultVal.isNull() || !resultVal.isBool())
+             return;
+         const bool usernameCheckSuccess = resultVal.toBool();
+         const QString reason = docObj.value(QLatin1String("reason")).toString();
+         const QJsonValue username = docObj.value(QLatin1String("username"));
+         if (username.isNull() || !username.isString())
+             return;
+         if (!usernameCheckSuccess)
+             emit existingUsername(username.toString());
+         else
+             emit successUsernameCheck(username.toString());
+     }else if (typeVal.toString().compare(QLatin1String("operation"),
 										  Qt::CaseInsensitive) == 0) {
 		int operation_type = docObj["operation_type"].toInt();
 		if (operation_type == INSERT) {
@@ -344,6 +367,19 @@ void Client::jsonReceived(const QJsonObject &docObj)
 			emit wrongSharedLink(reasonVal.toString());
 		}
 	}
+    else if (typeVal.toString().compare(QLatin1String("password"),
+                                        Qt::CaseInsensitive) == 0) {
+        const QJsonValue resultVal = docObj.value(QLatin1String("success"));
+        if (resultVal.isNull() || !resultVal.isBool())
+            return;
+        const bool success = resultVal.toBool();
+        if (success) {
+            emit successUpdatePassword();
+        } else {
+             const QString reasonVal = docObj.value(QLatin1String("reason")).toString();
+             emit failedUpdatePassword(reasonVal);
+        }
+    }
 }
 
 void Client::createNewFile(QString filename)
@@ -358,6 +394,11 @@ void Client::createNewFile(QString filename)
 
 void Client::connectToServer(const QHostAddress &address, quint16 port)
 {
+    //TO DO: check Enrico
+    qDebug()<<"QUI 0: "<<m_clientSocket->state();
+    if (m_clientSocket->state()!=QAbstractSocket::UnconnectedState)
+        return;
+    qDebug()<<"QUI: "<<m_clientSocket->state();
 	m_clientSocket->connectToHost(address, port);
 	if (m_clientSocket->waitForConnected()){
 		// Start handshake
