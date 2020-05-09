@@ -28,6 +28,7 @@ RUN wget https://github.com/mongodb/mongo-c-driver/releases/download/1.16.2/mong
     && rm -rf /home/user/mongo-c-driver-${MONGOC_VERSION}.tar.gz
 
 # Install mongocxx driver (most recent stable release)
+# Using -j4 instead of -j8 otherwise the compilation fails on MacOS
 WORKDIR /home/user
 RUN git clone https://github.com/mongodb/mongo-cxx-driver.git \
     --branch releases/stable --depth 1 \
@@ -36,7 +37,7 @@ RUN git clone https://github.com/mongodb/mongo-cxx-driver.git \
     -DCMAKE_BUILD_TYPE=Release          \
     -DCMAKE_INSTALL_PREFIX=/usr/local   \
     && make EP_mnmlstc_core \
-    && make -j8 \
+    && make -j4 \
     && make install
 
 # Create build directory
