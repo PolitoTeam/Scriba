@@ -31,8 +31,6 @@ Signup::Signup(QWidget *parent,Client* client) :
             this, &Signup::on_failedUsernameCheck);
     connect(client, &Client::successUsernameCheck,
             this, &Signup::on_successUsernameCheck);
-
-
 }
 
 Signup::~Signup()
@@ -79,7 +77,6 @@ void Signup::signedUp()
 }
 
 void Signup::signupFailed(const QString &reason){
-    qDebug()<<"signup failed";
     client->disconnectFromHost();
     if (reason.contains("username")){
         ui->labelInfoUser->setText(reason);
@@ -121,7 +118,6 @@ void Signup::on_pushButtonSignup_clicked()
              client->signup(username,password,nullptr);
         else
              client->signup(username,password,profile);
-        //client->sendProfileImage(username,profile);
 	}
 }
 
@@ -130,11 +126,9 @@ void Signup::on_lineEditUsername_editingFinished()
 	QString username = ui->lineEditUsername->text();
 	checkUsername(username);
     if (username.size()>0 && inuse_username==UNCHECKED){
-        qDebug()<<"ahia";
         client->checkExistingOrNotUsername(username);
     }
 }
-
 
 void Signup::on_lineEditPassword_editingFinished()
 {
@@ -332,10 +326,8 @@ QPixmap* Signup::getProfile() {
 	return profile;
 }
 
-
 void Signup::on_failedUsernameCheck(const QString &username)
 {
-
     if (!ui->lineEditUsername->text().compare(username)){
         inuse_username=USED;
             ui->labelInfoUser->setText("Username already in use");
@@ -344,9 +336,7 @@ void Signup::on_failedUsernameCheck(const QString &username)
 
 void Signup::on_successUsernameCheck(const QString &username)
 {
-
     if (!ui->lineEditUsername->text().compare(username)){
         inuse_username=FREE;
         }
 }
-
