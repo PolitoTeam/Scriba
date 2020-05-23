@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QStyleFactory>
 #include "appMainWindow.h"
 #include "client.h"
 
@@ -10,6 +11,9 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	QString addr = ADDR;
 	quint16 port = PORT;
+
+	// Set style for consistency between OSs
+	QApplication::setStyle(QStyleFactory::create("Fusion"));
 
 	QStringList args = QCoreApplication::arguments();
 	if (args.length() != 1 && args.length() != 3) {
