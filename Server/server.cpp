@@ -1145,8 +1145,9 @@ void Server::saveFile() {
 				std::string a = strJson.toUtf8().constData();
 				vector.push_back(a);
 			}
+
 			// Save resulting QJsonArray to db
-			db.saveFile(filename,symbols_json);
+            db.saveFile(filename,QJsonDocument(symbols_json).toBinaryData());
 		}
 		// Reset value to false
 		changed.insert(filename, false);

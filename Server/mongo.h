@@ -26,7 +26,7 @@ public:
 	bool checkConnection();
 
 	bool insertNewFile(const QString filename, const QString username);
-    void saveFile(const QString filename,const QJsonArray& symbols);
+    void saveFile(const QString filename,const QByteArray& symbols);
     bool retrieveFile(const QString filename, QJsonArray& symbols);
 
 	DatabaseError signup(const QString& username, const QString& password);
