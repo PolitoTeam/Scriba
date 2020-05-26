@@ -44,7 +44,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 
 	// Set fixed window size
 	this->setFixedSize(this->size());
-    setWindowFlags(Qt::Drawer);
+
 
 	ui->setupUi(this);
 	client->setParent(this);
