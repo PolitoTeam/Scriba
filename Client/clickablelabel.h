@@ -14,6 +14,7 @@ public:
     ~ClickableLabel();
     void setCustomPixmap(const QPixmap& p);
 
+
 signals:
     void clicked();
 
@@ -25,6 +26,7 @@ protected:
 
 private:
     QPixmap pixmap;
+
 
 };
 

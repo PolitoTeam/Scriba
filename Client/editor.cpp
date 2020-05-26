@@ -251,14 +251,14 @@ void Editor::closeEvent(QCloseEvent *)
 
 void Editor::peerYou()
 {
-	QListWidgetItem* item = new QListWidgetItem();
+    QListWidgetItem* item = new QListWidgetItem();
     QPixmap orig = *client->getProfile();
     // getting size if the original picture is not square
     int size = qMin(orig.width(), orig.height());
     // creating a new transparent pixmap with equal sides
+    // creating circle clip area
     QPixmap rounded = QPixmap(size, size);
     rounded.fill(Qt::transparent);
-    // creating circle clip area
     QPainterPath path;
     path.addEllipse(rounded.rect());
     QPainter painter(&rounded);
@@ -269,14 +269,28 @@ void Editor::peerYou()
     int x = qAbs(orig.width() - size) / 2;
     int y = qAbs(orig.height() - size) / 2;
     painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
-    item->setIcon(QIcon(rounded));
+
+
+    QPixmap background = QPixmap(size+50, size+50);
+    background.fill(Qt::transparent);
+    QPainterPath path1;
+    path1.addEllipse(background.rect());
+    QPainter painter1(&background);
+    painter1.setClipPath(path1);
+    // filling rounded area if needed
+    painter1.fillRect(background.rect(), QColor(124,252,0,127));
+    // getting offsets if the original picture is not square
+    x = qAbs(rounded.width()-size-50) / 2;
+    y = qAbs(rounded.height() - size-50) / 2;
+    painter1.drawPixmap(x,y, rounded.width(), rounded.height(), rounded);
+    item->setIcon(QIcon(background));
 	item->setText(this->client->getNickname() + " (You)");
 	item->setData(Qt::UserRole,this->client->getUsername());
 	//item->setTextAlignment(Qt::AlignHCenter);
-	item->setBackground( QColor(124,252,0,127) );
+    //item->setBackground( QColor(124,252,0,127) );
 	item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
 	item->setWhatsThis(this->client->getUsername());
-	this->ui->listWidget->addItem(item);
+    this->ui->listWidget->addItem(item);
 }
 
 void Editor::copy()
@@ -788,7 +802,21 @@ void Editor::updateText(const QString& text){
     int x = qAbs(orig.width() - size) / 2;
     int y = qAbs(orig.height() - size) / 2;
     painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
-    item->setIcon(QIcon(rounded));
+
+
+    QPixmap background = QPixmap(size+50, size+50);
+    background.fill(Qt::transparent);
+    QPainterPath path1;
+    path1.addEllipse(background.rect());
+    QPainter painter1(&background);
+    painter1.setClipPath(path1);
+    // filling rounded area if needed
+    painter1.fillRect(background.rect(), QColor(124,252,0,127));
+    // getting offsets if the original picture is not square
+    x = qAbs(rounded.width() - size-50) / 2;
+    y = qAbs(rounded.height() - size-50) / 2;
+    painter1.drawPixmap(x,y, rounded.width(), rounded.height(), rounded);
+    item->setIcon(QIcon(background));
 	item->setText(client->getUsername());
 	//qDebug() << "color: " << client->getColor();
     //item->setTextColor(QColor(client->getColor()));
@@ -824,11 +852,25 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
             int y = qAbs(orig.height() - size) / 2;
             painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
 
-            item->setIcon(QIcon(rounded));
+
+            QPixmap background = QPixmap(size+50, size+50);
+            background.fill(Qt::transparent);
+            QPainterPath path1;
+            path1.addEllipse(background.rect());
+            QPainter painter1(&background);
+            painter1.setClipPath(path1);
+            // filling rounded area if needed
+            painter1.fillRect(background.rect(), highlighter->getColor(user));
+            // getting offsets if the original picture is not square
+            x = qAbs(rounded.width() - size-50) / 2;
+            y = qAbs(rounded.height() - size-50) / 2;
+            painter1.drawPixmap(x,y, rounded.width(), rounded.height(), rounded);
+
+            item->setIcon(QIcon(background));
 			item->setText(users.at(i).first.second);
 			item->setData(Qt::UserRole,users.at(i).first.first);
 			//item->setTextAlignment(Qt::AlignHCenter);
-			item->setBackground( highlighter->getColor(user));
+            //item->setBackground( highlighter->getColor(user));
 			item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
 			item->setWhatsThis(users.at(i).first.first);
 			this->ui->listWidget->addItem(item);

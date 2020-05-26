@@ -8,6 +8,7 @@
 #include "client.h"
 #include "CRDT.h"
 #include "highlighter.h"
+#include "clickablelabel.h"
 
 namespace Ui {
 class Editor;

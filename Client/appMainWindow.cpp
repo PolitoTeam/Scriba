@@ -48,6 +48,9 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
                             "border-radius: 5px;"
                             "background-color:  rgba(0, 0, 255,0);"
                         "}"
+                        "QIcon {"
+                        "border-radius:10px;"
+                        "}"
 
 
                         "QLineEdit{ "
