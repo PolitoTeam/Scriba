@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTcpSocket>
 #include <QStackedWidget>
+#include <QLineEdit>
 
 typedef enum {LOGIN, SIGNUP, HOME, MODIFY, EDITOR } Widget;
 
@@ -25,6 +26,7 @@ class AppMainWindow : public QMainWindow
 public:
 	AppMainWindow(QWidget *parent = nullptr,Client* c=nullptr);
 	~AppMainWindow();
+    static void errorLineEdit(QLineEdit* lineEdit,bool f);
 
 private slots:
 	void on_logOut();

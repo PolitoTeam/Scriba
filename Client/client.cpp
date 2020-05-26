@@ -65,7 +65,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 
 	*/
 	m_clientSocket->addCaCertificates(":/resources/certificates/rootCA.crt");
-	m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyPeer);
+    m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
 
     profile=new QPixmap();
     profile->load(":/images/anonymous");

@@ -272,7 +272,8 @@ font-style:italic;</string>
               <property name="styleSheet">
                <string notr="true">color: rgb(255, 255, 255);
 border-color: rgb(33, 190, 43);
-background-color: rgb(24, 139, 208);</string>
+background-color: rgb(24, 139, 208);
+</string>
               </property>
               <property name="text">
                <string>Save password</string>

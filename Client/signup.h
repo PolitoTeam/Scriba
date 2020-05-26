@@ -7,8 +7,8 @@
 #include "appMainWindow.h"
 #include "client.h"
 
-#define IMAGE_WIDTH 170
-#define IMAGE_HEIGHT 170
+#define IMAGE_WIDTH 150
+#define IMAGE_HEIGHT 150
 
 namespace Ui {
 class Signup;
@@ -27,7 +27,7 @@ public:
 								bool& valid);
 
 private slots:
-	void on_pushButtonClear_clicked();
+    //void on_pushButtonClear_clicked();
 	void on_pushButtonSignup_clicked();
 	void on_lineEditUsername_editingFinished();
 	void on_lineEditPassword_editingFinished();
@@ -38,7 +38,7 @@ private slots:
 	void on_pushButtonBackLogin_clicked();
 	void signedUp();
 	void signupFailed(const QString &reason);
-	void on_pushButtonUpload_clicked();
+    void on_profile_image_clicked();
     void on_failedUsernameCheck(const QString& username);
     void on_successUsernameCheck(const QString &username);
 

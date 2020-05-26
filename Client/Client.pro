@@ -27,6 +27,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     CRDT.cpp \
     appMainWindow.cpp \
+    clickablelabel.cpp \
     client.cpp \
     highlighter.cpp \
     login.cpp \
@@ -41,6 +42,7 @@ SOURCES += \
 HEADERS += \
     CRDT.h \
     appMainWindow.h \
+    clickablelabel.h \
     client.h \
     colors.h \
     highlighter.h \

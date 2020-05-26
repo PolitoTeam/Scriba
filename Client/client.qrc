@@ -18,12 +18,14 @@
         <file>images/bold.png</file>
         <file>images/italic.png</file>
         <file>images/underline.png</file>
-        <file>images/anonymous.jpg</file>
         <file>images/share.png</file>
         <file>images/textcenter.png</file>
         <file>images/textleft.png</file>
         <file>images/textright.png</file>
         <file>images/cursor.png</file>
+        <file>images/anonymous.jpg</file>
+        <file>images/provaSfondo.png</file>
+        <file>images/warning.png</file>
     </qresource>
     <qresource prefix="/resources">
         <file>certificates/rootCA.crt</file>

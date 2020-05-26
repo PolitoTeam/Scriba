@@ -19,8 +19,32 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 										  this->size(),
 										  qApp->desktop()->availableGeometry())
 					  );
+
+
+    //"font: CMU Sans Serif;"
+    qApp->setStyleSheet("QLineEdit[error='true']"
+                        "{"
+                            "border:2px solid red;"
+                         "}"
+                        "QPushButton{ "
+                         "height: 28px;"
+                            "border-radius: 5px;"
+                        "}"
+
+                        "QLineEdit{ "
+                        "height: 28px;"
+                        "border-radius: 5px;"
+                        "padding: 0 8px;"
+                        "selection-background-color: darkgray;"
+                        "}"
+                        "QLineEdit:focus { "
+                        "background-color:rgb(30,144,255,20);}"
+                        );
+
+
 	// Set fixed window size
 	this->setFixedSize(this->size());
+    setWindowFlags(Qt::Drawer);
 
 	ui->setupUi(this);
 	client->setParent(this);
@@ -176,4 +200,12 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError)
 
 	login->enableAllButtons();
 	signup->enableAllButtons();
+}
+
+ void AppMainWindow::errorLineEdit(QLineEdit* lineEdit,bool f){
+    lineEdit->setProperty("error",f);
+
+    lineEdit->style()->unpolish( lineEdit);
+    lineEdit->style()->polish(  lineEdit);
+    lineEdit->update();
 }
