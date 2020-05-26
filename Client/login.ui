@@ -16,24 +16,6 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="3" column="1" rowspan="2">
-      <widget class="QPushButton" name="pushButtonNewAccount">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 255);
-border-color: rgb(33, 190, 43);
-background-color: rgb(0, 131, 206);</string>
-       </property>
-       <property name="text">
-        <string>New account</string>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
      <item row="5" column="1" colspan="3">
       <spacer name="verticalSpacer_3">
        <property name="orientation">
@@ -62,7 +44,7 @@ background-color: rgb(0, 131, 206);</string>
         </size>
        </property>
        <property name="title">
-        <string>Login</string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -74,16 +56,15 @@ background-color: rgb(0, 131, 206);</string>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="labelUsername">
-            <property name="text">
-             <string>Email</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLineEdit" name="lineEditUsername">
+            <property name="text">
+             <string/>
+            </property>
             <property name="echoMode">
              <enum>QLineEdit::Normal</enum>
+            </property>
+            <property name="placeholderText">
+             <string>Insert your username</string>
             </property>
            </widget>
           </item>
@@ -92,16 +73,12 @@ background-color: rgb(0, 131, 206);</string>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="labelPassword">
-            <property name="text">
-             <string>Password </string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLineEdit" name="lineEditPassword">
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>
+            </property>
+            <property name="placeholderText">
+             <string>Insert your password</string>
             </property>
            </widget>
           </item>
@@ -118,25 +95,26 @@ font-style:italic;</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonLogin">
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>Login</string>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
-      </widget>
-     </item>
-     <item row="3" column="2" rowspan="2" colspan="2">
-      <widget class="QPushButton" name="pushButtonLogin">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 255, 255);
-border-color: rgb(33, 190, 43);
-background-color: rgb(0, 131, 206);</string>
-       </property>
-       <property name="text">
-        <string>Login</string>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
       </widget>
      </item>
      <item row="2" column="0">
@@ -190,6 +168,35 @@ background-color: rgb(0, 131, 206);</string>
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="t_pushButtonForgot">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>Forgot your password?</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" colspan="2">
+      <widget class="QPushButton" name="t_pushButtonNewAccount">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>New account</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

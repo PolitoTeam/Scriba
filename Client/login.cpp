@@ -30,7 +30,7 @@ Login::~Login()
 void Login::enableAllButtons()
 {
 	ui->pushButtonLogin->setEnabled(true);
-	ui->pushButtonNewAccount->setEnabled(true);
+    ui->t_pushButtonNewAccount->setEnabled(true);
 }
 
 void Login::try_to_log()
@@ -40,14 +40,14 @@ void Login::try_to_log()
 
 	// Disable the connect button to prevent the user from clicking it again
 	ui->pushButtonLogin->setEnabled(false);
-	ui->pushButtonNewAccount->setEnabled(false);
+    ui->t_pushButtonNewAccount->setEnabled(false);
 	client->login(username, password);
 }
 
 void Login::loggedIn()
 {
 	ui->pushButtonLogin->setEnabled(true);
-	ui->pushButtonNewAccount->setEnabled(true);
+    ui->t_pushButtonNewAccount->setEnabled(true);
 	ui->lineEditUsername->clear();
 	ui->lineEditPassword->clear();
 
@@ -57,7 +57,7 @@ void Login::loggedIn()
 void Login::loginFailed(const QString &reason)
 {
 	ui->pushButtonLogin->setEnabled(true);
-	ui->pushButtonNewAccount->setEnabled(true);
+    ui->t_pushButtonNewAccount->setEnabled(true);
 	ui->labelMessage->setText(reason);
 
 	client->disconnectFromHost();
@@ -72,7 +72,7 @@ void Login::clearLineEdit() {
 	ui->lineEditUsername->clear();
 }
 
-void Login::on_pushButtonNewAccount_clicked()
+void Login::on_t_pushButtonNewAccount_clicked()
 {
 	this->clearLabel();
 	this->clearLineEdit();

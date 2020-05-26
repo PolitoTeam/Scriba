@@ -15,14 +15,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QToolTip { color: rgb(51, 51, 51); background-color: transparent; border: 0px; }
-QPushButton:hover#pushButtonBackLogin
-{
-	color: rgb(135,206,250)
-}
-QPushButton#pushButtonBackLogin
-{
-	color: rgb(0, 0, 255);
-}
+
 
 </string>
   </property>
@@ -46,7 +39,7 @@ QPushButton#pushButtonBackLogin
       </spacer>
      </item>
      <item row="2" column="3">
-      <widget class="QPushButton" name="pushButtonBackLogin">
+      <widget class="QPushButton" name="t_pushButtonBackLogin">
        <property name="font">
         <font>
          <weight>75</weight>
@@ -57,7 +50,7 @@ QPushButton#pushButtonBackLogin
         <cursorShape>PointingHandCursor</cursorShape>
        </property>
        <property name="styleSheet">
-        <string notr="true">border: 0px;
+        <string notr="true">
 </string>
        </property>
        <property name="text">
@@ -583,10 +576,7 @@ font-style:italic;</string>
            <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="styleSheet">
-           <string notr="true">color: rgb(255, 255, 255);
-border:0px;
-border-radius: 5px;
-background-color:  rgba(0, 0, 200);</string>
+           <string notr="true"/>
           </property>
           <property name="text">
            <string>Signup</string>

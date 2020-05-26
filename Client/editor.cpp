@@ -8,6 +8,7 @@
 #include <QCryptographicHash>
 #include <QtWidgets>
 #include <QTimer>
+#include <QPainter>
 #include <typeinfo>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
@@ -251,7 +252,24 @@ void Editor::closeEvent(QCloseEvent *)
 void Editor::peerYou()
 {
 	QListWidgetItem* item = new QListWidgetItem();
-    item->setIcon(QIcon(*client->getProfile()));
+    QPixmap orig = *client->getProfile();
+    // getting size if the original picture is not square
+    int size = qMin(orig.width(), orig.height());
+    // creating a new transparent pixmap with equal sides
+    QPixmap rounded = QPixmap(size, size);
+    rounded.fill(Qt::transparent);
+    // creating circle clip area
+    QPainterPath path;
+    path.addEllipse(rounded.rect());
+    QPainter painter(&rounded);
+    painter.setClipPath(path);
+    // filling rounded area if needed
+    painter.fillRect(rounded.rect(), Qt::black);
+    // getting offsets if the original picture is not square
+    int x = qAbs(orig.width() - size) / 2;
+    int y = qAbs(orig.height() - size) / 2;
+    painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
+    item->setIcon(QIcon(rounded));
 	item->setText(this->client->getNickname() + " (You)");
 	item->setData(Qt::UserRole,this->client->getUsername());
 	//item->setTextAlignment(Qt::AlignHCenter);
@@ -753,7 +771,24 @@ void Editor::updateText(const QString& text){
 	//    this->ui->listWidget->addItem(new QListWidgetItem(QIcon(*client->getProfile()),client->getUsername()));
 
 	QListWidgetItem *item = new QListWidgetItem;
-	item->setIcon(*client->getProfile());
+    QPixmap orig = *client->getProfile();
+    // getting size if the original picture is not square
+    int size = qMin(orig.width(), orig.height());
+    // creating a new transparent pixmap with equal sides
+    QPixmap rounded = QPixmap(size, size);
+    rounded.fill(Qt::transparent);
+    // creating circle clip area
+    QPainterPath path;
+    path.addEllipse(rounded.rect());
+    QPainter painter(&rounded);
+    painter.setClipPath(path);
+    // filling rounded area if needed
+    painter.fillRect(rounded.rect(), Qt::black);
+    // getting offsets if the original picture is not square
+    int x = qAbs(orig.width() - size) / 2;
+    int y = qAbs(orig.height() - size) / 2;
+    painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
+    item->setIcon(QIcon(rounded));
 	item->setText(client->getUsername());
 	//qDebug() << "color: " << client->getColor();
     //item->setTextColor(QColor(client->getColor()));
@@ -770,7 +805,26 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
         //qDebug()<<"Try adding: "<<users.at(i).first.first;
 		if (highlighter->addClient(user)){   //prevents duplicates
 			QListWidgetItem* item = new QListWidgetItem();
-			item->setIcon(QIcon(users.at(i).second));
+
+            QPixmap orig = users.at(i).second;
+            // getting size if the original picture is not square
+            int size = qMin(orig.width(), orig.height());
+            // creating a new transparent pixmap with equal sides
+            QPixmap rounded = QPixmap(size, size);
+            rounded.fill(Qt::transparent);
+            // creating circle clip area
+            QPainterPath path;
+            path.addEllipse(rounded.rect());
+            QPainter painter(&rounded);
+            painter.setClipPath(path);
+            // filling rounded area if needed
+            painter.fillRect(rounded.rect(), Qt::black);
+            // getting offsets if the original picture is not square
+            int x = qAbs(orig.width() - size) / 2;
+            int y = qAbs(orig.height() - size) / 2;
+            painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
+
+            item->setIcon(QIcon(rounded));
 			item->setText(users.at(i).first.second);
 			item->setData(Qt::UserRole,users.at(i).first.first);
 			//item->setTextAlignment(Qt::AlignHCenter);

@@ -169,9 +169,7 @@ font-style:italic;</string>
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgb(255, 255, 255);
-border-color: rgb(33, 190, 43);
-background-color: rgb(24, 139, 208);</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Save nickname</string>
@@ -270,10 +268,7 @@ font-style:italic;</string>
             <item>
              <widget class="QPushButton" name="pushButtonSavePassword">
               <property name="styleSheet">
-               <string notr="true">color: rgb(255, 255, 255);
-border-color: rgb(33, 190, 43);
-background-color: rgb(24, 139, 208);
-</string>
+               <string notr="true"/>
               </property>
               <property name="text">
                <string>Save password</string>

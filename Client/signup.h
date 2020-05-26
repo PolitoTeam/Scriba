@@ -35,7 +35,7 @@ private slots:
 	void on_lineEditUsername_textChanged(const QString &arg1);
 	void on_lineEditPassword_textChanged(const QString &arg1);
 	void on_lineEditConfirmPassword_textChanged(const QString &arg1);
-	void on_pushButtonBackLogin_clicked();
+    void on_t_pushButtonBackLogin_clicked();
 	void signedUp();
 	void signupFailed(const QString &reason);
     void on_profile_image_clicked();

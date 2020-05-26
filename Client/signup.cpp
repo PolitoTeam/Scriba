@@ -63,7 +63,7 @@ void Signup::signedUp()
 	// Enable buttons after receiving server reply
 	ui->pushButtonSignup->setEnabled(true);
     //ui->pushButtonClear->setEnabled(true);
-    ui->pushButtonBackLogin->setEnabled(true);
+    ui->t_pushButtonBackLogin->setEnabled(true);
 
 	ui->lineEditUsername->clear();
 	ui->lineEditPassword->clear();
@@ -118,7 +118,7 @@ void Signup::signupFailed(const QString &reason){
     clearLineEdit();
 	ui->pushButtonSignup->setEnabled(true);
     //ui->pushButtonClear->setEnabled(true);
-	ui->pushButtonBackLogin->setEnabled(true);
+    ui->t_pushButtonBackLogin->setEnabled(true);
 }
 
 void Signup::on_pushButtonSignup_clicked()
@@ -135,7 +135,7 @@ void Signup::on_pushButtonSignup_clicked()
 		// Disable buttons before receiving server reply
 		ui->pushButtonSignup->setEnabled(false);
         //ui->pushButtonClear->setEnabled(false);
-		ui->pushButtonBackLogin->setEnabled(false);
+        ui->t_pushButtonBackLogin->setEnabled(false);
         if (photo==false)
              client->signup(username,password,nullptr);
         else
@@ -320,7 +320,7 @@ bool Signup::checkConfirmation(const QString &pass,const QString &conf){
 	return true;
 }
 
-void Signup::on_pushButtonBackLogin_clicked()
+void Signup::on_t_pushButtonBackLogin_clicked()
 {
 	this->clearLabel();
 	this->clearLineEdit();
@@ -351,7 +351,7 @@ void Signup::enableAllButtons()
 {
 	ui->pushButtonSignup->setEnabled(true);
     //ui->pushButtonClear->setEnabled(true);
-	ui->pushButtonBackLogin->setEnabled(true);
+    ui->t_pushButtonBackLogin->setEnabled(true);
 }
 
 void Signup::on_profile_image_clicked()

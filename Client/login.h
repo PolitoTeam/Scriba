@@ -20,7 +20,7 @@ public:
 
 private slots:
 	void try_to_log();
-	void on_pushButtonNewAccount_clicked();
+    void on_t_pushButtonNewAccount_clicked();
 	void loggedIn();
 	void loginFailed(const QString &reason);
 	void on_lineEditUsername_textChanged(const QString &arg);
