@@ -31,7 +31,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
                           "color: rgb(255, 255, 255);"
                           "border:0px;"
                           "border-radius: 5px;"
-                          "background-color:  rgba(0, 0, 255,200);"
+                          "background-color:  rgba(0, 0, 255,180);"
                           "padding-left: 10px;"
                           "padding-right: 10px;"
                         "}"
@@ -65,7 +65,8 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 
 
 	// Set fixed window size
-	this->setFixedSize(this->size());
+    qDebug()<<"Set fixed size "<<this->size();
+    this->setFixedSize(QSize(640,800));
 
 
 	ui->setupUi(this);
@@ -133,6 +134,9 @@ void AppMainWindow::on_changeWidget(int widget) {
 		editor->show();
 	} else {
 		editor->hide();
+        if (widget==HOME){
+            this->home->setProfile();
+        }
 		stackedWidget->setCurrentIndex(widget);
 		this->show();
 	}

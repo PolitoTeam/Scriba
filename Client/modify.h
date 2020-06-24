@@ -24,7 +24,7 @@ signals:
 	void changeWidget(int);
 
 private slots:
-	void on_pushButtonUpload_clicked();
+    void on_profile_image_clicked();
 	void on_lineEditNickname_editingFinished();
 	void on_lineEditNickname_textChanged(const QString &arg1);
 	void on_lineEditNewPass_textChanged(const QString &arg1);
@@ -33,11 +33,11 @@ private slots:
     void on_lineEditConfirmPass_textChanged();
 	void on_pushSaveNickname_clicked();
 	void on_pushButtonSavePassword_clicked();
-	void on_pushButtonResetNickname_clicked();
-	void on_pushButtonResetPhoto_clicked();
+    void on_t_pushButtonResetNickname_clicked();
+    void on_t_pushButtonResetPhoto_clicked();
 	void on_pushButtonSavephoto_clicked();
-	void on_pushButtonFinish_clicked();
-	void on_pushButtonCancel_clicked();
+    void on_t_pushButtonFinish_clicked();
+    void on_t_pushButtonCancel_clicked();
     void on_lineEditOldPass_editingFinished();
     void on_wrongOldPasswordEntered(const QString &reason);
 	void on_correctOldPasswordEntered();

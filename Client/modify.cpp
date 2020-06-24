@@ -30,7 +30,7 @@ Modify::~Modify()
 	delete ui;
 }
 
-void Modify::on_pushButtonUpload_clicked()
+void Modify::on_profile_image_clicked()
 {
 	QString fileName = QFileDialog::getOpenFileName(
 				this,
@@ -40,18 +40,13 @@ void Modify::on_pushButtonUpload_clicked()
 
 	if (!fileName.isEmpty() && !fileName.isNull()) {
 		profile_photo_temp->load(fileName);
-		ui->profile_image->setPixmap(profile_photo_temp->scaled(
-											IMAGE_WIDTH, IMAGE_HEIGHT,
-											Qt::KeepAspectRatioByExpanding)
-									 );
+        ui->profile_image->setCustomPixmap(*profile_photo_temp);
 	}
 }
 
 void Modify::upload() {
 	QString nickname = client->getNickname();
-	ui->profile_image->setPixmap(client->getProfile()->scaled(
-									 IMAGE_WIDTH, IMAGE_HEIGHT,
-									 Qt::KeepAspectRatioByExpanding)
+    ui->profile_image->setCustomPixmap(*client->getProfile()
 								 );
 	ui->lineEditNickname->setText(nickname);
 	this->clearLabels();
@@ -108,18 +103,16 @@ void Modify::on_pushSaveNickname_clicked()
 }
 
 
-void Modify::on_pushButtonResetNickname_clicked()
+void Modify::on_t_pushButtonResetNickname_clicked()
 {
 	QString nickname=client->getNickname();
 	ui->lineEditNickname->setText(nickname);
 }
 
-void Modify::on_pushButtonResetPhoto_clicked()
+void Modify::on_t_pushButtonResetPhoto_clicked()
 {
 	profile_photo_temp->load(":/images/anonymous");
-	ui->profile_image->setPixmap(profile_photo_temp->scaled(
-									 IMAGE_WIDTH, IMAGE_HEIGHT,
-									 Qt::KeepAspectRatioByExpanding)
+    ui->profile_image->setCustomPixmap(*profile_photo_temp
 								 );
 }
 
@@ -136,13 +129,13 @@ void Modify::on_pushButtonSavephoto_clicked()
 	}
 }
 
-void Modify::on_pushButtonFinish_clicked()
+void Modify::on_t_pushButtonFinish_clicked()
 {
-	on_pushButtonCancel_clicked();
+    on_t_pushButtonCancel_clicked();
 	changeWidget(HOME);
 }
 
-void Modify::on_pushButtonCancel_clicked()
+void Modify::on_t_pushButtonCancel_clicked()
 {
 	ui->lineEditOldPass->clear();
 	ui->lineEditNewPass->clear();

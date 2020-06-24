@@ -37,7 +37,7 @@ void ClickableLabel::paintEvent(QPaintEvent *event)
 
 void ClickableLabel::enterEvent(QEvent *ev)
     {
-        qDebug()<<"here";
+
         setToolTip("Upload...");
     }
 

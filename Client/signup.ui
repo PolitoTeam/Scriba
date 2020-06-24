@@ -22,8 +22,29 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="0">
-      <spacer name="horizontalSpacer">
+     <item row="4" column="3">
+      <widget class="QPushButton" name="t_pushButtonBackLogin">
+       <property name="font">
+        <font>
+         <family>CMU Sans Serif</family>
+         <weight>50</weight>
+         <bold>false</bold>
+         <kerning>true</kerning>
+        </font>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Login</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="5">
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -32,29 +53,41 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>150</width>
+         <width>100</width>
          <height>20</height>
         </size>
        </property>
       </spacer>
      </item>
-     <item row="2" column="3">
-      <widget class="QPushButton" name="t_pushButtonBackLogin">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
+     <item row="6" column="2" colspan="3">
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
        </property>
-       <property name="styleSheet">
-        <string notr="true">
-</string>
+      </spacer>
+     </item>
+     <item row="1" column="2" colspan="3" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+      <widget class="QLabel" name="label">
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>30</height>
+        </size>
        </property>
        <property name="text">
-        <string>Login</string>
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap resource="client.qrc">:/images/google_logo.jpg</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -71,8 +104,8 @@
        </property>
       </spacer>
      </item>
-     <item row="1" column="5">
-      <spacer name="horizontalSpacer_2">
+     <item row="3" column="0">
+      <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -81,13 +114,13 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>150</width>
+         <width>100</width>
          <height>20</height>
         </size>
        </property>
       </spacer>
      </item>
-     <item row="1" column="2" colspan="3">
+     <item row="3" column="2" colspan="3">
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -592,18 +625,21 @@ font-style:italic;</string>
        </layout>
       </widget>
      </item>
-     <item row="4" column="2" colspan="3">
-      <spacer name="verticalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     <item row="2" column="2" colspan="3">
+      <widget class="QLabel" name="label_2">
+       <property name="font">
+        <font>
+         <family>CMU Sans Serif</family>
+         <pointsize>30</pointsize>
+        </font>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
+       <property name="text">
+        <string>Create your Lopast account</string>
        </property>
-      </spacer>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

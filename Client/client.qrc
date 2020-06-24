@@ -26,6 +26,7 @@
         <file>images/anonymous.jpg</file>
         <file>images/provaSfondo.png</file>
         <file>images/warning.png</file>
+        <file>images/google_logo.jpg</file>
     </qresource>
     <qresource prefix="/resources">
         <file>certificates/rootCA.crt</file>

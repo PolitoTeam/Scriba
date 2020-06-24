@@ -16,7 +16,66 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
+     <item row="1" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="menuLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="rightMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="nickNameLabel">
+           <property name="font">
+            <font>
+             <pointsize>20</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="usernameLabel">
+           <property name="styleSheet">
+            <string notr="true">color: rgb(102, 101, 102);</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="ClickableLabel" name="profileImage">
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0">
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -37,7 +96,7 @@
         </size>
        </property>
        <property name="title">
-        <string>Menu</string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -58,6 +117,10 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonOpenFile">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);</string>
+          </property>
           <property name="text">
            <string>Your Files</string>
           </property>
@@ -71,6 +134,10 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonOpenShared">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);</string>
+          </property>
           <property name="text">
            <string>Shared With You</string>
           </property>
@@ -84,6 +151,10 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonSharedLink">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);</string>
+          </property>
           <property name="text">
            <string>Shared Link</string>
           </property>
@@ -97,6 +168,10 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonModify">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 0, 0);</string>
+          </property>
           <property name="text">
            <string>Update Profile</string>
           </property>
@@ -113,6 +188,11 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonLogOut">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(252, 1, 7,180);
+
+</string>
+          </property>
           <property name="text">
            <string>Log Out</string>
           </property>
@@ -128,6 +208,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>clickablelabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

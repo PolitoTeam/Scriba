@@ -158,10 +158,17 @@ DatabaseError Mongo::signup(const QString &username, const QString &password) {
 			return CRYPTO_ERROR;
 		}
 
+        QString nickname=username;
+
+        QRegExp rx("([^@]+)");
+        if (rx.indexIn(username) != -1) {
+            nickname = rx.cap(1);
+        }
+
 		auto builder = bsoncxx::builder::stream::document{};
 		bsoncxx::document::value doc = builder
 				<< "username" << username.toStdString()
-				<< "nickname" << username.toStdString()
+                << "nickname" << nickname.toStdString()
 				<< "password" << hashed_password
 				<< finalize;
 		collection.insert_one(session, doc.view());

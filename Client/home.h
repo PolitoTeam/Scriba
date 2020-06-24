@@ -15,6 +15,7 @@ class Home : public QWidget
 
 public:
 	Home(QWidget *parent = nullptr,Client* client=nullptr);
+    void setProfile();
 	~Home();
 
 private slots:

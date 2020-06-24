@@ -123,3 +123,9 @@ void Home::showActiveFiles(bool shared){
 		emit fileChosen(choice);
 	}
 }
+
+void Home::setProfile(){
+    this->ui->usernameLabel->setText(this->client->getUsername());
+    this->ui->nickNameLabel->setText(this->client->getNickname());
+    this->ui->profileImage->setCustomPixmap(*this->client->getProfile());
+}
