@@ -4,6 +4,7 @@
 #include "modify.h"
 #include "signup.h"
 #include "ui_modify.h"
+#include "buttonhoverwatcher.h"
 
 Modify::Modify(QWidget *parent,Client* client) :
 	QWidget(parent),
@@ -13,6 +14,18 @@ Modify::Modify(QWidget *parent,Client* client) :
 	ui->setupUi(this);
 
 	ui->lineEditConfirmPass->setDisabled(true);
+    ui->lineEditNewPass->setDisabled(true);
+    ui->icon_error_pass->setVisible(false);
+    ui->icon_old_pass->setVisible(false);
+    ui->icon_new_pass->setVisible(false);
+    AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+    AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+    AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,false);
+
+
+    ButtonHoverWatcher * watcher = new ButtonHoverWatcher(":/images/back_button.png",":/images/back_button_hover.png",this);
+    ui->t_pushButtonFinish->installEventFilter(watcher);
+
 	profile_photo_temp = new QPixmap();
 
 	connect(client, &Client::wrongOldPassword,
@@ -135,14 +148,22 @@ void Modify::on_t_pushButtonFinish_clicked()
 	changeWidget(HOME);
 }
 
+
 void Modify::on_t_pushButtonCancel_clicked()
 {
 	ui->lineEditOldPass->clear();
 	ui->lineEditNewPass->clear();
 	ui->lineEditConfirmPass->clear();
 	ui->labelInfoPass->clear();
-    ui->labelInfoOldPassword->clear();
+    ui->icon_error_pass->setVisible(false);
+    ui->icon_old_pass->setVisible(false);
+    ui->icon_new_pass->setVisible(false);
+    AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+    AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+    AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,false);
+    //ui->labelInfoOldPassword->clear();
 }
+
 
 // PASSWORD CHECKING
 
@@ -152,7 +173,8 @@ void Modify::checkPassword(const QString& password) {
         bool success = Signup::isValidPassword(password, msg,
                                                valid_new_password);
         if (!success) {
-            ui->labelInfoPass->setText(msg);
+           addPasswordError(msg);
+
         }
 
     }
@@ -162,7 +184,7 @@ bool Modify::checkConfirmation(const QString &pass,const QString &conf){
     if (conf.size() > 0 && valid_new_password == true) {
         int res = QString::compare(pass, conf, Qt::CaseSensitive);
         if (res != 0){
-            ui->labelInfoPass->setText("Passwords don't match");
+            addPasswordError("Passwords don't match");
             return false;
         }
     }
@@ -173,13 +195,14 @@ bool Modify::checkConfirmation(const QString &pass,const QString &conf){
 void Modify::on_lineEditNewPass_textChanged(const QString &arg1)
 {
     QString conf=ui->lineEditConfirmPass->text();
-    ui->labelInfoPass->setText("");
+    clearNewPasswordError();
     if (conf.size()==0){
         if (arg1.size()>0) {
             ui->lineEditConfirmPass->setDisabled(false);
 
         } else {
             ui->lineEditConfirmPass->setDisabled(true);
+            clearConfirmPasswordError();
             ui->lineEditConfirmPass->clear();
         }
     }else{
@@ -196,14 +219,14 @@ void Modify::on_lineEditNewPass_editingFinished()
         if (ui->lineEditConfirmPass->text().size()>0)
             checkConfirmation(password,ui->lineEditConfirmPass->text());
         else
-             ui->labelInfoPass->clear();
+            clearNewPasswordError();
+
     }
 }
 
 void Modify::on_lineEditConfirmPass_textChanged()
 {
-    if(ui->labelInfoPass->text().contains("match"))
-        ui->labelInfoPass->clear();
+    clearConfirmPasswordError();
     QString password1 = ui->lineEditNewPass->text();
     QString password2 = ui->lineEditConfirmPass->text();
 
@@ -224,6 +247,7 @@ void Modify::on_lineEditConfirmPass_editingFinished()
 
 void Modify::on_pushButtonSavePassword_clicked()
 {
+
     QString oldpass = ui->lineEditOldPass->text();
 
     QString newpass = ui->lineEditNewPass->text();
@@ -232,8 +256,10 @@ void Modify::on_pushButtonSavePassword_clicked()
     if (correct_old_password==UNCHECKED)
         client->checkOldPassword(oldpass);
 
+    qDebug()<<"correct old password" <<correct_old_password;
+    qDebug()<<"valid new password" <<valid_new_password;
     // not send the request only if it's sure that the current onld password is wrong; send when is unchekced(pending request with yet no response, check only on server, or when is correct;
-    if (valid_new_password && correct_old_password
+    if (valid_new_password && correct_old_password==CORRECT
             && checkConfirmation(newpass,confirm)){
         QMessageBox msgbox;
         msgbox.setText("Are you sure?");
@@ -252,41 +278,153 @@ void Modify::on_lineEditOldPass_editingFinished()
 	client->checkOldPassword(old_password);
 }
 
-void Modify::on_lineEditOldPass_textChanged()
+void Modify::on_lineEditOldPass_textChanged(const QString &arg1)
 {
-    correct_old_password=UNCHECKED;
+        correct_old_password=UNCHECKED;
+
+        clearOldPasswordError();
+
+        if (arg1.size()>0) {
+              ui->lineEditNewPass->setDisabled(false);
+
+        } else {
+                ui->lineEditNewPass->setDisabled(true);
+                ui->lineEditConfirmPass->setDisabled(true);
+               clearNewPasswordError();
+                ui->lineEditNewPass->clear();
+                ui->lineEditConfirmPass->clear();
+        }
+
 }
 
 void Modify::on_failedUpdatePassword(const QString& reason)
 {
-    if (reason.contains("password") && !reason.contains("new"))
-        ui->labelInfoOldPassword->setText(reason);
-    else {
-        if (reason.contains("Wrong password"))
-             correct_old_password=WRONG;
-        ui->labelInfoPass->setText(reason);
+    if (reason.contains("password") && !reason.contains("new")){
+
+        ui->icon_error_pass->setVisible(true);
+        ui->icon_old_pass->setVisible(true);
+        AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+
     }
+    else {
+        if (reason.contains("Wrong password")){
+             correct_old_password=WRONG;
+             ui->icon_old_pass->setVisible(true);
+
+             AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+        }
+        else{
+
+            ui->icon_new_pass->setVisible(true);
+            AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+        }
+
+
+    }
+    addPasswordError(reason);
 }
 
 void Modify::on_successUpdatePassword()
 {
     correct_old_password=CORRECT;
     ui->labelInfoPass->setText("Password correctly updated");
+    ui->icon_error_pass->setVisible(false);
+    ui->icon_old_pass->setVisible(false);
+    ui->icon_new_pass->setVisible(false);
+    AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+    AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+    AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,false);
 }
+
 
 void Modify::on_wrongOldPasswordEntered(const QString &reason)
 {
     correct_old_password=WRONG;
 
 	// Print message only if modify window is visible
-	if (ui->groupBox->isVisible()) {
-        ui->labelInfoOldPassword->setText(reason);
-	}
+    if (ui->groupBox->isVisible())
+       addPasswordError(reason);
+
 }
 
 void Modify::on_correctOldPasswordEntered()
 {
+    qDebug()<<"on correct old password";
     correct_old_password=CORRECT;
-    ui->labelInfoOldPassword->clear();
+   clearOldPasswordError();
 
+}
+
+void Modify::addPasswordError(QString error){
+
+
+    ui->icon_error_pass->setVisible(true);
+
+
+    if (error.contains("Min") || error.contains("at least") || error.contains("Empty")){
+        ui->icon_new_pass->setVisible(true);
+        AppMainWindow::errorLineEdit(ui->lineEditNewPass,true);
+    }
+
+    if (error.contains("match") ){
+        ui->icon_new_pass->setVisible(true);
+        AppMainWindow::errorLineEdit(ui->lineEditNewPass,true);
+        AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,true);
+    }
+
+    if (error.contains("Wrong")){
+        ui->icon_old_pass->setVisible(true);
+        AppMainWindow::errorLineEdit(ui->lineEditOldPass,true);
+    }
+
+    //append if error not already signaled
+    if (!ui->labelInfoPass->text().contains(error))
+            if (ui->labelInfoPass->text().isEmpty())
+                ui->labelInfoPass->setText(error);
+            else
+                ui->labelInfoPass->setText(ui->labelInfoPass->text()+"\n"+error);
+
+
+}
+
+void Modify::clearOldPasswordError(){
+    ui->icon_old_pass->setVisible(false);
+    AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+    if (ui->labelInfoPass->text().contains(QRegExp("\n?Wrong password\n?"))){
+         ui->labelInfoPass->setText(ui->labelInfoPass->text().replace(QRegExp("\n?Wrong password\n?"),""));
+
+   }
+
+    if (ui->labelInfoPass->text().isEmpty())
+        ui->icon_error_pass->setVisible(false);
+}
+
+void Modify::clearNewPasswordError(){
+
+    if (!ui->labelInfoPass->text().contains("match")){
+        ui->icon_new_pass->setVisible(false);
+        AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+    }
+    if (ui->labelInfoPass->text().contains(QRegExp("\n?((Empty password)|(Min. 8 characters, Max 12 characters)|(Use at least 1 upper case letter)|(Use at least 1 special character)|(Use at least 1 digit)|(Characters allowed: A-Z, a-z, 0-9, @ \. _ \-))\n?"))){
+         ui->labelInfoPass->setText(ui->labelInfoPass->text().replace(QRegExp("\n?((Empty password)|(Min. 8 characters, Max 12 characters)|(Use at least 1 upper case letter)|(Use at least 1 special character)|(Use at least 1 digit)|(Characters allowed: A-Z, a-z, 0-9, @ \. _ \-))\n?"),""));
+    }
+
+    if (ui->labelInfoPass->text().isEmpty())
+        ui->icon_error_pass->setVisible(false);
+}
+
+void Modify::clearConfirmPasswordError(){
+
+    if (!ui->labelInfoPass->text().contains("Min")&& !ui->labelInfoPass->text().contains("at least")){
+            ui->icon_new_pass->setVisible(false);
+            AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+    }
+    AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,false);
+
+    if (ui->labelInfoPass->text().contains(QRegExp("\n?Passwords don't match\n?"))){
+         ui->labelInfoPass->setText(ui->labelInfoPass->text().replace(QRegExp("\n?Passwords don't match\n?"),""));
+    }
+
+    if (ui->labelInfoPass->text().isEmpty())
+        ui->icon_error_pass->setVisible(false);
 }

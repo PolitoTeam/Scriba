@@ -16,7 +16,7 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="3" column="1" colspan="2">
+     <item row="3" column="2" colspan="3">
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -58,27 +58,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QPushButton" name="t_pushButtonResetPhoto">
-              <property name="text">
-               <string>Reset</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButtonSavephoto">
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
-              <property name="text">
-               <string>Confirm</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
          </layout>
         </item>
         <item>
@@ -91,6 +70,12 @@
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
               <widget class="QLineEdit" name="lineEditNickname">
+               <property name="maximumSize">
+                <size>
+                 <width>246</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
@@ -109,27 +94,14 @@
                  <family>Ubuntu</family>
                 </font>
                </property>
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
                <property name="text">
                 <string>Save</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="t_pushButtonResetNickname">
-               <property name="styleSheet">
-                <string notr="true">background-color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="text">
-                <string>Reset</string>
-               </property>
-               <property name="autoDefault">
-                <bool>true</bool>
-               </property>
-               <property name="default">
-                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -158,12 +130,84 @@ font-style:italic;</string>
            <item>
             <layout class="QHBoxLayout" name="passwords">
              <item>
-              <layout class="QVBoxLayout" name="newpassword"/>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="oldpassword">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="1" column="1" alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="icon_old_pass">
+                 <property name="maximumSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="client.qrc">:/images/warning.png</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLineEdit" name="lineEditNewPass">
+                 <property name="maximumSize">
+                  <size>
+                   <width>246</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="echoMode">
+                  <enum>QLineEdit::Password</enum>
+                 </property>
+                 <property name="placeholderText">
+                  <string>Insert your new password</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="0" colspan="2">
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <item alignment="Qt::AlignVCenter">
+                  <widget class="QLabel" name="icon_error_pass">
+                   <property name="maximumSize">
+                    <size>
+                     <width>15</width>
+                     <height>15</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="pixmap">
+                    <pixmap resource="client.qrc">:/images/warning.png</pixmap>
+                   </property>
+                   <property name="scaledContents">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item alignment="Qt::AlignVCenter">
+                  <widget class="QLabel" name="labelInfoPass">
+                   <property name="styleSheet">
+                    <string notr="true">color:red;
+font-style:italic;</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item row="1" column="0">
                 <widget class="QLineEdit" name="lineEditOldPass">
+                 <property name="maximumSize">
+                  <size>
+                   <width>246</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
@@ -178,29 +222,33 @@ font-style:italic;</string>
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QLabel" name="labelInfoPass">
-                 <property name="styleSheet">
-                  <string notr="true">color:red;
-font-style:italic;</string>
+               <item row="2" column="1" alignment="Qt::AlignHCenter">
+                <widget class="QLabel" name="icon_new_pass">
+                 <property name="maximumSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
                  </property>
                  <property name="text">
                   <string/>
                  </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="lineEditNewPass">
-                 <property name="echoMode">
-                  <enum>QLineEdit::Password</enum>
+                 <property name="pixmap">
+                  <pixmap resource="client.qrc">:/images/warning.png</pixmap>
                  </property>
-                 <property name="placeholderText">
-                  <string>Insert your new password</string>
+                 <property name="scaledContents">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item>
+               <item row="3" column="0">
                 <widget class="QLineEdit" name="lineEditConfirmPass">
+                 <property name="maximumSize">
+                  <size>
+                   <width>246</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
                  <property name="echoMode">
                   <enum>QLineEdit::Password</enum>
                  </property>
@@ -209,31 +257,16 @@ font-style:italic;</string>
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QLabel" name="labelInfoOldPassword">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_2">
-               <item>
+               <item row="3" column="1">
                 <widget class="QPushButton" name="pushButtonSavePassword">
+                 <property name="cursor">
+                  <cursorShape>PointingHandCursor</cursorShape>
+                 </property>
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
                  <property name="text">
                   <string>Save</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="t_pushButtonCancel">
-                 <property name="text">
-                  <string>Reset</string>
                  </property>
                 </widget>
                </item>
@@ -260,7 +293,7 @@ font-style:italic;</string>
        </property>
       </spacer>
      </item>
-     <item row="0" column="1" colspan="2">
+     <item row="0" column="2" colspan="3">
       <spacer name="verticalSpacer_4">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -273,7 +306,7 @@ font-style:italic;</string>
        </property>
       </spacer>
      </item>
-     <item row="2" column="1" colspan="2">
+     <item row="2" column="2" colspan="3">
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
@@ -289,7 +322,7 @@ font-style:italic;</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="3">
+     <item row="3" column="5">
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -302,7 +335,20 @@ font-style:italic;</string>
        </property>
       </spacer>
      </item>
-     <item row="5" column="1" colspan="2">
+     <item row="4" column="4">
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="5" column="2" colspan="3">
       <spacer name="verticalSpacer_3">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -315,7 +361,7 @@ font-style:italic;</string>
        </property>
       </spacer>
      </item>
-     <item row="1" column="1" colspan="2" alignment="Qt::AlignHCenter">
+     <item row="1" column="2" colspan="3" alignment="Qt::AlignHCenter">
       <widget class="QLabel" name="label">
        <property name="maximumSize">
         <size>
@@ -334,25 +380,19 @@ font-style:italic;</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QPushButton" name="t_pushButtonFinish">
-       <property name="text">
-        <string>Finish</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2">
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+     <item row="4" column="3">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="t_pushButtonFinish">
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
+         <property name="text">
+          <string>Back</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

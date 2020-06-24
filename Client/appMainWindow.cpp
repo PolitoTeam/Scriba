@@ -34,6 +34,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
                           "background-color:  rgba(0, 0, 255,180);"
                           "padding-left: 10px;"
                           "padding-right: 10px;"
+
                         "}"
 
                         "QPushButton[objectName^='t_push']:hover"
@@ -48,6 +49,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
                             "border-radius: 5px;"
                             "background-color:  rgba(0, 0, 255,0);"
                         "}"
+
                         "QIcon {"
                         "border-radius:10px;"
                         "}"

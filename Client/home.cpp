@@ -5,6 +5,7 @@
 #include "ui_home.h"
 #include "client.h"
 #include "CRDT.h"
+#include "buttonhoverwatcher.h"
 
 Home::Home(QWidget *parent,Client* client) :
 	QWidget(parent),
@@ -20,6 +21,8 @@ Home::Home(QWidget *parent,Client* client) :
 	connect(client, &Client::wrongListFiles, this, &Home::on_openFilesError);
 	connect(client, &Client::wrongSharedLink, this, &Home::on_openFilesError);
 	connect(this, &Home::fileChosen,client,&Client::openFile);
+    ButtonHoverWatcher * watcher = new ButtonHoverWatcher("",":/images/exit.png",this);
+    ui->pushButtonLogOut->installEventFilter(watcher);
 }
 
 Home::~Home()

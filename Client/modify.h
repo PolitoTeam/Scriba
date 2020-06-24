@@ -28,6 +28,7 @@ private slots:
 	void on_lineEditNickname_editingFinished();
 	void on_lineEditNickname_textChanged(const QString &arg1);
 	void on_lineEditNewPass_textChanged(const QString &arg1);
+
 	void on_lineEditNewPass_editingFinished();
 	void on_lineEditConfirmPass_editingFinished();
     void on_lineEditConfirmPass_textChanged();
@@ -43,7 +44,8 @@ private slots:
 	void on_correctOldPasswordEntered();
     void on_failedUpdatePassword(const QString &reason);
     void on_successUpdatePassword();
-    void on_lineEditOldPass_textChanged();
+    void on_lineEditOldPass_textChanged(const QString &arg1);
+
 
 public slots:
 	void upload();
@@ -59,6 +61,10 @@ private:
 	void checkPassword(const QString &password);
 	bool checkConfirmation(const QString &pass,const QString &conf);
 	bool checkNickname(const QString &nickname);
+    void addPasswordError(QString error);
+    void clearOldPasswordError();
+    void clearNewPasswordError();
+    void clearConfirmPasswordError();
 };
 
 #endif // MODIFY_PROFILE_H
