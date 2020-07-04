@@ -29,6 +29,9 @@ public:
     void saveFile(const QString filename,const QByteArray& symbols);
     bool retrieveFile(const QString filename, QJsonArray& symbols);
 
+	void upsertImage(QString email, const QByteArray& image);
+	QByteArray retrieveImage(QString email, bool& found);
+
 	DatabaseError signup(const QString& username, const QString& password);
     DatabaseError login(const QString& username, const QString password,
 						QString& nickname);
@@ -53,6 +56,7 @@ public:
 
 private:
 	QString generateRandomString() const;
+	bsoncxx::types::b_binary fromQByteArrayToBSON(const QByteArray& image);
 
 	// The mongocxx::instance constructor initialize the driver:
 	// it must be created before using the driver and

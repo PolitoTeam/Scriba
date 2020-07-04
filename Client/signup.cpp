@@ -1,7 +1,6 @@
 #include <QRegularExpression>
 #include <QDebug>
 #include <QFileDialog>
-#include <QBitMap>
 #include <QPainter>
 #include <QTimer>
 #include <QStyle>

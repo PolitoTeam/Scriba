@@ -110,6 +110,65 @@ bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
 	}
 }
 
+bsoncxx::types::b_binary Mongo::fromQByteArrayToBSON(const QByteArray& image) {
+	// From QByteArray to const char *
+	const char *raw = image.data();
+
+	// From const char * to BSON
+	bsoncxx::types::b_binary bson_img;
+	bson_img.bytes = (unsigned char*) raw;
+	bson_img.size = image.size();
+
+	return bson_img;
+}
+
+void Mongo::upsertImage(QString email, const QByteArray& image) {
+	auto bson_img = fromQByteArrayToBSON(image);
+
+	mongocxx::collection collection = db["images"];
+	bsoncxx::builder::stream::document document{};
+
+	mongocxx::options::update options;
+	options.upsert(true);
+
+	collection.update_one(
+				document << "email" << email.replace(".", "!").toStdString()
+						 << finalize,
+				document << "$set" << open_document << "image"
+						 << bson_img << close_document
+						 << finalize,
+				options
+	);
+}
+
+QByteArray Mongo::retrieveImage(QString email, bool& found) {
+	found = true;
+	mongocxx::collection collection = db["images"];
+	bsoncxx::builder::stream::document document{};
+
+	// Set query projection
+	mongocxx::options::find opts{};
+	opts.projection(document << "image" << 1 << finalize);
+
+	auto cursor = collection.find_one(
+				document << "email" << email.replace(".", "!").toStdString()
+						 << finalize,
+				opts
+	);
+
+	// Image not found in the db
+	if (!cursor) {
+		found = false;
+		return nullptr;
+	}
+
+	// Return image found in the db
+	bsoncxx::document::value value = (*cursor);
+	bsoncxx::document::view view = value.view();
+	const unsigned char *data = view["image"].get_binary().bytes;
+	return QByteArray((char*) data, view["image"].get_binary().size);
+}
+
 bool Mongo::checkConnection() {
 	// Check connection: if exception raised, no connection can be established
 	// Also create the collection 'users' (otherwise exception raised when
