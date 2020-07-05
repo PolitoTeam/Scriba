@@ -879,7 +879,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 	sender->setFilename(filename + "," + username);
 
 	// Create empty file for the specified user
-	if (!db.insertNewFile(filename, username)) {
+	if (!db.insertNewFile(filename + "," + username)) {
 	   throw std::runtime_error("File shouldn't already exist.");
 	}
 
@@ -1001,7 +1001,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
     if (symbols_list.contains(filename))
         l=symbols_list.value(filename)->values();
     else
-        success = db.retrieveFile(filename,l);
+		success = db.retrieveFile(filename, l);
 
 
     int tot_symbols=l.size();

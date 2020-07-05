@@ -25,9 +25,10 @@ public:
 	void connect();
 	bool checkConnection();
 
-	bool insertNewFile(const QString filename, const QString username);
-    void saveFile(const QString filename,const QByteArray& symbols);
-    bool retrieveFile(const QString filename, QList<QJsonObject>& symbols);
+	bool insertNewFile(const QString& filename);
+	bool saveFile(const QString filename, QByteArray symbols);
+	bool retrieveFile(const QString filename, QList<QJsonObject>& symbols);
+	void cleanBucket();
 
 	void upsertImage(QString email, const QByteArray& image);
 	QByteArray retrieveImage(QString email, bool& found);
@@ -55,9 +56,6 @@ public:
     DatabaseError checkAlreadyExistingUsername(const QString &username);
 
 private:
-	QString generateRandomString() const;
-	bsoncxx::types::b_binary fromQByteArrayToBSON(const QByteArray& image);
-
 	// The mongocxx::instance constructor initialize the driver:
 	// it must be created before using the driver and
 	// must remain alive for as long as the driver is in use.
@@ -70,6 +68,12 @@ private:
 #endif
 
     mongocxx::database db;
+	mongocxx::gridfs::bucket bucket = conn["gridfs"].gridfs_bucket();
+	mongocxx::database bucket_db = conn["gridfs"];
+
+	QString generateRandomString() const;
+	bsoncxx::types::b_binary fromQByteArrayToBSON(const QByteArray& image);
+	bsoncxx::types::value getObjectID(const QString& filename, bool& found);
 };
 
 #endif // MONGO_H

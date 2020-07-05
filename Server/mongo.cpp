@@ -22,67 +22,6 @@ void Mongo::connect() {
 	db = conn["editor"];
 }
 
-bool Mongo::insertNewFile(const QString filename, const QString username) {
-	try {
-		mongocxx::collection collection = db["files"];
-		bsoncxx::builder::stream::document document{};
-		auto builder = bsoncxx::builder::stream::document{};
-		bsoncxx::document::value doc = builder
-				<< "filename" << filename.toStdString() + ","
-								 + username.toStdString()
-				<< bsoncxx::builder::stream::finalize;
-		collection.insert_one(doc.view());
-		return true;
-	} catch (std::exception& e) {
-		qDebug() << e.what();
-		return false;
-	}
-}
-
-void Mongo::saveFile(const QString filename, const QByteArray& symbols) {
-	mongocxx::collection collection = db["files"];
-	auto bson_symbols = fromQByteArrayToBSON(symbols);
-
-	collection.update_one(document{} << "filename" << filename.toStdString()
-									 << finalize,
-						  document{} << "$set" << open_document
-											<< "content" << bson_symbols
-									 << close_document << finalize);
-}
-
-bool Mongo::retrieveFile(const QString filename, QList<QJsonObject>& symbols) {
-	mongocxx::collection collection = db["files"];
-
-	mongocxx::options::find opts{};
-	opts.projection(document{} << "content" << 1 << finalize);
-	auto maybe_result = collection.find_one(
-				document{} << "filename" << filename.toStdString()
-						   << finalize, opts);
-
-	if (!maybe_result)
-		return false;
-
-	// Return symbols found in the db as a QByteArray
-	bsoncxx::document::value value = (*maybe_result);
-	bsoncxx::document::view view = value.view();
-	const unsigned char *data = view["content"].get_binary().bytes;
-	QByteArray barray = QByteArray((char*) data,
-								   view["content"].get_binary().size);
-
-	// Convert from QByteArray to QVector
-	// (to reverse the saving process, in which QVector is stored as binary)
-	QVector<QByteArray> qvector;
-	QDataStream in(barray);
-	in >> qvector;
-
-	// Store QVector in server memory as QJsonArray
-	for (auto i : qvector) {
-		QJsonObject obj = QJsonDocument::fromJson(i).object();
-		symbols.append(obj);
-	}
-	return true;
-}
-
 bsoncxx::types::b_binary Mongo::fromQByteArrayToBSON(const QByteArray& image) {
 	// From QByteArray to const char *
 	const char *raw = image.data();
@@ -667,4 +606,158 @@ DatabaseError Mongo::checkAlreadyExistingUsername(const QString &username) {
         session.abort_transaction();
         return QUERY_ERROR;
     }
+}
+
+//bool Mongo::insertNewFile(const QString filename, const QString username) {
+//	try {
+//		mongocxx::collection collection = db["files"];
+//		bsoncxx::builder::stream::document document{};
+//		auto builder = bsoncxx::builder::stream::document{};
+//		bsoncxx::document::value doc = builder
+//				<< "filename" << filename.toStdString() + ","
+//								 + username.toStdString()
+//				<< bsoncxx::builder::stream::finalize;
+//		collection.insert_one(doc.view());
+//		return true;
+//	} catch (std::exception& e) {
+//		qDebug() << e.what();
+//		return false;
+//	}
+//}
+
+//void Mongo::saveFile(const QString filename, const QByteArray& symbols) {
+//	mongocxx::collection collection = db["files"];
+//	auto bson_symbols = fromQByteArrayToBSON(symbols);
+
+//	collection.update_one(document{} << "filename" << filename.toStdString()
+//									 << finalize,
+//						  document{} << "$set" << open_document
+//											<< "content" << bson_symbols
+//									 << close_document << finalize);
+//}
+
+//bool Mongo::retrieveFile(const QString filename, QList<QJsonObject>& symbols) {
+//	mongocxx::collection collection = db["files"];
+
+//	mongocxx::options::find opts{};
+//	opts.projection(document{} << "content" << 1 << finalize);
+//	auto maybe_result = collection.find_one(
+//				document{} << "filename" << filename.toStdString()
+//						   << finalize, opts);
+
+//	if (!maybe_result)
+//		return false;
+
+//	// Return symbols found in the db as a QByteArray
+//	bsoncxx::document::value value = (*maybe_result);
+//	bsoncxx::document::view view = value.view();
+//	const unsigned char *data = view["content"].get_binary().bytes;
+//	QByteArray barray = QByteArray((char*) data,
+//								   view["content"].get_binary().size);
+
+//	// Convert from QByteArray to QVector
+//	// (to reverse the saving process, in which QVector is stored as binary)
+//	QVector<QByteArray> qvector;
+//	QDataStream in(barray);
+//	in >> qvector;
+
+//	// Store QVector in server memory as QJsonArray
+//	for (auto i : qvector) {
+//		QJsonObject obj = QJsonDocument::fromJson(i).object();
+//		symbols.append(obj);
+//	}
+//	return true;
+//}
+
+bsoncxx::types::value Mongo::getObjectID(const QString& filename, bool& found) {
+	found = true;
+	auto collection = bucket_db["fs.files"];
+
+	bsoncxx::builder::stream::document document{};
+	mongocxx::options::find opts{};
+	opts.projection(document << "_id" << 1 << finalize);
+
+	auto cursor = collection.find_one(document
+									  << "filename" << filename.toStdString()
+									  << finalize, opts);
+
+	if (!cursor) {
+		found = false;
+		return bsoncxx::types::value{bsoncxx::types::b_int32{-1}};
+	}
+
+	auto id = (*cursor).view()["_id"];
+	return bsoncxx::types::value{bsoncxx::types::b_oid{id.get_oid()}};
+}
+
+bool Mongo::insertNewFile(const QString& filename) {
+	bool found;
+	auto oid = getObjectID(filename, found);
+	if (found)
+		return false;
+
+	mongocxx::options::gridfs::upload opts;
+	// Change chunk size, default 255 kB
+//	opts.chunk_size_bytes(50);
+
+	char *raw = nullptr;
+	auto data = (uint8_t *) raw;
+	size_t len = 0;
+	auto up = bucket.open_upload_stream(filename.toStdString(), opts);
+	up.write(data, len);
+	up.close();
+
+	return true;
+}
+
+bool Mongo::saveFile(const QString filename, QByteArray symbols) {
+	bool found;
+	auto oid = getObjectID(filename, found);
+	if (!found)
+		return false;
+
+	bucket.delete_file(oid);
+	mongocxx::options::gridfs::upload opts;
+	// Change chunk size, default 255 kB
+//	opts.chunk_size_bytes(50);
+
+	char *raw = symbols.data();
+	auto data = (uint8_t *) raw;
+	size_t len = symbols.size();
+	auto up = bucket.open_upload_stream(filename.toStdString(), opts);
+	up.write(data, len);
+	up.close();
+
+	return true;
+}
+
+bool Mongo::retrieveFile(const QString filename, QList<QJsonObject>& symbols) {
+	bool found;
+	auto oid = getObjectID(filename, found);
+	if (!found)
+		return false;
+	auto downloadStream = bucket.open_download_stream(oid);
+
+	int64_t size = downloadStream.file_length();
+	unsigned char *buffer = new unsigned char[size];
+	downloadStream.read(buffer, size);
+	QByteArray bArray((const char*)buffer, size);
+
+	// Convert from QByteArray to QVector
+	// (to reverse the saving process, in which QVector is stored as binary)
+	QVector<QByteArray> qvector;
+	QDataStream in(bArray);
+	in >> qvector;
+
+	// Store QVector in server memory as QJsonArray
+	for (auto i : qvector) {
+		QJsonObject obj = QJsonDocument::fromJson(i).object();
+		symbols.append(obj);
+	}
+	return true;
+}
+
+void Mongo::cleanBucket() {
+	bucket_db["fs.files"].drop();
+	bucket_db["fs.chunks"].drop();
 }
