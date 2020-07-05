@@ -27,14 +27,6 @@ Server::Server(QObject *parent)
 	mapFileWorkers=new QMap<QString,QList<ServerWorker*>*>();
 	this->db.connect();
 
-	// Create folder to store profile images
-	QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
-	QDir dir_images(profile_images_path);
-	if (!dir_images.exists()) {
-		qDebug().nospace() << "Folder " << profile_images_path << " created";
-		dir_images.mkpath(".");
-	}
-
 	// TODO: TO CHANGE WITH YOUR LOCAL DIRECTORY
 	QFile keyFile(":/resources/certificates/server.key");
 	keyFile.open(QIODevice::ReadOnly);
@@ -236,20 +228,11 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 								   Qt::CaseInsensitive) == 0){
 		QJsonObject message=this->checkCredentials(sender,docObj);
 		QVector<QByteArray> tmp;
-		if (message.value(QLatin1String("success"))==true){
-			QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
-								 + sender->getUsername() + ".png";
-			QFileInfo file(image_path);
-			if (file.exists()) {
-				// Read Image
-				QImage p(image_path);
-				QByteArray bArray;
-				QBuffer buffer(&bArray);
-				buffer.open(QIODevice::WriteOnly);
-				p.save(&buffer, "PNG");
-
-				tmp.push_back(bArray);
-			}
+		if (message.value(QLatin1String("success")) == true) {
+			bool found;
+			auto image = db.retrieveImage(sender->getUsername(), found);
+			if (found)
+				tmp.push_back(image);
 		}
 		this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
     } else if (typeVal.toString().compare(QLatin1String("check_username"),
@@ -397,18 +380,7 @@ void Server::signup_updateImage(ServerWorker *sender,
             QImage p;
             p.loadFromData(img);
 
-			QString image_path = QDir::currentPath() + IMAGES_PATH
-								 + "/" + username + ".png";
-            qDebug()<<image_path;
-            QFile file(image_path);
-			if (file.exists()) { // WriteOnly doesn't seem to
-								 // override as it should be
-				file.remove();	// according to the documentation,
-								// need to remove manually
-			}
-            if (!file.open(QIODevice::WriteOnly))
-                qDebug() << "Unable to open the file specified";
-			p.save(&file, "PNG");
+			db.upsertImage(username, img);
 	}
 
 	if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
@@ -957,8 +929,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 	// TODO: per ora manda il contenuto del file insieme alla lista di chi è connesso;
 	//d agestire il caso in cui le connessioni cambiano mentre o dopo il messaggio è inviato
 
-	QString image_path;
-
 	for (int i = 0; i <list->count(); i++){
 		// Use initializer list to construct QJsonObject
 		if (sender->getUsername()==list->at(i)->getUsername()) {
@@ -973,23 +943,14 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
 		array_users.push_back(QJsonValue(data));
 
-		image_path = QDir::currentPath() + IMAGES_PATH + "/"
-					 + QJsonValue(list->at(i)->getUsername()).toString()
-					 + ".png";
-
-		QFileInfo file(image_path);
-		if (file.exists()) {
-			QImage p(image_path);
+		bool found;
+		auto image = db.retrieveImage(list->at(i)->getUsername(), found);
+		if (found) {
+			v.push_back(image);
+		} else{
 			QByteArray bArray;
-			QBuffer buffer(&bArray);
-			buffer.open(QIODevice::WriteOnly);
-			p.save(&buffer, "PNG");
 			v.append(bArray);
 		}
-        else{
-            QByteArray bArray;
-            v.append(bArray);
-        }
 	}
 
     int start=0;
@@ -1079,8 +1040,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
        storeSymbolsServerMemory(sender,message);
     }
 
-
-
 	// Inform all the connected clients of the new connection
 	QJsonObject message_broadcast;
 	message_broadcast["type"] = QStringLiteral("connection");
@@ -1088,16 +1047,11 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 	message_broadcast["username"]= sender->getUsername();
 	message_broadcast["nickname"]= sender->getNickname();
 
-	image_path = QDir::currentPath() + IMAGES_PATH + "/"
-				 + sender->getUsername() + ".png";
-
-	QFileInfo fileImage(image_path);
 	QByteArray bArray;
-	if (fileImage.exists()) {
-		QImage p(image_path);
-		QBuffer buffer(&bArray);
-		buffer.open(QIODevice::WriteOnly);
-		p.save(&buffer, "PNG");
+	bool found;
+	auto image = db.retrieveImage(sender->getUsername(), found);
+	if (found) {
+		bArray = image;
 	}
 
 	this->broadcastByteArray(message_broadcast,bArray,sender);

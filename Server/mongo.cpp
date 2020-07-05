@@ -608,67 +608,6 @@ DatabaseError Mongo::checkAlreadyExistingUsername(const QString &username) {
     }
 }
 
-//bool Mongo::insertNewFile(const QString filename, const QString username) {
-//	try {
-//		mongocxx::collection collection = db["files"];
-//		bsoncxx::builder::stream::document document{};
-//		auto builder = bsoncxx::builder::stream::document{};
-//		bsoncxx::document::value doc = builder
-//				<< "filename" << filename.toStdString() + ","
-//								 + username.toStdString()
-//				<< bsoncxx::builder::stream::finalize;
-//		collection.insert_one(doc.view());
-//		return true;
-//	} catch (std::exception& e) {
-//		qDebug() << e.what();
-//		return false;
-//	}
-//}
-
-//void Mongo::saveFile(const QString filename, const QByteArray& symbols) {
-//	mongocxx::collection collection = db["files"];
-//	auto bson_symbols = fromQByteArrayToBSON(symbols);
-
-//	collection.update_one(document{} << "filename" << filename.toStdString()
-//									 << finalize,
-//						  document{} << "$set" << open_document
-//											<< "content" << bson_symbols
-//									 << close_document << finalize);
-//}
-
-//bool Mongo::retrieveFile(const QString filename, QList<QJsonObject>& symbols) {
-//	mongocxx::collection collection = db["files"];
-
-//	mongocxx::options::find opts{};
-//	opts.projection(document{} << "content" << 1 << finalize);
-//	auto maybe_result = collection.find_one(
-//				document{} << "filename" << filename.toStdString()
-//						   << finalize, opts);
-
-//	if (!maybe_result)
-//		return false;
-
-//	// Return symbols found in the db as a QByteArray
-//	bsoncxx::document::value value = (*maybe_result);
-//	bsoncxx::document::view view = value.view();
-//	const unsigned char *data = view["content"].get_binary().bytes;
-//	QByteArray barray = QByteArray((char*) data,
-//								   view["content"].get_binary().size);
-
-//	// Convert from QByteArray to QVector
-//	// (to reverse the saving process, in which QVector is stored as binary)
-//	QVector<QByteArray> qvector;
-//	QDataStream in(barray);
-//	in >> qvector;
-
-//	// Store QVector in server memory as QJsonArray
-//	for (auto i : qvector) {
-//		QJsonObject obj = QJsonDocument::fromJson(i).object();
-//		symbols.append(obj);
-//	}
-//	return true;
-//}
-
 bsoncxx::types::value Mongo::getObjectID(const QString& filename, bool& found) {
 	found = true;
 	auto collection = bucket_db["fs.files"];
