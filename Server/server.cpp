@@ -1050,9 +1050,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
     while (cont && success){
         qDebug()<<"HERE";
-        while(symbols.count()) {
-             symbols.pop_back();
-         }
+        symbols=QJsonArray();
         message=QJsonObject();
         message["type"] = QStringLiteral("file_to_open");
         message["success"] = true;
@@ -1073,7 +1071,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
            }
         if (i==symbols_list.value(filename)->values().size())
             cont=false;
-       message["symbols"] = symbols;
+       message["content"] = symbols;
        QByteArray toSend = this->createByteArrayJsonImage(message,v);
        this->sendByteArray(sender,toSend);
        cum_bytes=0;
