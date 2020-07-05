@@ -36,7 +36,7 @@ private slots:
 	void on_pushButtonSavePassword_clicked();
     void on_t_pushButtonResetNickname_clicked();
     void on_t_pushButtonResetPhoto_clicked();
-	void on_pushButtonSavephoto_clicked();
+    void save_photo();
     void on_t_pushButtonFinish_clicked();
     void on_t_pushButtonCancel_clicked();
     void on_lineEditOldPass_editingFinished();
