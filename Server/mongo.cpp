@@ -5,6 +5,7 @@
 #include <iostream>
 #include <mongocxx/exception/operation_exception.hpp>
 #include "mongo.h"
+#include <QDataStream>
 
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
@@ -40,74 +41,46 @@ bool Mongo::insertNewFile(const QString filename, const QString username) {
 
 void Mongo::saveFile(const QString filename, const QByteArray& symbols) {
 	mongocxx::collection collection = db["files"];
-   /* QJsonDocument doc(symbols);
-    QString strJson(doc.toJson(QJsonDocument::Compact));
+	auto bson_symbols = fromQByteArrayToBSON(symbols);
 
-    std::string symbols_str = strJson.toUtf8().constData();
-    bsoncxx::document::value s = bsoncxx::from_json(symbols_str);*/
-
-
-    qDebug()<<"to compress size: "<<symbols.size();
-    QByteArray compress = qCompress(symbols,9);
-
-    bsoncxx::document::value value =  document{}
-            << "content" << bsoncxx::types::b_binary{bsoncxx::binary_sub_type::k_binary, (uint32_t)compress.size(), (uint8_t *)compress.data()}
-            << finalize;
-    qDebug()<<"compress size: "<<compress.size();
 	collection.update_one(document{} << "filename" << filename.toStdString()
-                                     << finalize,
-                          document{} << "$set" << open_document
-                                            << "content" << value.view()
-                                     << close_document << finalize);
+									 << finalize,
+						  document{} << "$set" << open_document
+											<< "content" << bson_symbols
+									 << close_document << finalize);
 }
 
 bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
 	mongocxx::collection collection = db["files"];
 
-	bsoncxx::stdx::optional<bsoncxx::document::value> maybe_result =
-	  collection.find_one(document{} << "filename" << filename.toStdString()
-						  << finalize);
-	if (maybe_result) {
-		bsoncxx::document::element element = (*maybe_result).view()["content"];
+	mongocxx::options::find opts{};
+	opts.projection(document{} << "content" << 1 << finalize);
+	auto maybe_result = collection.find_one(
+				document{} << "filename" << filename.toStdString()
+						   << finalize, opts);
 
-		if(element.type() != bsoncxx::type::k_document) {
-            qDebug("here1 ");
-			return false;
-		}
-
-
-         qDebug("here2 ");
-        bsoncxx::document::element content=element.get_document().view()["content"];
-
-
-        const uint8_t* buffer=content.get_binary().bytes;
-        qDebug()<<"to uncompress size: "<<content.get_binary().size;
-        std::vector<uint8_t> my_vector(&buffer[0], &buffer[content.get_binary().size]);
-        QByteArray ba(reinterpret_cast<const char*>(my_vector.data()), my_vector.size());
-        qDebug()<<"Byte array size: "<<ba.size();
-        QByteArray uncompressed = qUncompress(ba);
-        qDebug()<<"Byte array size: "<<uncompressed.size();
-
-        QJsonParseError parseError;
-        QJsonDocument jsonDoc = QJsonDocument::fromBinaryData(uncompressed);
-        QString strJson(jsonDoc.toJson());
-        qDebug()<<"\n"<<strJson;
-
-
-        symbols = jsonDoc.array();
-       /*
-	   int size = json_object.size();
-
-	   for (int i=0;i<size;i++){
-		   QString index = QString::number(i);
-		   QJsonValue e = json_object[index];
-		   symbols.append(e);
-       }*/
-	   return true;
-	}
-	else {
+	if (!maybe_result)
 		return false;
+
+	// Return symbols found in the db as a QByteArray
+	bsoncxx::document::value value = (*maybe_result);
+	bsoncxx::document::view view = value.view();
+	const unsigned char *data = view["content"].get_binary().bytes;
+	QByteArray barray = QByteArray((char*) data,
+								   view["content"].get_binary().size);
+
+	// Convert from QByteArray to QVector
+	// (to reverse the saving process, in which QVector is stored as binary)
+	QVector<QByteArray> qvector;
+	QDataStream in(barray);
+	in >> qvector;
+
+	// Store QVector in server memory as QJsonArray
+	for (auto i : qvector) {
+		QJsonObject obj = QJsonDocument::fromJson(i).object();
+		symbols.append(obj);
 	}
+	return true;
 }
 
 bsoncxx::types::b_binary Mongo::fromQByteArrayToBSON(const QByteArray& image) {

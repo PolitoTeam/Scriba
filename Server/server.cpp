@@ -202,7 +202,7 @@ void Server::broadcastByteArray(const QJsonObject &message,
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json)
 {
-	qDebug() << json;
+//	qDebug() << json;
 	if (sender->getNickname().isEmpty()) {
 		return jsonFromLoggedOut(sender, json);
 	} else {
@@ -1135,19 +1135,19 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
 void Server::saveFile() {
 	for (QString filename : symbols_list.keys()) {
 		if (changed.value(filename) == true) {
-			// Save from main memory to QJsonArray
-			QJsonArray symbols_json;
-			std::vector<std::string> vector = {};
+			// Save from main memory to QVector
+			QVector<QByteArray> qvector;
 			for (QJsonObject symbol : symbols_list.value(filename)->values()) {
-				symbols_json.append(symbol);
-				QJsonDocument doc(symbol);
-				QString strJson(doc.toJson(QJsonDocument::Compact));
-				std::string a = strJson.toUtf8().constData();
-				vector.push_back(a);
+				qvector.push_back(QJsonDocument(symbol).toJson());
 			}
 
-			// Save resulting QJsonArray to db
-            db.saveFile(filename,QJsonDocument(symbols_json).toBinaryData());
+			// Convert QVector to QByteArray
+			QByteArray data;
+			QDataStream stream(&data, QIODevice::WriteOnly);
+			stream << qvector;
+
+			// Save binary file into db
+			db.saveFile(filename, data);
 		}
 		// Reset value to false
 		changed.insert(filename, false);
