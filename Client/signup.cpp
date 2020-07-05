@@ -80,13 +80,15 @@ void Signup::signedUp()
     photo=false;
     client->disconnectFromHost();
     // Show popup for 1 second
-    this->popUp->setText("Correclty signed up.");
-    this->popUp->setWindowTitle("Sign up");
-    this->popUp->setStandardButtons(this->popUp->NoButton);
-    this->popUp->setModal(false);
-    QTimer::singleShot(1500, this->popUp, &QMessageBox::hide);  // 1000 ms
-    this->popUp->show();
-    changeWidget(LOGIN);
+//    this->popUp->setText("Correclty signed up.");
+//    this->popUp->setWindowTitle("Sign up");
+//    this->popUp->setStandardButtons(this->popUp->NoButton);
+//    this->popUp->setModal(false);
+//    QTimer::singleShot(1500, this->popUp, &QMessageBox::hide);  // 1000 ms
+//    this->popUp->show();
+	emit changeLoginLabel("Correctly signed up");
+	emit changeWidget(LOGIN);
+
 }
 
 

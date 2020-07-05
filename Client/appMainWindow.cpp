@@ -86,8 +86,10 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 
 	signup = new Signup(stackedWidget,client);
 	stackedWidget->addWidget(signup);
-	connect(signup, &Signup::changeWidget, this,
-			&AppMainWindow::on_changeWidget);
+	connect(signup, &Signup::changeWidget,
+			this, &AppMainWindow::on_changeWidget);
+	connect(signup, &Signup::changeLoginLabel,
+			this, &AppMainWindow::on_changeLoginLabel);
 
 	home = new Home(stackedWidget,client);
 	stackedWidget->addWidget(home);
@@ -109,7 +111,7 @@ AppMainWindow::AppMainWindow(QWidget *parent,Client* c) :
 	connect(modify, &Modify::changeWidget,
 			this, &AppMainWindow::on_changeWidget);
 
-	QObject::connect(home,&Home::modify,modify,&Modify::upload);
+	connect(home,&Home::modify,modify,&Modify::upload);
 	connect(home, &Home::logOut, this, &AppMainWindow::on_logOut);
 	connect(client, &Client::error, this, &AppMainWindow::error);
 }
@@ -142,6 +144,10 @@ void AppMainWindow::on_changeWidget(int widget) {
 		stackedWidget->setCurrentIndex(widget);
 		this->show();
 	}
+}
+
+void AppMainWindow::on_changeLoginLabel(const QString& label) {
+	login->setLabel(label);
 }
 
 void AppMainWindow::error(QAbstractSocket::SocketError socketError)

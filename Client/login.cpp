@@ -87,3 +87,7 @@ void Login::on_lineEditUsername_textChanged(const QString&)
 {
 	this->clearLabel();
 }
+
+void Login::setLabel(const QString& label) {
+	ui->labelMessage->setText(label);
+}
