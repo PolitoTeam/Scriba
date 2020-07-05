@@ -54,6 +54,7 @@ void Modify::on_profile_image_clicked()
 	if (!fileName.isEmpty() && !fileName.isNull()) {
 		profile_photo_temp->load(fileName);
         ui->profile_image->setCustomPixmap(*profile_photo_temp);
+        save_photo();
 	}
 }
 
@@ -130,16 +131,16 @@ void Modify::on_t_pushButtonResetPhoto_clicked()
 }
 
 
-void Modify::on_pushButtonSavephoto_clicked()
+void Modify::save_photo()
 {
-	QMessageBox msgbox;
-	msgbox.setText("Are you sure?");
-	msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-	msgbox.setDefaultButton(QMessageBox::Save);
-	if (msgbox.exec() == QMessageBox::Save) {
-		client->overrideProfileImage(*this->profile_photo_temp);
-		client->sendProfileImage();
-	}
+    QMessageBox msgbox;
+    msgbox.setText("Are you sure?");
+    msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+    msgbox.setDefaultButton(QMessageBox::Save);
+    if (msgbox.exec() == QMessageBox::Save) {
+        client->overrideProfileImage(*this->profile_photo_temp);
+        client->sendProfileImage();
+    }
 }
 
 void Modify::on_t_pushButtonFinish_clicked()
