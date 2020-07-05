@@ -27,7 +27,7 @@ public:
 
 	bool insertNewFile(const QString filename, const QString username);
     void saveFile(const QString filename,const QByteArray& symbols);
-	bool retrieveFile(const QString filename, QJsonArray& symbols);
+    bool retrieveFile(const QString filename, QList<QJsonObject>& symbols);
 
 	void upsertImage(QString email, const QByteArray& image);
 	QByteArray retrieveImage(QString email, bool& found);

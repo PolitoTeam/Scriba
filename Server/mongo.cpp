@@ -50,7 +50,7 @@ void Mongo::saveFile(const QString filename, const QByteArray& symbols) {
 									 << close_document << finalize);
 }
 
-bool Mongo::retrieveFile(const QString filename, QJsonArray& symbols) {
+bool Mongo::retrieveFile(const QString filename, QList<QJsonObject>& symbols) {
 	mongocxx::collection collection = db["files"];
 
 	mongocxx::options::find opts{};

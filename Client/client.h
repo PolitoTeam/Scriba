@@ -104,6 +104,7 @@ private:
 	QByteArray m_received_data;
 	QBuffer m_buffer;
 	QProgressDialog *progress;
+    int progress_counter=0;
 
 	void jsonReceived(const QJsonObject &doc);
 	void byteArrayReceived(const QByteArray &doc);

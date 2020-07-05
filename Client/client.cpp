@@ -42,6 +42,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 	// Connect readyRead() to the slot
 	// that will take care of reading the data in
 	connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead);
+
 	connect(m_clientSocket, &QSslSocket::encrypted, this, [](){/*qDebug()<<"encrypted!";*/});
 
 
@@ -514,21 +515,36 @@ void Client::byteArrayReceived(const QByteArray& doc){
 					return;
 				const bool success = resultVal.toBool();
 				if (success) {
+                    const bool first = progress_counter==0;
+                    qDebug()<<"First is "<<first;
+
 					const QJsonValue cont = docObj.value(QLatin1String("content"));
 					if (cont.isNull() || !cont.isArray())
 						return;
 					const QJsonArray symbols = cont.toArray();
 
-					progress = new QProgressDialog(nullptr);
-					progress->setWindowTitle("Loading...");
-					progress->setRange(0, symbols.size() - 1);
-					progress->setModal(true);
-					progress->setMinimumDuration(500);
-					progress->setWindowFlags(Qt::Window | Qt::WindowTitleHint
-											 | Qt::CustomizeWindowHint);
-					progress->setCancelButton(nullptr);
+                    const QJsonValue tot_symbolsVal= docObj.value(QLatin1String("tot_symbols"));
+                    if (tot_symbolsVal.isNull() || !tot_symbolsVal.toInt())
+                        return;
+                    int tot_symbols=tot_symbolsVal.toInt();
+                    qDebug()<<tot_symbols;
 
-					int progress_counter = 0;
+                    if (first){
+
+                        progress = new QProgressDialog(nullptr);
+                        progress_counter = 0;
+                        progress->setWindowTitle("Loading...");
+                        progress->setRange(0, tot_symbols-1);
+                        progress->setModal(true);
+                        progress->setValue(progress_counter);
+                        progress->setMinimumDuration(0);
+                        progress->setWindowFlags(Qt::Window | Qt::WindowTitleHint
+                                                 | Qt::CustomizeWindowHint);
+                        progress->setCancelButton(nullptr);
+
+                    }
+
+
 					for (int i = symbols.size() - 1; i >= 0; i--) {
 						Symbol s = Symbol::fromJson(symbols[i].toObject());
 
@@ -536,52 +552,67 @@ void Client::byteArrayReceived(const QByteArray& doc){
 						if (s.getValue()=='\n' || s.getValue()=='\0')
 							emit remoteAlignChange(s);
 
-						progress_counter++;
+
+                        progress_counter++;
 						progress->setValue(progress_counter);
 					}
-					progress->hide();
-					progress->cancel();
+
 
 					const QJsonValue name = docObj.value(QLatin1String("filename"));
 					if (name.isNull() || !name.isString())
 						return;
 					this->openfile=name.toString();
 
-					const QJsonValue shared_link = docObj.value(QLatin1String("shared_link"));
-					if (shared_link.isNull() || !shared_link.isString())
-						return;
-					this->sharedLink = shared_link.toString();
+                    const QJsonValue infoVal= docObj.value(QLatin1String("info"));
+                    if (infoVal.isNull() || !infoVal.isBool())
+                        return;
 
-					const QJsonValue array= docObj.value(QLatin1String("users"));
-					if (array.isNull() || !array.isArray())
-						return;
-					const QJsonArray array_users=array.toArray();
-					QList<QPair<QPair<QString,QString>,QPixmap>> connected;
+                    if (infoVal.toBool()){
 
-					foreach (const QJsonValue& v, array_users){
-						quint32 img_size = qFromLittleEndian<qint32>(
-									reinterpret_cast<const uchar *>(image_array.left(4).data())
-						);
+                            const QJsonValue shared_link = docObj.value(QLatin1String("shared_link"));
+                            if (shared_link.isNull() || !shared_link.isString())
+                                return;
+                            this->sharedLink = shared_link.toString();
 
-                        QPixmap p;
-                        if (img_size!=0){
-							QByteArray img = image_array.mid(4, img_size);
-                            p.loadFromData(img);
-						} else {
-							// Empty added size
-                            p.load(":/images/anonymous");
-                        }
-                        image_array=image_array.mid(img_size+4);
-						connected.append(QPair<QPair<QString,QString>,
-										 QPixmap>(QPair<QString,QString>(
-												v.toObject().value("username").toString(),
-												v.toObject().value("nickname").toString()),
-												p)
-						);
-					}
-					// emit contentReceived(cont.toString()); TODO: remove comment
-					emit usersConnectedReceived(connected);
-					emit correctOpenedFile();
+                            const QJsonValue array= docObj.value(QLatin1String("users"));
+                            if (array.isNull() || !array.isArray())
+                                return;
+                            const QJsonArray array_users=array.toArray();
+                            QList<QPair<QPair<QString,QString>,QPixmap>> connected;
+
+                            foreach (const QJsonValue& v, array_users){
+                                quint32 img_size = qFromLittleEndian<qint32>(
+                                            reinterpret_cast<const uchar *>(image_array.left(4).data())
+                                );
+
+                                QPixmap p;
+                                if (img_size!=0){
+                                    QByteArray img = image_array.mid(4, img_size);
+                                    p.loadFromData(img);
+                                } else {
+                                    // Empty added size
+                                    p.load(":/images/anonymous");
+                                }
+                                image_array=image_array.mid(img_size+4);
+                                connected.append(QPair<QPair<QString,QString>,
+                                                 QPixmap>(QPair<QString,QString>(
+                                                        v.toObject().value("username").toString(),
+                                                        v.toObject().value("nickname").toString()),
+                                                        p)
+                                );
+                            }
+                            // emit contentReceived(cont.toString()); TODO: remove comment
+                            emit usersConnectedReceived(connected);
+                    }
+                    qDebug()<<progress_counter;
+                    qDebug()<<tot_symbols;
+                    if (progress_counter>=tot_symbols-1){
+                        progress->hide();
+                        progress->cancel();
+                        progress_counter=0;
+                        emit correctOpenedFile();
+                        qDebug()<<"Correct opened file";
+                    }
 				} else {
 					this->openfile.clear();
 					const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
@@ -741,6 +772,8 @@ void Client::openFile(const QString& filename){
 	QJsonObject message;
 	message["type"] = QStringLiteral("file_to_open");
 	message["filename"] = filename;
+
+
 
     sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 }
