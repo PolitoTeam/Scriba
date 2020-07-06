@@ -884,16 +884,18 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 }
 
 void Server::storeSymbolsServerMemory(ServerWorker* sender,QList<QJsonObject> array){
+    if (!symbols_list.contains(sender->getFilename())) {
+        symbols_list.insert(sender->getFilename(),
+                            new QMap<QString,QJsonObject>());
+    }
     // Store symbols in server memory
     foreach (const QJsonValue & symbol, array) {
         QString position = fromJsonArraytoString(symbol["position"].toArray());
-        if (!symbols_list.contains(sender->getFilename())) {
-            symbols_list.insert(sender->getFilename(),
-                                new QMap<QString,QJsonObject>());
-        }
+
         symbols_list.value(sender->getFilename())->insert(position, symbol.toObject());
-        changed.insert(sender->getFilename(), false);
+
     }
+    changed.insert(sender->getFilename(), false);
 }
 
 QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
@@ -968,13 +970,17 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
 
     int start=0;
+    int num_chunks=1;
     bool cont=false;
     QJsonArray symbols;
     bool success = true;
     QList<QJsonObject> l;
-    if (symbols_list.contains(filename))
+    if (symbols_list.contains(filename)){
+        qDebug()<<"Reading from memory";
         l=symbols_list.value(filename)->values();
+    }
     else{
+        qDebug()<<"Reading from database";
         success = db.retrieveFile(filename,l);
         storeSymbolsServerMemory(sender,l);
     }
@@ -989,7 +995,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
         int old_size=symbols.size();
         QJsonObject o=l[i];
         symbols.append(o);
-        int size=QJsonDocument(o).toJson().size();
         if (symbols.size()==old_size){
             start=i;
             cont=true;
@@ -1007,6 +1012,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
             message["filename"]= filename;
             message["tot_symbols"]=tot_symbols;
             message["info"]=true;
+            message["chunk"]=num_chunks;
             message["users"] = array_users;
             message["shared_link"] = sharedLink;
             /*		message["color"] = color;*/
@@ -1025,7 +1031,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
 
     while (cont && success){
-        qDebug()<<"HERE";
+        num_chunks++;
         symbols=QJsonArray();
         message=QJsonObject();
         message["type"] = QStringLiteral("file_to_open");
@@ -1035,20 +1041,20 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
         //continua a mandare come fosse un file normale
         int i;
-        for (i=start;i<symbols_list.value(filename)->values().size();i++){
+        for (i=start;i<l.size();i++){
             int old_size=symbols.size();
             QJsonObject o=l[i];
             symbols.append(o);
-            int size=QJsonDocument(o).toJson().size();
             if (symbols.size()==old_size){
                 start=i;
                 cont=true;
                 break;
                 }
            }
-        if (i==symbols_list.value(filename)->values().size())
+        if (i==l.size())
             cont=false;
        message["content"] = symbols;
+       message["chunk"]=num_chunks;
        QVector<QByteArray> tmp;
        QByteArray toSend = this->createByteArrayJsonImage(message,tmp);
        this->sendByteArray(sender,toSend);
@@ -1062,6 +1068,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 	message_broadcast["filename"]=filename;
 	message_broadcast["username"]= sender->getUsername();
 	message_broadcast["nickname"]= sender->getNickname();
+
 
 	QByteArray bArray;
 	bool found;

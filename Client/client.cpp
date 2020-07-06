@@ -520,21 +520,30 @@ void Client::byteArrayReceived(const QByteArray& doc){
 					return;
 				const bool success = resultVal.toBool();
 				if (success) {
-                    const bool first = progress_counter==0;
+                    const bool first = tmp_symbols_counter==0;
                     qDebug()<<"First is "<<first;
 
 					const QJsonValue cont = docObj.value(QLatin1String("content"));
 					if (cont.isNull() || !cont.isArray())
 						return;
 					const QJsonArray symbols = cont.toArray();
-                    qDebug()<<"updated symbols";
-                    qDebug()<<"symbols size: "<<symbols.size();
+                    tmp_symbols_counter+=symbols.size();
 
                     const QJsonValue tot_symbolsVal= docObj.value(QLatin1String("tot_symbols"));
                     if (tot_symbolsVal.isNull() || !tot_symbolsVal.toInt())
                         return;
                     int tot_symbols=tot_symbolsVal.toInt();
                     qDebug()<<" tot symbols: "<<tot_symbols;
+                    const QJsonValue chunkVal= docObj.value(QLatin1String("chunk"));
+                    if (chunkVal.isNull() || !chunkVal.toInt())
+                        return;
+                    int num_chunk=chunkVal.toInt();
+
+                    tmp_map.insert(num_chunk,symbols);
+
+                    if (num_chunk>=tmp_num_chunk)
+                        tmp_num_chunk=num_chunk;
+
 
                     if (first){
 
@@ -551,21 +560,34 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                     }
 
-                    qDebug()<<"Loop on "<<symbols.size()<<" symbols";
-                    qDebug()<<"Starting from "<<symbols.size() - 1;
-					for (int i = symbols.size() - 1; i >= 0; i--) {
+                    if (tmp_symbols_counter>=tot_symbols){
 
-						Symbol s = Symbol::fromJson(symbols[i].toObject());
+                        for (int j=tmp_num_chunk;j>0;j--){
 
-                        emit remoteInsert(s);
-						if (s.getValue()=='\n' || s.getValue()=='\0')
-							emit remoteAlignChange(s);
+                            qDebug()<<tmp_map[j].size();
+                            for (int i = tmp_map[j].size()-1; i >= 0; i--) {
+
+                                Symbol s = Symbol::fromJson(tmp_map[j][i].toObject());
+
+                                emit remoteInsert(s);
+                                if (s.getValue()=='\n' || s.getValue()=='\0')
+                                    emit remoteAlignChange(s);
 
 
-                        progress_counter++;
-						progress->setValue(progress_counter);
+                                progress_counter++;
+                                progress->setValue(progress_counter);
 
-					}
+                            }
+                        }
+                        progress->hide();
+                        progress->cancel();
+                        progress_counter=0;
+                        emit correctOpenedFile();
+                        tmp_map.clear();
+                        tmp_num_chunk=0;
+                        tmp_symbols_counter=0;
+                        qDebug()<<"Correct opened file";
+                      }
 
 
 					const QJsonValue name = docObj.value(QLatin1String("filename"));
@@ -614,15 +636,8 @@ void Client::byteArrayReceived(const QByteArray& doc){
                             // emit contentReceived(cont.toString()); TODO: remove comment
                             emit usersConnectedReceived(connected);
                     }
-                    qDebug()<<progress_counter;
-                    qDebug()<<tot_symbols;
-                    if (progress_counter>=tot_symbols-1){
-                        progress->hide();
-                        progress->cancel();
-                        progress_counter=0;
-                        emit correctOpenedFile();
-                        qDebug()<<"Correct opened file";
-                    }
+
+
 				} else {
 					this->openfile.clear();
 					const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
