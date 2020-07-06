@@ -53,6 +53,8 @@ public slots:
 
 private slots:
 	void onReadyRead();
+    void byteArrayReceived(const QByteArray &doc);
+    void jsonReceived(const QJsonObject &doc);
 
 signals:
 	void connected();
@@ -89,6 +91,9 @@ signals:
     void existingUsername(const QString &username);
     void successUsernameCheck(const QString &username);
 
+    void byteArrayReceivedSignal(const QByteArray &doc);
+    void jsonReceivedSignal(const QJsonObject &doc);
+
 private:
 	QString addr;
 	quint16 port;
@@ -106,8 +111,8 @@ private:
 	QProgressDialog *progress;
     int progress_counter=0;
 
-	void jsonReceived(const QJsonObject &doc);
-	void byteArrayReceived(const QByteArray &doc);
+
+
 	void extract_content_size();
 	bool parseJson();
 };

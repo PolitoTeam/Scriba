@@ -38,10 +38,13 @@ Client::Client(QObject *parent, QString addr, quint16 port)
 			this, [](QAbstractSocket::SocketState socketState){ qDebug()<<socketState; });
 
 	connect(this,&Client::connected,this, []()->void{/*qDebug()<<"New client Connected";*/});
+    connect(this,&Client::byteArrayReceivedSignal,this, &Client::byteArrayReceived,Qt::QueuedConnection);
+    connect(this,&Client::jsonReceivedSignal,this, &Client::jsonReceived,Qt::QueuedConnection);
 
 	// Connect readyRead() to the slot
 	// that will take care of reading the data in
-	connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead);
+    connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead, Qt::QueuedConnection);
+
 
 	connect(m_clientSocket, &QSslSocket::encrypted, this, [](){/*qDebug()<<"encrypted!";*/});
 
@@ -415,6 +418,7 @@ void Client::connectToServer(const QHostAddress &address, quint16 port)
 
 void Client::onReadyRead()
 {
+
 	if (m_clientSocket->bytesAvailable() > 0) {
 		m_received_data.append(m_clientSocket->readAll());
 	}
@@ -480,10 +484,11 @@ bool Client::parseJson()
 	if (parseError.error == QJsonParseError::NoError) {
 
 		if (jsonDoc.isObject()) {
-			jsonReceived(jsonDoc.object());
+            emit jsonReceivedSignal(jsonDoc.object());
 		}
 	} else {
-		byteArrayReceived(json_data);
+        qDebug()<<" byte array received";
+        emit byteArrayReceivedSignal(json_data);
 	}
 	m_received_data.remove(0,8+json_size);
 	return true;
@@ -522,12 +527,14 @@ void Client::byteArrayReceived(const QByteArray& doc){
 					if (cont.isNull() || !cont.isArray())
 						return;
 					const QJsonArray symbols = cont.toArray();
+                    qDebug()<<"updated symbols";
+                    qDebug()<<"symbols size: "<<symbols.size();
 
                     const QJsonValue tot_symbolsVal= docObj.value(QLatin1String("tot_symbols"));
                     if (tot_symbolsVal.isNull() || !tot_symbolsVal.toInt())
                         return;
                     int tot_symbols=tot_symbolsVal.toInt();
-                    qDebug()<<tot_symbols;
+                    qDebug()<<" tot symbols: "<<tot_symbols;
 
                     if (first){
 
@@ -544,7 +551,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                     }
 
-
+                    qDebug()<<"Loop on "<<symbols.size()<<" symbols";
 					for (int i = symbols.size() - 1; i >= 0; i--) {
 						Symbol s = Symbol::fromJson(symbols[i].toObject());
 
@@ -555,6 +562,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                         progress_counter++;
 						progress->setValue(progress_counter);
+                        qDebug()<<"Received "<<progress_counter<<" symbols";
 					}
 
 

@@ -75,7 +75,7 @@ private:
 	QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
 	QByteArray createByteArrayJsonImage(QJsonObject &message,
 										QVector<QByteArray> &v);
-    void storeSymbolsServerMemory(ServerWorker* sender,QJsonObject message);
+    void storeSymbolsServerMemory(ServerWorker* sender,QList<QJsonObject> array);
 	bool udpateSymbolListAndCommunicateDisconnection(QString filename,
 													 ServerWorker* sender);
 	static QString fromJsonArraytoString(const QJsonArray& data);
