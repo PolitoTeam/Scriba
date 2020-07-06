@@ -44,6 +44,7 @@ private slots:
 
 signals:
 	void changeWidget(int i);
+	void changeLoginLabel(const QString& label);
 
 private:
 	Ui::Signup *ui;

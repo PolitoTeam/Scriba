@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>597</width>
+    <width>610</width>
     <height>705</height>
    </rect>
   </property>
@@ -83,7 +83,7 @@
                 <enum>QLineEdit::Normal</enum>
                </property>
                <property name="placeholderText">
-                <string>Update your nickname</string>
+                <string>New nickname</string>
                </property>
               </widget>
              </item>
@@ -162,7 +162,7 @@ font-style:italic;</string>
                   <enum>QLineEdit::Password</enum>
                  </property>
                  <property name="placeholderText">
-                  <string>Insert your new password</string>
+                  <string>New password</string>
                  </property>
                 </widget>
                </item>
@@ -218,7 +218,7 @@ font-style:italic;</string>
                   <enum>QLineEdit::Password</enum>
                  </property>
                  <property name="placeholderText">
-                  <string>Insert your old password</string>
+                  <string>Old password</string>
                  </property>
                 </widget>
                </item>
@@ -253,7 +253,7 @@ font-style:italic;</string>
                   <enum>QLineEdit::Password</enum>
                  </property>
                  <property name="placeholderText">
-                  <string>Confirm the new password</string>
+                  <string>Confirm password</string>
                  </property>
                 </widget>
                </item>
@@ -315,7 +315,7 @@ font-style:italic;</string>
         </font>
        </property>
        <property name="text">
-        <string>Update your Lopast account </string>
+        <string>Update Profile </string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>

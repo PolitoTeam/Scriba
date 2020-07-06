@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>693</width>
-    <height>499</height>
+    <width>360</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Use your Lopast account</string>
+        <string>Login</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -82,7 +82,7 @@
              <enum>QLineEdit::Normal</enum>
             </property>
             <property name="placeholderText">
-             <string>Insert your username</string>
+             <string>Username</string>
             </property>
            </widget>
           </item>
@@ -96,7 +96,7 @@
              <enum>QLineEdit::Password</enum>
             </property>
             <property name="placeholderText">
-             <string>Insert your password</string>
+             <string>Password</string>
             </property>
            </widget>
           </item>
@@ -132,34 +132,34 @@ font-style:italic;</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="t_pushButtonNewAccount">
+          <property name="font">
+           <font>
+            <family>CMU Sans Serif</family>
+           </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>New account</string>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
-      </widget>
-     </item>
-     <item row="4" column="2" colspan="2" alignment="Qt::AlignLeft">
-      <widget class="QPushButton" name="t_pushButtonNewAccount">
-       <property name="font">
-        <font>
-         <family>CMU Sans Serif</family>
-        </font>
-       </property>
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
-       </property>
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>New account</string>
-       </property>
-       <property name="autoDefault">
-        <bool>true</bool>
-       </property>
-       <property name="default">
-        <bool>false</bool>
-       </property>
       </widget>
      </item>
      <item row="0" column="1" colspan="3">
@@ -187,21 +187,6 @@ font-style:italic;</string>
         </size>
        </property>
       </spacer>
-     </item>
-     <item row="4" column="1" alignment="Qt::AlignLeft">
-      <widget class="QPushButton" name="t_pushButtonForgot">
-       <property name="font">
-        <font>
-         <family>CMU Sans Serif</family>
-        </font>
-       </property>
-       <property name="cursor">
-        <cursorShape>PointingHandCursor</cursorShape>
-       </property>
-       <property name="text">
-        <string>Forgot your password?</string>
-       </property>
-      </widget>
      </item>
      <item row="3" column="0">
       <spacer name="horizontalSpacer">

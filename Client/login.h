@@ -17,6 +17,7 @@ public:
 	Login(QWidget *parent = nullptr,Client* client = nullptr);
 	~Login();
 	void enableAllButtons();
+	void setLabel(const QString& label);
 
 private slots:
 	void try_to_log();
