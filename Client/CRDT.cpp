@@ -2,7 +2,7 @@
 #include "CRDT.h"
 
 CRDT::CRDT(Client *client) : client(client) {
-	connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
+    connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert,Qt::QueuedConnection);
 	connect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
 	connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
 	connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);

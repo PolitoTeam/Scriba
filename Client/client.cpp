@@ -552,7 +552,9 @@ void Client::byteArrayReceived(const QByteArray& doc){
                     }
 
                     qDebug()<<"Loop on "<<symbols.size()<<" symbols";
+                    qDebug()<<"Starting from "<<symbols.size() - 1;
 					for (int i = symbols.size() - 1; i >= 0; i--) {
+
 						Symbol s = Symbol::fromJson(symbols[i].toObject());
 
                         emit remoteInsert(s);
@@ -562,7 +564,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                         progress_counter++;
 						progress->setValue(progress_counter);
-                        qDebug()<<"Received "<<progress_counter<<" symbols";
+
 					}
 
 
