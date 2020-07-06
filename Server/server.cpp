@@ -230,31 +230,7 @@ void Server::stopServer()
 
 void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 {
-<<<<<<< HEAD
-    const QJsonValue typeVal = docObj.value(QLatin1String("type"));
-    if (typeVal.isNull() || !typeVal.isString())
-        return;
-    if (typeVal.toString().compare(QLatin1String("login"),
-                                   Qt::CaseInsensitive) == 0){
-        QJsonObject message=this->checkCredentials(sender,docObj);
-        QVector<QByteArray> tmp;
-        if (message.value(QLatin1String("success"))==true){
-            QString image_path = QDir::currentPath() + IMAGES_PATH + "/"
-                                 + sender->getUsername() + ".png";
-            QFileInfo file(image_path);
-            if (file.exists()) {
-                // Read Image
-                QImage p(image_path);
-                QByteArray bArray;
-                QBuffer buffer(&bArray);
-                buffer.open(QIODevice::WriteOnly);
-                p.save(&buffer, "PNG");
 
-                tmp.push_back(bArray);
-            }
-        }
-        this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
-=======
 	const QJsonValue typeVal = docObj.value(QLatin1String("type"));
 	if (typeVal.isNull() || !typeVal.isString())
 		return;
@@ -269,7 +245,6 @@ void Server::jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &docObj)
 				tmp.push_back(image);
 		}
 		this->sendByteArray(sender,createByteArrayJsonImage(message,tmp));
->>>>>>> 003231331a0d3c7fb9e74043a8ee587f1325a1fd
     } else if (typeVal.toString().compare(QLatin1String("check_username"),
                                           Qt::CaseInsensitive) == 0){
         QJsonObject message = this->checkAlreadyExistingUsername(docObj);
@@ -415,24 +390,10 @@ void Server::signup_updateImage(ServerWorker *sender,
             QImage p;
             p.loadFromData(img);
 
-<<<<<<< HEAD
-            QString image_path = QDir::currentPath() + IMAGES_PATH
-                                 + "/" + username + ".png";
-            qDebug()<<image_path;
-            QFile file(image_path);
-            if (file.exists()) { // WriteOnly doesn't seem to
-                                 // override as it should be
-                file.remove();	// according to the documentation,
-                                // need to remove manually
-            }
-            if (!file.open(QIODevice::WriteOnly))
-                qDebug() << "Unable to open the file specified";
-            p.save(&file, "PNG");
-    }
-=======
+
 			db.upsertImage(username, img);
 	}
->>>>>>> 003231331a0d3c7fb9e74043a8ee587f1325a1fd
+
 
     if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
         message["success"] = true;
@@ -956,66 +917,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
         QByteArray toSend = this->createByteArrayJsonImage(message,v);
         this->sendByteArray(sender,toSend);
         return message;
-<<<<<<< HEAD
-    }
 
-    int pos = filename.lastIndexOf(QChar(','));
-    QString file=filename.left(pos);
-    QString author = filename.right(filename.length() - pos - 1);
-
-    sender->setFilename(filename);
-    int index = 0;
-
-    if (mapFileWorkers->contains(filename)) {
-        index = mapFileWorkers->value(filename)->size();
-        mapFileWorkers->value(filename)->append(sender);
-    } else {
-        QList<ServerWorker*>* list=new QList<ServerWorker*>();
-        list->append(sender);
-        mapFileWorkers->insert(filename,list);
-    }
-
-    QList<ServerWorker*>* list=mapFileWorkers->value(filename);
-    QJsonArray array_users;
-
-    // TODO: per ora manda il contenuto del file insieme alla lista di chi è connesso;
-    //d agestire il caso in cui le connessioni cambiano mentre o dopo il messaggio è inviato
-
-    QString image_path;
-
-    for (int i = 0; i <list->count(); i++){
-        // Use initializer list to construct QJsonObject
-        if (sender->getUsername()==list->at(i)->getUsername()) {
-            continue;
-        }
-        auto data = QJsonObject({
-                qMakePair(QString("username"),
-                          QJsonValue(list->at(i)->getUsername())),
-                qMakePair(QString("nickname"),
-                          QJsonValue(list->at(i)->getNickname()))
-        });
-
-        array_users.push_back(QJsonValue(data));
-
-        image_path = QDir::currentPath() + IMAGES_PATH + "/"
-                     + QJsonValue(list->at(i)->getUsername()).toString()
-                     + ".png";
-
-        QFileInfo file(image_path);
-        if (file.exists()) {
-            QImage p(image_path);
-            QByteArray bArray;
-            QBuffer buffer(&bArray);
-            buffer.open(QIODevice::WriteOnly);
-            p.save(&buffer, "PNG");
-            v.append(bArray);
-        }
-        else{
-            QByteArray bArray;
-            v.append(bArray);
-        }
-    }
-=======
 	}
 
 	int pos = filename.lastIndexOf(QChar(','));
@@ -1063,7 +965,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 			v.append(bArray);
 		}
 	}
->>>>>>> 003231331a0d3c7fb9e74043a8ee587f1325a1fd
+
 
     int start=0;
     bool cont=false;
@@ -1153,28 +1055,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
        qDebug()<<"Another sent: sending "<<symbols.size()<<" symbols\n";
     }
 
-<<<<<<< HEAD
 
-
-    // Inform all the connected clients of the new connection
-    QJsonObject message_broadcast;
-    message_broadcast["type"] = QStringLiteral("connection");
-    message_broadcast["filename"]=filename;
-    message_broadcast["username"]= sender->getUsername();
-    message_broadcast["nickname"]= sender->getNickname();
-
-    image_path = QDir::currentPath() + IMAGES_PATH + "/"
-                 + sender->getUsername() + ".png";
-
-    QFileInfo fileImage(image_path);
-    QByteArray bArray;
-    if (fileImage.exists()) {
-        QImage p(image_path);
-        QBuffer buffer(&bArray);
-        buffer.open(QIODevice::WriteOnly);
-        p.save(&buffer, "PNG");
-    }
-=======
 	// Inform all the connected clients of the new connection
 	QJsonObject message_broadcast;
 	message_broadcast["type"] = QStringLiteral("connection");
@@ -1188,7 +1069,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 	if (found) {
 		bArray = image;
 	}
->>>>>>> 003231331a0d3c7fb9e74043a8ee587f1325a1fd
 
     this->broadcastByteArray(message_broadcast,bArray,sender);
     return message;
