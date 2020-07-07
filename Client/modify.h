@@ -34,12 +34,9 @@ private slots:
     void on_lineEditConfirmPass_textChanged();
 	void on_pushSaveNickname_clicked();
 	void on_pushButtonSavePassword_clicked();
-    void on_t_pushButtonResetNickname_clicked();
-    void on_t_pushButtonResetPhoto_clicked();
-    void save_photo();
+	void save_photo();
     void on_t_pushButtonFinish_clicked();
-    void on_t_pushButtonCancel_clicked();
-    void on_lineEditOldPass_editingFinished();
+	void on_lineEditOldPass_editingFinished();
     void on_wrongOldPasswordEntered(const QString &reason);
 	void on_correctOldPasswordEntered();
     void on_failedUpdatePassword(const QString &reason);
@@ -65,6 +62,7 @@ private:
     void clearOldPasswordError();
     void clearNewPasswordError();
     void clearConfirmPasswordError();
+	void clearForm();
 };
 
 #endif // MODIFY_PROFILE_H

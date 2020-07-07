@@ -116,21 +116,6 @@ void Modify::on_pushSaveNickname_clicked()
 	}
 }
 
-
-void Modify::on_t_pushButtonResetNickname_clicked()
-{
-	QString nickname=client->getNickname();
-	ui->lineEditNickname->setText(nickname);
-}
-
-void Modify::on_t_pushButtonResetPhoto_clicked()
-{
-	profile_photo_temp->load(":/images/anonymous");
-    ui->profile_image->setCustomPixmap(*profile_photo_temp
-								 );
-}
-
-
 void Modify::save_photo()
 {
     QMessageBox msgbox;
@@ -143,28 +128,26 @@ void Modify::save_photo()
     }
 }
 
-void Modify::on_t_pushButtonFinish_clicked()
-{
-    on_t_pushButtonCancel_clicked();
-	changeWidget(HOME);
-}
-
-
-void Modify::on_t_pushButtonCancel_clicked()
+void Modify::clearForm()
 {
 	ui->lineEditOldPass->clear();
 	ui->lineEditNewPass->clear();
 	ui->lineEditConfirmPass->clear();
 	ui->labelInfoPass->clear();
-    ui->icon_error_pass->setVisible(false);
-    ui->icon_old_pass->setVisible(false);
-    ui->icon_new_pass->setVisible(false);
-    AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
-    AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
-    AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,false);
-    //ui->labelInfoOldPassword->clear();
+	ui->icon_error_pass->setVisible(false);
+	ui->icon_old_pass->setVisible(false);
+	ui->icon_new_pass->setVisible(false);
+	AppMainWindow::errorLineEdit(ui->lineEditOldPass,false);
+	AppMainWindow::errorLineEdit(ui->lineEditNewPass,false);
+	AppMainWindow::errorLineEdit(ui->lineEditConfirmPass,false);
+	//ui->labelInfoOldPassword->clear();
 }
 
+void Modify::on_t_pushButtonFinish_clicked()
+{
+	clearForm();
+	changeWidget(HOME);
+}
 
 // PASSWORD CHECKING
 
