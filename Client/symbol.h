@@ -46,6 +46,19 @@ public:
 		json["site"] = site;
 		return json;
 	}
+
+	friend QDataStream &operator<<(QDataStream& out,
+								   const Identifier& id) {
+		out << id.digit << id.site;
+		return out;
+	}
+
+	friend QDataStream &operator>>(QDataStream& in,
+								   Identifier& id) {
+		id = Identifier();
+		in >> id.digit >> id.site;
+		return in;
+	}
 };
 
 class SymbolFormat {
@@ -55,6 +68,8 @@ public:
 	QString font;
 	int size;
 	QString color;
+
+	SymbolFormat() {}
 
 	QJsonObject toJson() {
 		QJsonObject json;
@@ -91,6 +106,41 @@ public:
 		format.setFont(font);
 		format.setForeground(QColor(color));
 		return format;
+	}
+
+	// Function to serialize any enum into QDataStream as a qint64
+	template<typename Enum,
+			 typename = typename std::enable_if<std::is_enum<Enum>::value>::type>
+	friend QDataStream& operator<<(QDataStream& stream, const Enum& e) {
+		stream << static_cast<qint64>(e);
+		return stream;
+	}
+
+	// Function to deserialize any enum from QDataStream as a qint64
+	template<typename Enum,
+			 typename = typename std::enable_if<std::is_enum<Enum>::value>::type>
+	friend QDataStream& operator>>(QDataStream& stream, Enum& e) {
+		qint64 v;
+		stream >> v;
+		e = static_cast<Enum>(v);
+		return stream;
+	}
+
+	friend QDataStream &operator<<(QDataStream& out,
+								   const SymbolFormat& format) {
+		out << format.align;
+		out << format.italic << format.bold << format.underline;
+		out << format.font << format.size << format.color;
+		return out;
+	}
+
+	friend QDataStream &operator>>(QDataStream& in,
+								   SymbolFormat& format) {
+		format = SymbolFormat();
+		in >> format.align;
+		in >> format.italic >> format.bold >> format.underline;
+		in >> format.font >> format.size >> format.color;
+		return in;
 	}
 };
 
@@ -224,6 +274,21 @@ public:
 		SymbolFormat format = SymbolFormat::fromJson(json["format"].toObject());
 		Symbol s(value, position, counter, format);
 		return s;
+	}
+
+	friend QDataStream &operator<<(QDataStream& out,
+								   const Symbol& symbol) {
+		out << symbol.value << symbol.position
+			<< symbol.counter << symbol.format;
+		return out;
+	}
+
+	friend QDataStream &operator>>(QDataStream& in,
+								   Symbol& symbol) {
+		symbol = Symbol();
+		in >> symbol.value >> symbol.position
+			>> symbol.counter >> symbol.format;
+		return in;
 	}
 };
 
