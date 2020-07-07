@@ -89,7 +89,7 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial,
 							QFont font, QColor color,Qt::Alignment align) {
 	if (line < 0 || index < 0)
 		throw std::runtime_error("Error: index out of bound.\n");
-	QJsonArray symbols;
+	QVector<Symbol> vector;
 	for (int i =0; i<partial.length(); i++){
 		// Calculate position
 		QVector<Identifier> posBefore = findPosBefore(line, index);
@@ -109,7 +109,8 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial,
 				s.setAlignment(SymbolFormat::Alignment::ALIGN_RIGHT);
 		}
 
-		symbols.append(s.toJson());
+		vector.push_back(s);
+
 		insertChar(s, line, index);
 		this->size++;
 		if (s.getValue()=='\n') {
@@ -120,12 +121,17 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial,
 		}
 	}
 
+	// Serialize
+	QByteArray data;
+	QDataStream in(&data, QIODevice::WriteOnly);
+	in << vector;
+
 	// Broadcast
 	QJsonObject message;
 	message["type"] = QStringLiteral("operation");
 	message["editorId"] = _siteId;
 	message["operation_type"] = PASTE;
-	message["symbols"] = symbols;
+	message["symbols"] = QString(data.toBase64());
 
 	client->sendJson(message);
 }

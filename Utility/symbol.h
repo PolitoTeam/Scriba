@@ -295,3 +295,4 @@ public:
 Q_DECLARE_METATYPE(Symbol)
 
 #endif // SYMBOL_H
+

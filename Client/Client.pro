@@ -54,8 +54,7 @@ HEADERS += \
     modify.h \
     myqtextedit.h \
     remotecursor.h \
-    signup.h \
-    symbol.h
+    signup.h
 
 FORMS += \
     index.ui \

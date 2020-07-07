@@ -4,9 +4,9 @@
 #include <QJsonObject>
 #include <map>
 #include <random>
-#include "symbol.h"
 #include "client.h"
 #include "../Utility/common.h"
+#include "../Utility/symbol.h"
 
 #define BASE 32
 #define BOUNDARY 10

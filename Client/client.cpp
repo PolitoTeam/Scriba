@@ -16,7 +16,7 @@
 #include <QtEndian>
 #include "client.h"
 #include "CRDT.h"
-#include "symbol.h"
+#include "../Utility/symbol.h"
 
 Client::Client(QObject *parent, QString addr, quint16 port)
 	: QObject(parent)
