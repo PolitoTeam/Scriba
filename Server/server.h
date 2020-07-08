@@ -77,7 +77,7 @@ private:
 	QByteArray createByteArrayJsonImage(QJsonObject &message,
 										QVector<QByteArray> &v);
     QByteArray createByteArrayFileContentImage(QJsonObject &message,QVector<Symbol> &c,QVector<QByteArray> &v);
-    void storeSymbolsServerMemory(ServerWorker* sender,QVector<Symbol> array);
+	void storeSymbolsServerMemory(QString filename, QVector<Symbol> array);
 	bool udpateSymbolListAndCommunicateDisconnection(QString filename,
 													 ServerWorker* sender);
 	static QString fromJsonArraytoString(const QJsonArray& data);
