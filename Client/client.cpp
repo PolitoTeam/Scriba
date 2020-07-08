@@ -497,7 +497,7 @@ bool Client::parseJson()
 void Client::byteArrayReceived(const QByteArray& doc){
 	quint32 size = qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(doc.left(4).data()));
 	QByteArray json = doc.mid(4,size);
-	QByteArray image_array = doc.mid(4+size,-1);
+    QByteArray content_image_array = doc.mid(4+size,-1);
 
 	QJsonParseError parseError;
 	// We try to create a json document with the data we received
@@ -520,21 +520,22 @@ void Client::byteArrayReceived(const QByteArray& doc){
 					return;
 				const bool success = resultVal.toBool();
 				if (success) {
-                    const bool first = tmp_symbols_counter==0;
+                    /*const bool first = tmp_symbols_counter==0;
                     qDebug()<<"First is "<<first;
 
-					const QJsonValue cont = docObj.value(QLatin1String("content"));
-					if (cont.isNull() || !cont.isArray())
-						return;
+                    const QJsonValue cont = docObj.value(QLatin1String("content"));
+                    if (cont.isNull() || !cont.isArray())
+                        return;
 					const QJsonArray symbols = cont.toArray();
                     tmp_symbols_counter+=symbols.size();
+                    */
 
                     const QJsonValue tot_symbolsVal= docObj.value(QLatin1String("tot_symbols"));
                     if (tot_symbolsVal.isNull() || !tot_symbolsVal.toInt())
                         return;
                     int tot_symbols=tot_symbolsVal.toInt();
                     qDebug()<<" tot symbols: "<<tot_symbols;
-                    const QJsonValue chunkVal= docObj.value(QLatin1String("chunk"));
+                    /*const QJsonValue chunkVal= docObj.value(QLatin1String("chunk"));
                     if (chunkVal.isNull() || !chunkVal.toInt())
                         return;
                     int num_chunk=chunkVal.toInt();
@@ -543,31 +544,50 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                     if (num_chunk>=tmp_num_chunk)
                         tmp_num_chunk=num_chunk;
+                    */
 
+                    progress = new QProgressDialog(nullptr);
+                    progress_counter = 0;
+                    progress->setWindowTitle("Loading...");
+                    progress->setRange(0, tot_symbols-1);
+                    progress->setModal(true);
+                    progress->setValue(0);
+                    progress->setMinimumDuration(0);
+                    progress->setWindowFlags(Qt::Window | Qt::WindowTitleHint
+                                             | Qt::CustomizeWindowHint);
+                    progress->setCancelButton(nullptr);
 
-                    if (first){
+                    quint32 content_size = qFromLittleEndian<qint32>(
+                                reinterpret_cast<const uchar *>(content_image_array.left(4).data())
+                    );
 
-                        progress = new QProgressDialog(nullptr);
-                        progress_counter = 0;
-                        progress->setWindowTitle("Loading...");
-                        progress->setRange(0, tot_symbols-1);
-                        progress->setModal(true);
-                        progress->setValue(progress_counter);
-                        progress->setMinimumDuration(0);
-                        progress->setWindowFlags(Qt::Window | Qt::WindowTitleHint
-                                                 | Qt::CustomizeWindowHint);
-                        progress->setCancelButton(nullptr);
+                    QVector<QJsonObject> vec;
+                    if (content_size!=0){
+                        QByteArray content = content_image_array.mid(4, content_size);
 
+                        QDataStream out(&content, QIODevice::ReadOnly);
+                        out >> vec;
+                       // QDataStream in(content);
+
+                        //in >> vec; //load
+                        //p.loadFromData(img);
+
+                    } else {
+                        // Empty added size
+                        qDebug()<<" CONTENUTO VUOTO: da gestire";
                     }
+                    content_image_array=content_image_array.mid(content_size+4);
 
-                    if (tmp_symbols_counter>=tot_symbols){
+
+                    /*if (tmp_symbols_counter>=tot_symbols){
 
                         for (int j=tmp_num_chunk;j>0;j--){
 
                             qDebug()<<tmp_map[j].size();
-                            for (int i = tmp_map[j].size()-1; i >= 0; i--) {
+                            */
+                     for (int i = vec.size()-1; i >= 0; i--) {
 
-                                Symbol s = Symbol::fromJson(tmp_map[j][i].toObject());
+                                Symbol s = Symbol::fromJson(vec[i].object());
 
                                 emit remoteInsert(s);
                                 if (s.getValue()=='\n' || s.getValue()=='\0')
@@ -578,16 +598,13 @@ void Client::byteArrayReceived(const QByteArray& doc){
                                 progress->setValue(progress_counter);
 
                             }
-                        }
+
                         progress->hide();
                         progress->cancel();
-                        progress_counter=0;
+
                         emit correctOpenedFile();
-                        tmp_map.clear();
-                        tmp_num_chunk=0;
-                        tmp_symbols_counter=0;
-                        qDebug()<<"Correct opened file";
-                      }
+
+
 
 
 					const QJsonValue name = docObj.value(QLatin1String("filename"));
@@ -614,18 +631,18 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                             foreach (const QJsonValue& v, array_users){
                                 quint32 img_size = qFromLittleEndian<qint32>(
-                                            reinterpret_cast<const uchar *>(image_array.left(4).data())
+                                            reinterpret_cast<const uchar *>(content_image_array.left(4).data())
                                 );
 
                                 QPixmap p;
                                 if (img_size!=0){
-                                    QByteArray img = image_array.mid(4, img_size);
+                                    QByteArray img = content_image_array.mid(4, img_size);
                                     p.loadFromData(img);
                                 } else {
                                     // Empty added size
                                     p.load(":/images/anonymous");
                                 }
-                                image_array=image_array.mid(img_size+4);
+                                content_image_array=content_image_array.mid(img_size+4);
                                 connected.append(QPair<QPair<QString,QString>,
                                                  QPixmap>(QPair<QString,QString>(
                                                         v.toObject().value("username").toString(),
@@ -654,7 +671,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
 				if (!file.toString().compare(this->openfile)){
 					QList<QPair<QPair<QString,QString>,QPixmap>> connected;
 					quint32 img_size = qFromLittleEndian<qint32>(
-								reinterpret_cast<const uchar *>(image_array.left(4).data())
+                                reinterpret_cast<const uchar *>(content_image_array.left(4).data())
 					);
 
 					if (img_size == 0) {
@@ -666,7 +683,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
 						);
 					}
 					else{
-						QByteArray img = image_array.mid(4);
+                        QByteArray img = content_image_array.mid(4);
 						QPixmap p;
 						p.loadFromData(img);
 						connected.append(QPair<QPair<QString,QString>,QPixmap>(
@@ -712,11 +729,11 @@ void Client::byteArrayReceived(const QByteArray& doc){
                     this->nickname=nickname;
 
 					quint32 img_size = qFromLittleEndian<qint32>(
-								reinterpret_cast<const uchar *>(image_array.left(4).data())
+                                reinterpret_cast<const uchar *>(content_image_array.left(4).data())
 					);
 
 					if (img_size != 0) {
-                        QByteArray img = image_array.mid(4);
+                        QByteArray img = content_image_array.mid(4);
                         profile->loadFromData(img);
                     }
 

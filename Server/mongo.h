@@ -27,7 +27,7 @@ public:
 
 	bool insertNewFile(const QString& filename);
 	bool saveFile(const QString filename, QByteArray symbols);
-	bool retrieveFile(const QString filename, QList<QJsonObject>& symbols);
+    bool retrieveFile(const QString filename, QVector<QJsonObject>& symbols);
 	void cleanBucket();
 
 	void upsertImage(QString email, const QByteArray& image);

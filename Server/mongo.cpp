@@ -670,7 +670,7 @@ bool Mongo::saveFile(const QString filename, QByteArray symbols) {
 	return true;
 }
 
-bool Mongo::retrieveFile(const QString filename, QList<QJsonObject>& symbols) {
+bool Mongo::retrieveFile(const QString filename, QVector<QJsonObject>& symbols) {
 	bool found;
 	auto oid = getObjectID(filename, found);
 	if (!found)

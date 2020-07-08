@@ -7,6 +7,7 @@
 #include <QSslSocket>
 #include <QSslConfiguration>
 #include <QDir>
+#include <QVector>
 #include <QtEndian>
 #include "server.h"
 #include "serverworker.h"
@@ -116,6 +117,38 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,
     // Depends on the endliness of the machine
     QByteArray ba((const char *)&size_json, sizeof(size_json));
     ba.append(byte_array);
+
+    if(v.size()==0){
+        quint32 size_img = 0;
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        ba.append(p);
+    }
+
+    for (QByteArray a: v){
+        quint32 size_img = a.size();
+        QByteArray p((const char *)&size_img, sizeof(size_img));
+        if (size_img!=0)
+            p.append(a);
+        ba.append(p);
+    }
+    return ba;
+}
+
+QByteArray Server::createByteArrayFileContentImage(QJsonObject &message,QVector<QJsonObject> &c,QVector<QByteArray> &v){
+    QByteArray byte_array_msg = QJsonDocument(message).toJson();
+    quint32 size_json = byte_array_msg.size();
+
+    QByteArray byte_array_content;
+    QDataStream in(&byte_array_content, QIODevice::WriteOnly);
+    in << c;
+    quint32 size_content = byte_array_content.size();
+
+    // Depends on the endliness of the machine
+    QByteArray ba((const char *)&size_json, sizeof(size_json));
+    ba.append(byte_array_msg);
+    QByteArray ba_c((const char *)&size_content, sizeof(size_content));
+    ba.append(byte_array_content);
+
 
     if(v.size()==0){
         quint32 size_img = 0;
@@ -883,7 +916,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     return message;
 }
 
-void Server::storeSymbolsServerMemory(ServerWorker* sender,QList<QJsonObject> array){
+void Server::storeSymbolsServerMemory(ServerWorker* sender,QVector<QJsonObject> array){
     if (!symbols_list.contains(sender->getFilename())) {
         symbols_list.insert(sender->getFilename(),
                             new QMap<QString,QJsonObject>());
@@ -974,10 +1007,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
     bool cont=false;
     QJsonArray symbols;
     bool success = true;
-    QList<QJsonObject> l;
+    QVector<QJsonObject> l;
     if (symbols_list.contains(filename)){
         qDebug()<<"Reading from memory";
-        l=symbols_list.value(filename)->values();
+        l=symbols_list.value(filename)->values().toVector();
     }
     else{
         qDebug()<<"Reading from database";
@@ -990,7 +1023,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
     db.getSharedLink(author, file, sharedLink);
 
     int tot_symbols=l.size();
-    qDebug()<<"To send: "<<tot_symbols<<" symbols";
+    /*qDebug()<<"To send: "<<tot_symbols<<" symbols";
     for (int i=start;i<l.size();i++){
         int old_size=symbols.size();
         QJsonObject o=l[i];
@@ -1001,18 +1034,15 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
             break;
             }
     }
-
-
-
-
+    */
 
     if (success == true) {
             message["success"] = true;
             message["content"] = symbols;
             message["filename"]= filename;
             message["tot_symbols"]=tot_symbols;
-            message["info"]=true;
-            message["chunk"]=num_chunks;
+            //message["info"]=true;
+            //message["chunk"]=num_chunks;
             message["users"] = array_users;
             message["shared_link"] = sharedLink;
             /*		message["color"] = color;*/
@@ -1022,8 +1052,11 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
                                                "different form json array");
         }
 
+    QByteArray toSend= this->createByteArrayFileContentImage(message,l,v);
+    this->sendByteArray(sender,toSend);
+    // TO DO: immagini solo se message[success]=true
 
-    qDebug()<<"start "<<start;
+    /*
 
     QByteArray toSend = this->createByteArrayJsonImage(message,v);
     this->sendByteArray(sender,toSend);
@@ -1060,6 +1093,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
        this->sendByteArray(sender,toSend);
        qDebug()<<"Another sent: sending "<<symbols.size()<<" symbols\n";
     }
+    */
 
 
 	// Inform all the connected clients of the new connection
