@@ -6,9 +6,9 @@
 #include <QSslSocket>
 #include <QBuffer>
 #include <QProgressDialog>
-#include "symbol.h"
 #include "remotecursor.h"
 #include "../Utility/serializesize.h"
+#include "../Utility/symbol.h"
 
 class QHostAddress;
 class QJsonDocument;

@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QSyntaxHighlighter>
 #include "CRDT.h"
-#include "symbol.h"
 #include "colors.h"
+#include "../Utility/symbol.h"
 
 class Highlighter: public QSyntaxHighlighter
 {

@@ -8,6 +8,7 @@
 #include <QSslCertificate>
 #include "../Utility/common.h"
 #include "mongo.h"
+#include "../Utility/symbol.h"
 
 class QThread;
 class ServerWorker;

@@ -560,13 +560,23 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             QJsonObject symbol = docObj["symbol"].toObject();
             QString position = fromJsonArraytoString(symbol["position"].toArray());
             symbols_list.value(sender->getFilename())->insert(position, symbol);
-        } else if (operation_type == PASTE) {
-            QJsonArray symbols = docObj["symbols"].toArray();
-            for (int i = 0; i < symbols.size(); i++) {
-                QJsonObject symbol = symbols[i].toObject();
-                QString position = fromJsonArraytoString(symbol["position"].toArray());
-                symbols_list.value(sender->getFilename())->insert(position, symbol);
-            }
+		} else if (operation_type == PASTE) {
+			// Decode as QByteArray
+			QByteArray bArray;
+			bArray.append(docObj["symbols"].toString());
+			QByteArray b64 = QByteArray::fromBase64(bArray);
+
+			// Deserialize
+			QVector<Symbol> vec;
+			QDataStream out(&b64, QIODevice::ReadOnly);
+			out >> vec;
+
+			// Save symbols in memory
+			for (Symbol s : vec) {
+				QJsonObject symbol = s.toJson();
+				QString position = fromJsonArraytoString(symbol["position"].toArray());
+				symbols_list.value(sender->getFilename())->insert(position, symbol);
+			}
         }
 
         changed.insert(sender->getFilename(), true);

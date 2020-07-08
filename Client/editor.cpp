@@ -560,7 +560,6 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
 			if (!partial.isNull() && !partial.isEmpty()){
 				crdt->localInsertGroup(line, index, partial, font, color,align);
-				//qDebug()<<"Inserted: "<<partial;
 			}
 
 		}
