@@ -561,7 +561,9 @@ void Client::byteArrayReceived(const QByteArray& doc){
                                 reinterpret_cast<const uchar *>(content_image_array.left(4).data())
                     );
 
-                    QVector<QJsonObject> vec;
+                    qDebug()<<"content size read: "<<content_size;
+
+                    QVector<Symbol> vec;
                     if (content_size!=0){
                         QByteArray content = content_image_array.mid(4, content_size);
 
@@ -578,6 +580,8 @@ void Client::byteArrayReceived(const QByteArray& doc){
                     }
                     content_image_array=content_image_array.mid(content_size+4);
 
+                    qDebug()<<"Contentuo size: "<<vec.size();
+
 
                     /*if (tmp_symbols_counter>=tot_symbols){
 
@@ -587,7 +591,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
                             */
                      for (int i = vec.size()-1; i >= 0; i--) {
 
-                                Symbol s = Symbol::fromJson(vec[i].object());
+                                Symbol s = vec[i];
 
                                 emit remoteInsert(s);
                                 if (s.getValue()=='\n' || s.getValue()=='\0')
@@ -598,13 +602,8 @@ void Client::byteArrayReceived(const QByteArray& doc){
                                 progress->setValue(progress_counter);
 
                             }
-
-                        progress->hide();
-                        progress->cancel();
-
-                        emit correctOpenedFile();
-
-
+                    progress->hide();
+                    progress->cancel();
 
 
 					const QJsonValue name = docObj.value(QLatin1String("filename"));
@@ -612,11 +611,9 @@ void Client::byteArrayReceived(const QByteArray& doc){
 						return;
 					this->openfile=name.toString();
 
-                    const QJsonValue infoVal= docObj.value(QLatin1String("info"));
-                    if (infoVal.isNull() || !infoVal.isBool())
-                        return;
 
-                    if (infoVal.toBool()){
+
+
 
                             const QJsonValue shared_link = docObj.value(QLatin1String("shared_link"));
                             if (shared_link.isNull() || !shared_link.isString())
@@ -628,6 +625,7 @@ void Client::byteArrayReceived(const QByteArray& doc){
                                 return;
                             const QJsonArray array_users=array.toArray();
                             QList<QPair<QPair<QString,QString>,QPixmap>> connected;
+                            qDebug()<<"Users received "<<array_users.size();
 
                             foreach (const QJsonValue& v, array_users){
                                 quint32 img_size = qFromLittleEndian<qint32>(
@@ -652,7 +650,11 @@ void Client::byteArrayReceived(const QByteArray& doc){
                             }
                             // emit contentReceived(cont.toString()); TODO: remove comment
                             emit usersConnectedReceived(connected);
-                    }
+
+
+
+                            emit correctOpenedFile();
+
 
 
 				} else {

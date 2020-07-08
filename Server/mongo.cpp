@@ -670,7 +670,7 @@ bool Mongo::saveFile(const QString filename, QByteArray symbols) {
 	return true;
 }
 
-bool Mongo::retrieveFile(const QString filename, QVector<QJsonObject>& symbols) {
+bool Mongo::retrieveFile(const QString filename, QVector<Symbol>& symbols) {
 	bool found;
 	auto oid = getObjectID(filename, found);
 	if (!found)
@@ -684,15 +684,9 @@ bool Mongo::retrieveFile(const QString filename, QVector<QJsonObject>& symbols) 
 
 	// Convert from QByteArray to QVector
 	// (to reverse the saving process, in which QVector is stored as binary)
-	QVector<QByteArray> qvector;
-	QDataStream in(bArray);
-	in >> qvector;
 
-	// Store QVector in server memory as QJsonArray
-	for (auto i : qvector) {
-		QJsonObject obj = QJsonDocument::fromJson(i).object();
-		symbols.append(obj);
-	}
+    QDataStream in(qUncompress(bArray));
+    in >> symbols;
 	return true;
 }
 

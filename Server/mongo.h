@@ -11,6 +11,7 @@
 #include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
+#include "../Utility/symbol.h"
 
 typedef enum {NON_EXISTING_USER, ALREADY_EXISTING_USER, WRONG_PASSWORD,
 			  QUERY_ERROR, CONNECTION_ERROR, NON_EXISTING_FILE,
@@ -27,7 +28,7 @@ public:
 
 	bool insertNewFile(const QString& filename);
 	bool saveFile(const QString filename, QByteArray symbols);
-    bool retrieveFile(const QString filename, QVector<QJsonObject>& symbols);
+    bool retrieveFile(const QString filename, QVector<Symbol>& symbols);
 	void cleanBucket();
 
 	void upsertImage(QString email, const QByteArray& image);

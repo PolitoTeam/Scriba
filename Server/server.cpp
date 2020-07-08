@@ -134,7 +134,7 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,
     return ba;
 }
 
-QByteArray Server::createByteArrayFileContentImage(QJsonObject &message,QVector<QJsonObject> &c,QVector<QByteArray> &v){
+QByteArray Server::createByteArrayFileContentImage(QJsonObject &message,QVector<Symbol> &c,QVector<QByteArray> &v){
     QByteArray byte_array_msg = QJsonDocument(message).toJson();
     quint32 size_json = byte_array_msg.size();
 
@@ -147,7 +147,8 @@ QByteArray Server::createByteArrayFileContentImage(QJsonObject &message,QVector<
     QByteArray ba((const char *)&size_json, sizeof(size_json));
     ba.append(byte_array_msg);
     QByteArray ba_c((const char *)&size_content, sizeof(size_content));
-    ba.append(byte_array_content);
+    ba_c.append(byte_array_content);
+    ba.append(ba_c);
 
 
     if(v.size()==0){
@@ -543,23 +544,26 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
         // and broadcast operation to other editors
         if (operation_type == INSERT) {
             QJsonObject symbol = docObj["symbol"].toObject();
-            QString position = fromJsonArraytoString(symbol["position"].toArray());
-            symbols_list.value(sender->getFilename())->insert(position, symbol);
+            Symbol s = Symbol::fromJson(symbol);
+            QString position = s.positionString();
+            symbols_list.value(sender->getFilename())->insert(position, s);
         } else if (operation_type == DELETE) {
             QJsonArray symbols = docObj["symbols"].toArray();
-            for (int i = 0; i < symbols.size(); i++) {
-                QJsonObject symbol = symbols[i].toObject();
-                QString position = fromJsonArraytoString(symbol["position"].toArray());
+            for (QJsonValue s_o: symbols) {
+                Symbol s = Symbol::fromJson(s_o.toObject());
+                QString position = s.positionString();
+
                 symbols_list.value(sender->getFilename())->remove(position);
             }
         } else if (operation_type == CHANGE) {
             QJsonObject symbol = docObj["symbol"].toObject();
-            QString position = fromJsonArraytoString(symbol["position"].toArray());
-            symbols_list.value(sender->getFilename())->insert(position, symbol);
+            Symbol s =Symbol::fromJson(symbol);
+            QString position = s.positionString();
+            symbols_list.value(sender->getFilename())->insert(position,s );
         } else if (operation_type == ALIGN) {
             QJsonObject symbol = docObj["symbol"].toObject();
             QString position = fromJsonArraytoString(symbol["position"].toArray());
-            symbols_list.value(sender->getFilename())->insert(position, symbol);
+            symbols_list.value(sender->getFilename())->insert(position, Symbol::fromJson(symbol));
 		} else if (operation_type == PASTE) {
 			// Decode as QByteArray
 			QByteArray bArray;
@@ -573,9 +577,8 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
 			// Save symbols in memory
 			for (Symbol s : vec) {
-				QJsonObject symbol = s.toJson();
-				QString position = fromJsonArraytoString(symbol["position"].toArray());
-				symbols_list.value(sender->getFilename())->insert(position, symbol);
+                QString position = s.positionString();
+                symbols_list.value(sender->getFilename())->insert(position, s);
 			}
         }
 
@@ -917,7 +920,7 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
 
     if (!symbols_list.contains(sender->getFilename())) {
         symbols_list.insert(sender->getFilename(),
-                            new QMap<QString,QJsonObject>());
+                            new QMap<QString,Symbol>());
         changed.insert(sender->getFilename(), true);
     }
 
@@ -926,16 +929,18 @@ QJsonObject Server::createNewFile(const QJsonObject &doc, ServerWorker *sender)
     return message;
 }
 
-void Server::storeSymbolsServerMemory(ServerWorker* sender,QVector<QJsonObject> array){
+void Server::storeSymbolsServerMemory(ServerWorker* sender,QVector<Symbol> array){
     if (!symbols_list.contains(sender->getFilename())) {
         symbols_list.insert(sender->getFilename(),
-                            new QMap<QString,QJsonObject>());
+                            new QMap<QString,Symbol>());
     }
     // Store symbols in server memory
-    foreach (const QJsonValue & symbol, array) {
-        QString position = fromJsonArraytoString(symbol["position"].toArray());
+    foreach (const Symbol & symbol, array) {
+        Symbol s=symbol;
 
-        symbols_list.value(sender->getFilename())->insert(position, symbol.toObject());
+        QString position = s.positionString();
+
+        symbols_list.value(sender->getFilename())->insert(position, s);
 
     }
     changed.insert(sender->getFilename(), false);
@@ -1012,15 +1017,13 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 	}
 
 
-    int start=0;
-    int num_chunks=1;
-    bool cont=false;
-    QJsonArray symbols;
     bool success = true;
-    QVector<QJsonObject> l;
+    QVector<Symbol> l;
     if (symbols_list.contains(filename)){
         qDebug()<<"Reading from memory";
-        l=symbols_list.value(filename)->values().toVector();
+        for (Symbol s :symbols_list.value(filename)->values().toVector()){
+            l.append(s);
+        }
     }
     else{
         qDebug()<<"Reading from database";
@@ -1048,7 +1051,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
     if (success == true) {
             message["success"] = true;
-            message["content"] = symbols;
             message["filename"]= filename;
             message["tot_symbols"]=tot_symbols;
             //message["info"]=true;
@@ -1221,25 +1223,24 @@ QString Server::fromJsonArraytoString(const QJsonArray& data) {
     QJsonDocument doc;
     doc.setArray(data);
     QString str(doc.toJson());
+    qDebug()<<"JSONTOSTRING INPUT: "<<data<<" OUTPUT: "<<str;
     return str;
 }
+
+
 
 void Server::saveFile() {
     for (QString filename : symbols_list.keys()) {
         if (changed.value(filename) == true) {
-            // Save from main memory to QVector
-            QVector<QByteArray> qvector;
-            for (QJsonObject symbol : symbols_list.value(filename)->values()) {
-                qvector.push_back(QJsonDocument(symbol).toJson());
-            }
+
 
             // Convert QVector to QByteArray
             QByteArray data;
             QDataStream stream(&data, QIODevice::WriteOnly);
-            stream << qvector;
+            stream <<  symbols_list.value(filename)->values();
 
             // Save binary file into db
-            db.saveFile(filename, data);
+            db.saveFile(filename, qCompress(data));
         }
         // Reset value to false
         changed.insert(filename, false);

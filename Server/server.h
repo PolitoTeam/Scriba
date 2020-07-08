@@ -56,7 +56,7 @@ private:
 	// <filename, list_of_workers>
 	QMap<QString,QList<ServerWorker*>*>* mapFileWorkers;
 	// <filename, map_of_symbols>
-	QMap<QString,QMap<QString, QJsonObject>*> symbols_list;
+    QMap<QString,QMap<QString, Symbol>*> symbols_list;
 	// <filename, changed>
 	QMap<QString, bool> changed;
 
@@ -76,11 +76,12 @@ private:
 	QJsonObject closeFile(const QJsonObject &doc, ServerWorker *sender);
 	QByteArray createByteArrayJsonImage(QJsonObject &message,
 										QVector<QByteArray> &v);
-    QByteArray createByteArrayFileContentImage(QJsonObject &message,QVector<QJsonObject> &c,QVector<QByteArray> &v);
-    void storeSymbolsServerMemory(ServerWorker* sender,QVector<QJsonObject> array);
+    QByteArray createByteArrayFileContentImage(QJsonObject &message,QVector<Symbol> &c,QVector<QByteArray> &v);
+    void storeSymbolsServerMemory(ServerWorker* sender,QVector<Symbol> array);
 	bool udpateSymbolListAndCommunicateDisconnection(QString filename,
 													 ServerWorker* sender);
 	static QString fromJsonArraytoString(const QJsonArray& data);
+    static QString fromVectorIdentifiertoString(const QVector<Identifier>& data);
 	void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
 	void sendJson(ServerWorker *destination, const QJsonObject &message);
 	void sendByteArray(ServerWorker *sender,const QByteArray &toSend);

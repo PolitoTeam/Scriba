@@ -243,6 +243,23 @@ public:
 		return result;
 	}
 
+	QString positionString() {
+		QString result = "[";
+		bool first = true;
+
+		for (Identifier i : position) {
+			if (first) {
+				first = false;
+			} else {
+				result += ", ";
+			}
+			result += i.to_string();
+		}
+		result += "]";
+		return result;
+
+	}
+
 	QJsonObject toJson() {
 		QJsonObject json;
 
