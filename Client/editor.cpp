@@ -831,6 +831,12 @@ void Editor::addUsers(const QList<QPair<QPair<QString,QString>,QPixmap>> users){
 		//  //qDebug()<<" --------Username: "<<user<<" Color: "<<color;
         //qDebug()<<"Try adding: "<<users.at(i).first.first;
 		if (highlighter->addClient(user)){   //prevents duplicates
+            if (this->highlighter->document()!=0){
+                //qDebug()<< "Assigning file";
+                this->highlighter->setDocument(ui->textEdit->document());
+                // qDebug()<< "Assigned file";
+            }
+
 			QListWidgetItem* item = new QListWidgetItem();
 
             QPixmap orig = users.at(i).second;
@@ -907,6 +913,11 @@ void Editor::removeUser(const QString& username, const QString& nickname){
 		if (item->data(Qt::UserRole).toString()==username){
             //qDebug()<<"ITEM TO REMOVE: "<<username;
 			highlighter->freeColor(fromStringToIntegerHash(username));
+            if (this->highlighter->document()!=0){
+                //qDebug()<< "Assigning file";
+                this->highlighter->setDocument(ui->textEdit->document());
+                // qDebug()<< "Assigned file";
+            }
 			this->ui->listWidget->removeItemWidget(item);
 			//  ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
 			delete item;
