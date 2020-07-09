@@ -436,7 +436,7 @@ void Server::signup_updateImage(ServerWorker *sender,
             }
             int operation_type = docObj["operation_type"].toInt();
 
-            if (operation_type==PASTE || operation_type==CHANGE){
+            if (operation_type==PASTE || operation_type==CHANGE || operation_type==DELETE){
 
                 QByteArray content_array = json_data.mid(4+size,-1);
                 quint32 content_size = qFromLittleEndian<qint32>(
@@ -466,11 +466,27 @@ void Server::signup_updateImage(ServerWorker *sender,
                 QElapsedTimer timer;
                 timer.start();
 
-                // Save symbols in memory
-                for (Symbol s : vec) {
-                    QString position = s.positionString();
-                    symbols_list.value(sender->getFilename())->insert(position, s);
+                if (operation_type==DELETE){
+
+
+                    for (Symbol s: vec) {
+
+                        QString position = s.positionString();
+
+                        symbols_list.value(sender->getFilename())->remove(position);
+                    }
                 }
+                else{
+
+
+                    // Save symbols in memory
+                    for (Symbol s : vec) {
+                        QString position = s.positionString();
+                        symbols_list.value(sender->getFilename())->insert(position, s);
+                    }
+                }
+
+
 
                 changed.insert(sender->getFilename(), true);
                 broadcastByteArray(docObj,content,sender);
@@ -608,7 +624,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
             Symbol s = Symbol::fromJson(symbol);
             QString position = s.positionString();
             symbols_list.value(sender->getFilename())->insert(position, s);
-        } else if (operation_type == DELETE) {
+        }/* else if (operation_type == DELETE) {
             QJsonArray symbols = docObj["symbols"].toArray();
             for (QJsonValue s_o: symbols) {
                 Symbol s = Symbol::fromJson(s_o.toObject());
@@ -616,7 +632,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
                 symbols_list.value(sender->getFilename())->remove(position);
             }
-        }/* else if (operation_type == CHANGE) {
+        } else if (operation_type == CHANGE) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s =Symbol::fromJson(symbol);
             QString position = s.positionString();

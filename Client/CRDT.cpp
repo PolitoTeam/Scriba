@@ -250,11 +250,11 @@ int CRDT::generateRandomNumBetween(int n1,int n2) {
 }
 
 void CRDT::localErase(int& line, int& index,int lenght) {
-	QJsonArray symbols;
+    QVector<Symbol> symbols;
 
 	for (int i=0;i<lenght;i++){
 		Symbol s = _symbols[line][index];
-		symbols.append(s.toJson());
+        symbols.push_back(s);
 		bool newLineRemoved = (s.getValue() == '\n');
 		_symbols[line].erase(_symbols[line].begin() + index);
 
@@ -272,9 +272,10 @@ void CRDT::localErase(int& line, int& index,int lenght) {
 	message["type"] = QStringLiteral("operation");
 	message["editorId"] = _siteId;
 	message["operation_type"] = DELETE;
-	message["symbols"] = symbols;
 
-	client->sendJson(message);
+
+    QByteArray toSend= client->createByteArrayFileContent(message,symbols);
+    client->sendByteArray(toSend);
 }
 
 void CRDT::localChange(int line, int index, QFont font, QColor color) {
@@ -658,12 +659,12 @@ void CRDT::findEndPosition(Symbol lastChar, QVector<Symbol> lastLine,
 	}
 }
 
-void CRDT::handleRemoteErase(const QJsonArray& symbols) {
+void CRDT::handleRemoteErase(const QVector<Symbol>& symbols) {
 	int startLine,startIndex,endLine,endIndex;
 
 	for (int i = 0; i < symbols.size(); i++) {
-		QJsonObject symbol = symbols[i].toObject();
-		Symbol s = Symbol::fromJson(symbol);
+
+        Symbol s = symbols[i];
 
 		int line, index;
 		bool res = findPosition(s, line, index);

@@ -42,7 +42,7 @@ public:
 private slots:
 	void handleRemoteInsert(const Symbol& s);
     void handleRemotePaste(const QVector<Symbol>& s);
-    void handleRemoteErase(const QJsonArray& s);
+    void handleRemoteErase(const QVector<Symbol>& s);
     void handleRemoteChange(const QVector<Symbol>& s);
 	void handleRemoteAlignChange(const Symbol& s);
 

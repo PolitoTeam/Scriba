@@ -76,7 +76,7 @@ signals:
 
 	void remoteInsert(Symbol s);
     void remotePaste(QVector<Symbol> s);
-	void remoteErase(QJsonArray s);
+    void remoteErase(QVector<Symbol> s);
     void remoteChange(QVector<Symbol> s);
 	void remoteAlignChange(Symbol s);
 	void correctNewFile();

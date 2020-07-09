@@ -272,11 +272,11 @@ void Client::jsonReceived(const QJsonObject &docObj)
 			Symbol s = Symbol::fromJson(symbol);
 
 			emit remoteInsert(s);
-		} else if (operation_type == DELETE){
+        }/* else if (operation_type == DELETE){
 			QJsonArray symbols = docObj["symbols"].toArray();
 
 			emit remoteErase(symbols);
-        }/* else if (operation_type == CHANGE) {
+        }else if (operation_type == CHANGE) {
 			QJsonObject symbol = docObj["symbol"].toObject();
 			Symbol s = Symbol::fromJson(symbol);
 
@@ -724,8 +724,9 @@ void Client::byteArrayReceived(const QByteArray& doc){
                 }
                 int operation_type = opType.toInt();
 
-                if (operation_type!=PASTE && operation_type!=CHANGE)
+                if (operation_type!=PASTE && operation_type!=CHANGE  && operation_type!=DELETE)
                     return;
+
 
                 const QJsonValue tot_symbolsVal = docObj.value(QLatin1String("tot_symbols"));
                 if (tot_symbolsVal.isNull()) {
@@ -767,8 +768,10 @@ void Client::byteArrayReceived(const QByteArray& doc){
 
                 if (operation_type==PASTE)
                      emit remotePaste(vec);
-                else
+                else if(operation_type==CHANGE)
                      emit remoteChange(vec);
+                else
+                    emit remoteErase(vec);
 
             }
 
