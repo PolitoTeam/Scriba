@@ -276,16 +276,17 @@ void Client::jsonReceived(const QJsonObject &docObj)
 			QJsonArray symbols = docObj["symbols"].toArray();
 
 			emit remoteErase(symbols);
-		} else if (operation_type == CHANGE) {
+        }/* else if (operation_type == CHANGE) {
 			QJsonObject symbol = docObj["symbol"].toObject();
 			Symbol s = Symbol::fromJson(symbol);
 
 			emit remoteChange(s);
-		} else if (operation_type == PASTE) {
+
+        } else if (operation_type == PASTE) {
 			QJsonArray symbols = docObj["symbols"].toArray();
 
 			emit remotePaste(symbols);
-		} else if (operation_type == ALIGN) {
+        } */else if (operation_type == ALIGN) {
 			QJsonObject symbol = docObj["symbol"].toObject();
 			Symbol s = Symbol::fromJson(symbol);
 
@@ -715,6 +716,62 @@ void Client::byteArrayReceived(const QByteArray& doc){
 				const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
 				emit loginError(reasonVal.toString());
 			}
+            else if (typeVal.toString().compare(QLatin1String("operation"),
+                                                Qt::CaseInsensitive) == 0){
+                const QJsonValue opType = docObj.value(QLatin1String("operation_type"));
+                if (opType.isNull()) {
+                    return;
+                }
+                int operation_type = opType.toInt();
+
+                if (operation_type!=PASTE && operation_type!=CHANGE)
+                    return;
+
+                const QJsonValue tot_symbolsVal = docObj.value(QLatin1String("tot_symbols"));
+                if (tot_symbolsVal.isNull()) {
+                    return;
+                }
+
+                int tot_symbols = tot_symbolsVal.toInt();
+
+
+                quint32 content_size = qFromLittleEndian<qint32>(
+                            reinterpret_cast<const uchar *>(content_image_array.left(4).data())
+                            );
+
+                qDebug()<<"content size read: "<<content_size;
+                qDebug()<<"Number of symbols: "<<tot_symbols;
+
+                QVector<Symbol> vec(tot_symbols);
+                if (content_size!=0){
+
+                    QElapsedTimer timer;
+                    timer.start();
+                    QByteArray content = content_image_array.mid(4, content_size);
+                    QDataStream out(&content, QIODevice::ReadOnly);
+                    qDebug()<<"content size kkk: "<<content.size();
+                    out >> vec;
+
+
+
+                    qDebug() << "Time to receive: " << timer.elapsed() << "milliseconds";
+                } else {
+                    // Empty added size
+                    qDebug()<<" CONTENUTO VUOTO: da gestire";
+                }
+
+                qDebug()<<"Contentuo size: "<<vec.size();
+
+                QElapsedTimer timer;
+                timer.start();
+
+                if (operation_type==PASTE)
+                     emit remotePaste(vec);
+                else
+                     emit remoteChange(vec);
+
+            }
+
 		}
 	} else {
 		qDebug() << "Error json: "<<parseError.error;
@@ -810,6 +867,25 @@ QString Client::getOpenedFile()
 
 void Client::setOpenedFile(const QString& name) {
 	this->openfile = name;
+}
+
+QByteArray Client::createByteArrayFileContent(QJsonObject message, QVector<Symbol> c){
+    QByteArray byte_array_msg = QJsonDocument(message).toJson();
+    quint32 size_json = byte_array_msg.size();
+
+    QByteArray byte_array_content;
+    QDataStream in(&byte_array_content, QIODevice::WriteOnly);
+    in << c;
+    quint32 size_content = byte_array_content.size();
+
+    // Depends on the endliness of the machine
+    QByteArray ba((const char *)&size_json, sizeof(size_json));
+    ba.append(byte_array_msg);
+    QByteArray ba_c((const char *)&size_content, sizeof(size_content));
+    ba_c.append(byte_array_content);
+    ba.append(ba_c);
+
+    return ba;
 }
 
 

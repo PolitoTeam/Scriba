@@ -1030,13 +1030,29 @@ void Editor::on_formatChange() {
 	QString changed = ui->textEdit->textCursor().selectedText();
 
 	int start = ui->textEdit->textCursor().selectionStart();
+
+
 	int end = ui->textEdit->textCursor().selectionEnd();
+
+
+    QFont fontPrec;
+    QColor colorPrec;
+    QFont font;
+    QColor color;
+    int startIndex;
+    int endIndex;
+    int startLine;
+    int endLine;
 	//qDebug() << "start/end selection" << start << end;
 	QTextCursor cursor = ui->textEdit->textCursor();
 	for (int i = start; i < end; i++) {
 		cursor.setPosition(i);
 		int line = cursor.blockNumber();
 		int index = cursor.positionInBlock();
+        if (i==start){
+            startIndex=endIndex=index;
+            startLine=endLine=line;
+        }
 		//qDebug() << "line/index/char" << line << index << changed.at(i - start);
 
 		// if newline ('\n') do nothing
@@ -1045,25 +1061,71 @@ void Editor::on_formatChange() {
 			continue;
 		}
 
+        qDebug()<<"Font: "<<font;
+        qDebug()<<"FontPrec: "<<fontPrec;
+        if (font==fontPrec)
+            qDebug()<<"Font equals";
+
+        qDebug()<<"Color: "<<color;
+        qDebug()<<"ColorPrec: "<<colorPrec;
+        if (color==colorPrec)
+            qDebug()<<"Color equals";
+
 		// position AFTER the char to read its format
-		cursor.setPosition(i + 1);
-		QFont font = cursor.charFormat().font();
-		crdt->localChange(line, index, font, cursor.charFormat().foreground().color());
+        cursor.setPosition(i + 1);font = cursor.charFormat().font();
+        color = cursor.charFormat().foreground().color();
+        if (i==start){
+            fontPrec=font;
+            colorPrec=color;
+        }
+
+        if (font == fontPrec && color==colorPrec){
+            //qDebug()<<"concatenated: "<<added.at(i).unicode();
+           endIndex=index;
+           endLine=line;
+        }else{
+            crdt->localChangeGroup(startLine, endLine,startIndex,endIndex,
+                                   fontPrec,  colorPrec);
+            qDebug()<<"Local change group; startLine: "<<startLine<<" endLine: "<<endLine<<" startIndex: "<<startIndex<<" endIndex: "<<endIndex;
+            fontPrec=font;
+            colorPrec=color;
+            startIndex=index;
+            startLine=line;
+            endIndex=index;
+            endLine=line;
+        }
+
 	}
+    crdt->localChangeGroup(startLine, endLine,startIndex,endIndex,
+                           fontPrec,  colorPrec);
 }
 
 void Editor::on_formatChange(QTextCursor c) {
 	//qDebug() << "CHANGED" << c.selectedText();
 	QString changed = c.selectedText();
+    QFont fontPrec;
+    QColor colorPrec;
+    QFont font;
+    QColor color;
 
 	int start = c.selectionStart();
+
 	int end = c.selectionEnd();
+
+    int startIndex;
+    int endIndex;
+    int startLine;
+    int endLine;
 	//qDebug() << "start/end selection" << start << end;
 	QTextCursor cursor = ui->textEdit->textCursor();
 	for (int i = start; i < end; i++) {
 		cursor.setPosition(i);
 		int line = cursor.blockNumber();
 		int index = cursor.positionInBlock();
+        if (i==start){
+            startIndex=endIndex=index;
+            startLine=endLine=line;
+        }
 		//qDebug() << "line/index/char" << line << index << changed.at(i - start);
 
 		// if newline ('\n') do nothing
@@ -1074,9 +1136,36 @@ void Editor::on_formatChange(QTextCursor c) {
 
 		// position AFTER the char to read its format
 		cursor.setPosition(i + 1);
-		QFont font = cursor.charFormat().font();
-		crdt->localChange(line, index, font, cursor.charFormat().foreground().color());
+        font = cursor.charFormat().font();
+        color=cursor.charFormat().foreground().color();
+        if (i==start){
+            fontPrec=font;
+            colorPrec=color;
+        }
+        qDebug()<<"Font: "<<font;
+        qDebug()<<"FontPrec: "<<fontPrec;
+
+
+        if (font == fontPrec && color==colorPrec){
+            //qDebug()<<"concatenated: "<<added.at(i).unicode();
+           endIndex=index;
+           endLine=line;
+        }else{
+            crdt->localChangeGroup(startLine, endLine,startIndex,endIndex,
+                                   fontPrec,  colorPrec);
+            qDebug()<<"Local change group; startLine: "<<startLine<<" endLine: "<<endLine<<" startIndex: "<<startIndex<<" endIndex: "<<endIndex;
+            fontPrec=font;
+            colorPrec=color;
+            startIndex=index;
+            startLine=line;
+            endIndex=index;
+            endLine=line;
+        }
+
+
 	}
+    crdt->localChangeGroup(startLine, endLine,startIndex,endIndex,
+                           fontPrec,  colorPrec);
 }
 
 void Editor::on_addCRDTterminator() {

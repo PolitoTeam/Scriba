@@ -24,9 +24,12 @@ public:
 	void localInsert(int line, int index, ushort value, QFont font, QColor color,Qt::Alignment align);
 	void localInsertGroup(int& line, int& index, QString partial, QFont font, QColor color,Qt::Alignment align);
 	void localErase(int& line, int& index,int length);
+
 	int getSiteID();
 	void localChangeAlignment(int line,SymbolFormat::Alignment align);
 	void localChange(int line, int index, QFont font, QColor color);
+    void localChangeGroup(int startLine, int endLine,int startIndex,int endIndex,
+                                QFont font, QColor color);
 	int getSize();
 	QString to_string();
 	Symbol getSymbol(int line,int index);
@@ -38,9 +41,9 @@ public:
 
 private slots:
 	void handleRemoteInsert(const Symbol& s);
-	void handleRemotePaste(const QJsonArray& s);
-	void handleRemoteErase(const QJsonArray& s);
-	void handleRemoteChange(const Symbol& s);
+    void handleRemotePaste(const QVector<Symbol>& s);
+    void handleRemoteErase(const QJsonArray& s);
+    void handleRemoteChange(const QVector<Symbol>& s);
 	void handleRemoteAlignChange(const Symbol& s);
 
 signals:

@@ -121,19 +121,19 @@ void CRDT::localInsertGroup(int& line, int& index, QString partial,
 		}
 	}
 
-	// Serialize
-	QByteArray data;
-	QDataStream in(&data, QIODevice::WriteOnly);
-	in << vector;
-
 	// Broadcast
 	QJsonObject message;
 	message["type"] = QStringLiteral("operation");
 	message["editorId"] = _siteId;
 	message["operation_type"] = PASTE;
-	message["symbols"] = QString(data.toBase64());
+    message["tot_symbols"] =vector.length();
 
-	client->sendJson(message);
+    qDebug()<<"PASTING..."<<vector.length();
+
+    QByteArray toSend= client->createByteArrayFileContent(message,vector);
+    client->sendByteArray(toSend);
+
+    //client->sendJson(message);
 }
 
 void CRDT::localChangeAlignment(int line,SymbolFormat::Alignment align) {
@@ -294,6 +294,68 @@ void CRDT::localChange(int line, int index, QFont font, QColor color) {
 	client->sendJson(message);
 }
 
+void CRDT::localChangeGroup(int startLine, int endLine,int startIndex,int endIndex,
+                            QFont font, QColor color) {
+    if (startLine < 0 || startIndex < 0 || endLine < 0 || endIndex < 0)
+        throw std::runtime_error("Error: index out of bound.\n");
+    QVector<Symbol> vector;
+    if (startLine==endLine){
+        for (int i=startIndex; i<=endIndex; i++){
+            // UPDATE INDEX & LINE
+            Symbol s = _symbols[startLine][i];
+            // Update font and color
+            s.setFormat(font, color);
+            _symbols[startLine][i] = s;
+            vector.push_back(s);
+
+        }
+    }
+    else{
+        for (int i=startIndex; i<_symbols[startLine].length(); i++){
+            // UPDATE INDEX & LINE
+            Symbol s = _symbols[startLine][i];
+            // Update font and color
+            s.setFormat(font, color);
+            _symbols[startLine][i] = s;
+            vector.push_back(s);
+
+        }
+        for (int i=0; i<=endIndex; i++){
+            // UPDATE INDEX & LINE
+            Symbol s = _symbols[endLine][i];
+            // Update font and color
+            s.setFormat(font, color);
+            _symbols[endLine][i] = s;
+            vector.push_back(s);
+        }
+        for (int  j=startLine+1;j<endLine-1;j++){
+            for (int i =0; i<_symbols[j].length(); i++){
+                // UPDATE INDEX & LINE
+                Symbol s = _symbols[j][i];
+
+                // Update font and color
+                s.setFormat(font, color);
+                _symbols[j][i] = s;
+
+                vector.push_back(s);
+
+            }
+        }
+    }
+    // Broadcast
+    QJsonObject message;
+    message["type"] = QStringLiteral("operation");
+    message["editorId"] = _siteId;
+    message["operation_type"] = CHANGE;
+    message["tot_symbols"] = vector.size();
+
+
+    QByteArray toSend= client->createByteArrayFileContent(message,vector);
+    client->sendByteArray(toSend);
+
+    //client->sendJson(message);
+}
+
 void CRDT::cursorPositionChanged(int line, int index) {
 	Symbol s = _symbols[line][index];
 
@@ -421,14 +483,14 @@ void CRDT::handleRemoteAlignChange(const Symbol& s) {
 	emit changeAlignment(align,line, index);
 }
 
-void CRDT::handleRemotePaste(const QJsonArray& symbols){
+void CRDT::handleRemotePaste(const QVector<Symbol>& symbols){
 	QString partial;
+    qDebug()<<"Symbols received to paste "<<symbols.length();
 	int firstLine, firstIndex;
 	QTextCharFormat newFormat;
 	QVector<Symbol> alignChanges;
 	for (int i = 0; i < symbols.size(); i++) {
-		QJsonObject symbol = symbols[i].toObject();
-		Symbol s = Symbol::fromJson(symbol);
+        Symbol s =symbols[i];
 		int line, index;
 		if (_symbols.size() != 0) {
 			findInsertPosition(s, line, index);
@@ -638,16 +700,19 @@ void CRDT::handleRemoteErase(const QJsonArray& symbols) {
 	emit erase(startLine, startIndex,symbols.size());
 }
 
-void CRDT::handleRemoteChange(const Symbol& s) {
-	int line, index;
-	bool res = findPosition(s, line, index);
-	if (!res)
-		return;
+void CRDT::handleRemoteChange(const QVector<Symbol>& symbols) {
+    qDebug()<<" Handle remote change: "<<symbols.size();
+    for (Symbol s: symbols){
+        int line, index;
+        bool res = findPosition(s, line, index);
+        if (!res)
+            return;
 
-	// Update symbol
-	_symbols[line][index] = s;
+        // Update symbol
+        _symbols[line][index] = s;
 
-	emit change(line, index, s);
+        emit change(line, index, s);
+    }
 }
 
 Symbol CRDT::getSymbol(int line,int index) {

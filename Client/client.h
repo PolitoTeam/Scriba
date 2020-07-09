@@ -31,6 +31,7 @@ public:
 	void getFilenameFromLink(const QString& sharedLink);
 	QList<QPair<QString,QString>> getActiveFiles();
 	void sendJson(const QJsonObject& message);
+    QByteArray createByteArrayFileContent(QJsonObject message, QVector<Symbol> vector);
 	void createNewFile(QString filename);
 	void closeFile();
     void sendByteArray(const QByteArray &byteArray);
@@ -74,9 +75,9 @@ signals:
 	void openFilesError(const QString& reason);
 
 	void remoteInsert(Symbol s);
-	void remotePaste(QJsonArray s);
+    void remotePaste(QVector<Symbol> s);
 	void remoteErase(QJsonArray s);
-	void remoteChange(Symbol s);
+    void remoteChange(QVector<Symbol> s);
 	void remoteAlignChange(Symbol s);
 	void correctNewFile();
 	void correctOpenedFile();

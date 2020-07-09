@@ -100,7 +100,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
     connect(worker, &ServerWorker::jsonReceived, this,
             std::bind(&Server::jsonReceived,
                       this, worker, std::placeholders::_1));
-    connect(worker, &ServerWorker::signingUp_updatingImage, this,
+    connect(worker, &ServerWorker::byte_array_received, this,
             std::bind(&Server::signup_updateImage,
                       this, worker, std::placeholders::_1));
     connect(this, &Server::stopAllClients,
@@ -405,6 +405,86 @@ void Server::signup_updateImage(ServerWorker *sender,
                     return;
                 }
             }
+
+            QByteArray image_array = json_data.mid(4+size,-1);
+            quint32 img_size = qFromLittleEndian<qint32>(
+                        reinterpret_cast<const uchar *>(image_array.left(4).data())
+            );
+            if (img_size != 0) {
+                    QByteArray img = image_array.mid(4, img_size);
+                    image_array = image_array.mid(img_size + 4);
+                    QImage p;
+                    p.loadFromData(img);
+
+
+                    db.upsertImage(username, img);
+            }
+
+
+            if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
+                message["success"] = true;
+                this->sendJson(sender,message);
+            }
+        }
+        else if (typeValS.compare(QLatin1String("operation"), Qt::CaseInsensitive) == 0){
+            const QJsonValue opType = docObj.value(QLatin1String("operation_type"));
+            if (opType.isNull()) {
+                message["success"] = false;
+                message["reason"] = QStringLiteral("Wrong format");
+                this->sendJson(sender,message);
+                return;
+            }
+            int operation_type = docObj["operation_type"].toInt();
+
+            if (operation_type==PASTE || operation_type==CHANGE){
+
+                QByteArray content_array = json_data.mid(4+size,-1);
+                quint32 content_size = qFromLittleEndian<qint32>(
+                            reinterpret_cast<const uchar *>(content_array.left(4).data())
+                            );
+
+
+
+                QVector<Symbol> vec;
+                QByteArray content;
+                if (content_size!=0){
+                    QElapsedTimer timer;
+                    timer.start();
+                    content= content_array.mid(4, content_size);
+                    qDebug()<<"BYTES SERVER: "<<content.size();
+                    QDataStream out(&content, QIODevice::ReadOnly);
+                    out >> vec;
+                    qDebug() << "Time to receive: " << timer.elapsed() << "milliseconds";
+                } else {
+                    // Empty added size
+                    qDebug()<<" CONTENUTO VUOTO: da gestire";
+                }
+
+                qDebug()<<"to paste: "<<vec.size();
+
+
+                QElapsedTimer timer;
+                timer.start();
+
+                // Save symbols in memory
+                for (Symbol s : vec) {
+                    QString position = s.positionString();
+                    symbols_list.value(sender->getFilename())->insert(position, s);
+                }
+
+                changed.insert(sender->getFilename(), true);
+                broadcastByteArray(docObj,content,sender);
+            }
+            else{
+                message["success"] = false;
+                message["reason"] = QStringLiteral("Wrong format");
+                this->sendJson(sender,message);
+                return;
+            }
+
+
+
+
         }
     } else {
         message["success"] = false;
@@ -413,25 +493,7 @@ void Server::signup_updateImage(ServerWorker *sender,
         return;
     }
 
-    QByteArray image_array = json_data.mid(4+size,-1);
-    quint32 img_size = qFromLittleEndian<qint32>(
-                reinterpret_cast<const uchar *>(image_array.left(4).data())
-    );
-    if (img_size != 0) {
-            QByteArray img = image_array.mid(4, img_size);
-            image_array = image_array.mid(img_size + 4);
-            QImage p;
-            p.loadFromData(img);
 
-
-			db.upsertImage(username, img);
-	}
-
-
-    if (typeValS.compare(QLatin1String("signup"), Qt::CaseInsensitive) == 0){
-        message["success"] = true;
-        this->sendJson(sender,message);
-    }
 }
 
 
@@ -554,18 +616,18 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
 
                 symbols_list.value(sender->getFilename())->remove(position);
             }
-        } else if (operation_type == CHANGE) {
+        }/* else if (operation_type == CHANGE) {
             QJsonObject symbol = docObj["symbol"].toObject();
             Symbol s =Symbol::fromJson(symbol);
             QString position = s.positionString();
             symbols_list.value(sender->getFilename())->insert(position,s );
-        } else if (operation_type == ALIGN) {
+        }*/ else if (operation_type == ALIGN) {
             QJsonObject symbol = docObj["symbol"].toObject();
 			Symbol s =Symbol::fromJson(symbol);
 			QString position = s.positionString();
             symbols_list.value(sender->getFilename())->insert(position, Symbol::fromJson(symbol));
-		} else if (operation_type == PASTE) {
-			// Decode as QByteArray
+        }/* else if (operation_type == PASTE) {
+            // Decode as QByteArray
 			QByteArray bArray;
 			bArray.append(docObj["symbols"].toString());
 			QByteArray b64 = QByteArray::fromBase64(bArray);
@@ -580,7 +642,9 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj)
                 QString position = s.positionString();
                 symbols_list.value(sender->getFilename())->insert(position, s);
 			}
+
         }
+        */
 
         changed.insert(sender->getFilename(), true);
         broadcast(docObj, sender);

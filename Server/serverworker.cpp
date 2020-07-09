@@ -170,7 +170,7 @@ bool ServerWorker::parseJson()
             qDebug() << "Invalid message: " + QString::fromUtf8(json_data);
 		}
     } else {
-		emit signingUp_updatingImage(json_data);
+        emit byte_array_received(json_data);
     }
     m_received_data.remove(0,8+json_size);
     return true;
