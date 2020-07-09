@@ -239,6 +239,7 @@ void Editor::exit()
 	crdt->setId(fromStringToIntegerHash(client->getUsername()));
 	// this->highlighter->setCRDT(crdt);
 	this->highlighter->addLocal(fromStringToIntegerHash(client->getUsername()));
+   actionShowAssigned->trigger();
 
 	emit changeWidget(HOME);
 }
