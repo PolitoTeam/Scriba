@@ -1,37 +1,34 @@
 #ifndef MYQTEXTEDIT_H
 #define MYQTEXTEDIT_H
 
-#include <QObject>
-#include <QWidget>
-#include <QTextEdit>
-#include <QPainter>
 #include "remotecursor.h"
+#include <QObject>
+#include <QPainter>
+#include <QTextEdit>
+#include <QWidget>
 
-class MyQTextEdit : public QTextEdit
-{
-	Q_OBJECT
+class MyQTextEdit : public QTextEdit {
+  Q_OBJECT
 public:
-	explicit MyQTextEdit(QWidget *parent = nullptr);
-	QMap<int, RemoteCursor*> remote_cursors;
-	void keyPressEvent(QKeyEvent *e) override;
-	void insertFromMimeData(const QMimeData *source) override;
-	void setLine(int* line);
-	void setIndex(int* index);
+  explicit MyQTextEdit(QWidget *parent = nullptr);
+  QMap<int, RemoteCursor *> remote_cursors;
+  void keyPressEvent(QKeyEvent *e) override;
+  void insertFromMimeData(const QMimeData *source) override;
+  void setLine(int *line);
+  void setIndex(int *index);
 
 private:
-	QTextCursor cursor;
-	int* line,*index;
+  QTextCursor cursor;
+  int *line, *index;
 
 protected:
-	void paintEvent(QPaintEvent* event) override;
+  void paintEvent(QPaintEvent *event) override;
 
 signals:
-	void undo();
-	void redo();
-	void resetDefaultAlignment(bool a);
-	void firstLineAlignmentOnPaste(QString alignment);
+  void undo();
+  void redo();
+  void resetDefaultAlignment(bool a);
+  void firstLineAlignmentOnPaste(QString alignment);
 };
-
-
 
 #endif // MYQTEXTEDIT_H
