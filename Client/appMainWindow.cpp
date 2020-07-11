@@ -25,7 +25,7 @@ AppMainWindow::AppMainWindow(QWidget *parent, Client *c)
   qApp->setStyleSheet(stylesheet);
 
   // Set fixed window size
-  this->setFixedSize(QSize(640, 800));
+  this->setFixedSize(QSize(640, 500));
 
   ui->setupUi(this);
   client->setParent(this);
@@ -86,6 +86,14 @@ void AppMainWindow::on_changeWidget(int widget) {
     editor->show();
   } else {
     editor->hide();
+    if (widget==LOGIN || widget==HOME){
+        // Set fixed window size
+        this->setFixedSize(QSize(640, 600));
+    }
+    else{
+        // Set fixed window size
+        this->setFixedSize(QSize(640, 700));
+    }
     if (widget == HOME) {
       this->home->setProfile();
     }
