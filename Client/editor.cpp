@@ -1058,6 +1058,10 @@ void Editor::on_formatChange() {
 
   int end = ui->textEdit->textCursor().selectionEnd();
 
+  qDebug()<<"start: "<<start;
+  qDebug()<<"end: "<<end;
+
+
   QFont fontPrec;
   QColor colorPrec;
   QFont font;
@@ -1066,8 +1070,17 @@ void Editor::on_formatChange() {
   int endIndex;
   int startLine;
   int endLine;
-  // qDebug() << "start/end selection" << start << end;
   QTextCursor cursor = ui->textEdit->textCursor();
+  if (start==end){
+      cursor.setPosition(start);
+      int line = cursor.blockNumber();
+      int index = cursor.positionInBlock();
+
+      startLine=endLine=line;
+      startIndex=endIndex=index;
+  }
+  // qDebug() << "start/end selection" << start << end;
+
   for (int i = start; i < end; i++) {
     cursor.setPosition(i);
     int line = cursor.blockNumber();
@@ -1121,6 +1134,7 @@ void Editor::on_formatChange() {
       endLine = line;
     }
   }
+
   crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                          colorPrec);
 }
@@ -1143,6 +1157,14 @@ void Editor::on_formatChange(QTextCursor c) {
   int endLine;
   // qDebug() << "start/end selection" << start << end;
   QTextCursor cursor = ui->textEdit->textCursor();
+  if (start==end){
+      cursor.setPosition(start);
+      int line = cursor.blockNumber();
+      int index = cursor.positionInBlock();
+
+      startLine=endLine=line;
+      startIndex=endIndex=index;
+  }
   for (int i = start; i < end; i++) {
     cursor.setPosition(i);
     int line = cursor.blockNumber();

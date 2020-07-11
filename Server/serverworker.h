@@ -27,7 +27,6 @@ public:
 
 public slots:
   void disconnectFromClient();
-  void sslErrors(const QList<QSslError> &errors);
   void onReadyRead();
   bool parseJson();
 
