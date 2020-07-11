@@ -35,7 +35,7 @@ Editor::Editor(QWidget *parent, Client *client)
   connect(ui->actionCopy, &QAction::triggered, this, &Editor::copy);
   connect(ui->actionCut, &QAction::triggered, this, &Editor::cut);
   connect(ui->actionPaste, &QAction::triggered, this, &Editor::paste);
-  // connect(ui->actionUndo, &QAction::triggered, this, &Editor::undo);
+  connect(ui->actionUndo, &QAction::triggered, this, &Editor::undo);
   connect(ui->actionRedo, &QAction::triggered, this, &Editor::redo);
   connect(ui->actionFont, &QAction::triggered, this, &Editor::selectFont);
   connect(ui->actionBold, &QAction::triggered, this, &Editor::setFontBold);
@@ -189,6 +189,8 @@ Editor::Editor(QWidget *parent, Client *client)
 
   ui->textEdit->setLine(&line);
   ui->textEdit->setIndex(&index);
+
+  statusBar()->setStyleSheet("color: green; font: 14pt; ");
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
@@ -226,8 +228,9 @@ void Editor::printPdf() {
   printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setOutputFileName(fileName);
   ui->textEdit->document()->print(&printer);
-  statusBar()->showMessage(
-      tr("Exported \"%1\"").arg(QDir::toNativeSeparators(fileName)));
+  QString msg=tr("  Exported \"%1\"").arg(QDir::toNativeSeparators(fileName));
+
+  statusBar()->showMessage(msg,3000);
   //! [0]
 #endif
 }
