@@ -23,21 +23,15 @@ Client::Client(QObject *parent, QString addr, quint16 port)
   this->addr = addr;
   this->port = port;
 
-  // Forward the connected and disconnected signals
   connect(m_clientSocket, &QSslSocket::connected, this, &Client::connected);
   connect(m_clientSocket,
           static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(
               &QAbstractSocket::error),
           this, &Client::error);
-
   connect(m_clientSocket, &QSslSocket::disconnected, this, [this]() -> void {
     this->m_received_data.clear();
     this->m_exptected_json_size = 0;
   });
-  connect(m_clientSocket, &QSslSocket::stateChanged, this,
-          [](QAbstractSocket::SocketState socketState) {
-            //            qDebug() << socketState;
-          });
   connect(this, &Client::byteArrayReceivedSignal, this,
           &Client::byteArrayReceived, Qt::QueuedConnection);
   connect(this, &Client::jsonReceivedSignal, this, &Client::jsonReceived,
@@ -48,27 +42,7 @@ Client::Client(QObject *parent, QString addr, quint16 port)
   connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead,
           Qt::QueuedConnection);
 
-  /* QFile certFile("/Users/giuseppe.pastore/Documents/Programmazione di
-  sistema/Progetto/SharedEditor/SharedEditor/certificates/server.pem");
-  certFile.open(QIODevice::ReadOnly);
-  QSslCertificate cert = QSslCertificate(certFile.readAll());
-  certFile.close();
-  */
-
-  // TO UNCOMMENT
-  /*
-
-  QSslConfiguration::defaultConfiguration().setCaCertificates(QSslConfiguration::systemCaCertificates());
-  m_clientSocket->addCaCertificates(QSslConfiguration::systemCaCertificates());
-  //qDebug()<<"CA certificates: ";
-  for (QSslCertificate x: m_clientSocket->sslConfiguration().caCertificates()){
-
-          //qDebug()<<"\n Common Name:
-  "<<x.issuerInfo(QSslCertificate::CommonName)<<" SubjectName:
-  "<<x.subjectInfo(QSslCertificate::CommonName);
-  }
-
-  */
+  // QSslSocket::VerifyPeer doesn't work on macOS
   m_clientSocket->addCaCertificates(":/resources/certificates/rootCA.crt");
   m_clientSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
 
@@ -88,20 +62,17 @@ void Client::sendByteArray(const QByteArray &byteArray) {
 void Client::login(const QString &username, const QString &password) {
   connectToServer(QHostAddress(this->addr), this->port);
 
-  // Create the JSON we want to send
   QJsonObject message;
   message["type"] = QStringLiteral("login");
   message["username"] = username;
   message["password"] = password;
-
   sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 }
 
 void Client::signup(const QString &username, const QString &password,
                     QPixmap *image) {
   connectToServer(QHostAddress(this->addr), this->port);
-  qDebug() << "In signup";
-  // Create the JSON we want to send
+
   QJsonObject message;
   message["type"] = QStringLiteral("signup");
   message["username"] = username;
@@ -109,10 +80,10 @@ void Client::signup(const QString &username, const QString &password,
 
   QByteArray obj = QJsonDocument(message).toJson(QJsonDocument::Compact);
   quint32 size_json = obj.size();
-  // Depends on the endliness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(obj);
 
+  // If profile image uploaded by user
   if (image != nullptr) {
     QByteArray bArray;
     QBuffer buffer(&bArray);
@@ -185,6 +156,7 @@ void Client::checkOldPassword(const QString &old_password) {
 
 void Client::checkExistingOrNotUsername(const QString &username) {
   connectToServer(QHostAddress(this->addr), this->port);
+
   QJsonObject message;
   message["type"] = QStringLiteral("check_username");
   message["username"] = username;
@@ -192,10 +164,9 @@ void Client::checkExistingOrNotUsername(const QString &username) {
 }
 
 // Attempts to close the socket.
-// If there is pending data waiting to be written, QAbstractSocket will enter C
-// losingState and wait until all data has been written.
+// If there is pending data waiting to be written, QAbstractSocket will enter
+// ClosingState and wait until all data has been written.
 void Client::disconnectFromHost() {
-  qDebug() << m_clientSocket->bytesAvailable();
   if (this->m_loggedIn == true) {
     this->username.clear();
     this->nickname.clear();
@@ -203,15 +174,16 @@ void Client::disconnectFromHost() {
     this->m_loggedIn = false;
     this->profile->load(":/images/anonymous");
   }
+
   m_clientSocket->disconnectFromHost();
   if (m_clientSocket->state() == QAbstractSocket::UnconnectedState ||
       m_clientSocket->waitForDisconnected(1000)) {
-    qDebug("Disconnected!");
   }
 }
 
 void Client::jsonReceived(const QJsonObject &docObj) {
-  qDebug() << docObj;
+  //  qDebug() << docObj;
+
   // Actions depend on the type of message
   const QJsonValue typeVal = docObj.value(QLatin1String("type"));
   if (typeVal.isNull() || !typeVal.isString())
@@ -221,13 +193,12 @@ void Client::jsonReceived(const QJsonObject &docObj) {
                                  Qt::CaseInsensitive) == 0) {
     if (m_loggedIn)
       return; // If we are already logged in we ignore
-    // The success field will contain the result of our attempt to login
+
     const QJsonValue resultVal = docObj.value(QLatin1String("success"));
     if (resultVal.isNull() || !resultVal.isBool())
-      return; // The message had no success field so we ignore
+      return;
     const bool signupSuccess = resultVal.toBool();
     if (signupSuccess) {
-      // We logged in succesfully and we notify it via the signedUp signal
       emit signedUp();
       return;
     }
@@ -268,22 +239,7 @@ void Client::jsonReceived(const QJsonObject &docObj) {
       Symbol s = Symbol::fromJson(symbol);
 
       emit remoteInsert(s);
-    } /* else if (operation_type == DELETE){
-                     QJsonArray symbols = docObj["symbols"].toArray();
-
-                     emit remoteErase(symbols);
-     }else if (operation_type == CHANGE) {
-                     QJsonObject symbol = docObj["symbol"].toObject();
-                     Symbol s = Symbol::fromJson(symbol);
-
-                     emit remoteChange(s);
-
-     } else if (operation_type == PASTE) {
-                     QJsonArray symbols = docObj["symbols"].toArray();
-
-                     emit remotePaste(symbols);
-     } */
-    else if (operation_type == ALIGN) {
+    } else if (operation_type == ALIGN) {
       QJsonObject symbol = docObj["symbol"].toObject();
       Symbol s = Symbol::fromJson(symbol);
 
@@ -320,7 +276,7 @@ void Client::jsonReceived(const QJsonObject &docObj) {
         return;
       const bool shared = sharedJson.toBool();
       emit filesReceived(shared);
-    } else { // Error handling
+    } else {
       const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
       emit openFilesError(reasonVal.toString());
     }
@@ -393,30 +349,27 @@ void Client::createNewFile(QString filename) {
 }
 
 void Client::connectToServer(const QHostAddress &address, quint16 port) {
-  // TO DO: check Enrico
-  qDebug() << "QUI 0: " << m_clientSocket->state();
   if (m_clientSocket->state() != QAbstractSocket::UnconnectedState)
     return;
-  qDebug() << "QUI: " << m_clientSocket->state();
+
   m_clientSocket->connectToHost(address, port);
   if (m_clientSocket->waitForConnected()) {
     // Start handshake
     m_clientSocket->startClientEncryption();
-    // End handshake
   }
 
-  // Wait 1 minute
+  // Wait up to 1 minute
   if (!m_clientSocket->waitForEncrypted(60000)) {
     qDebug("Unable to connect to server");
   }
 }
 
 void Client::onReadyRead() {
-
   if (m_clientSocket->bytesAvailable() > 0) {
     m_received_data.append(m_clientSocket->readAll());
   }
 
+  // 8 is the size of the integer (that contains content size)
   if (m_received_data.isNull() || m_received_data.size() < 8) {
     return;
   }
@@ -479,7 +432,6 @@ bool Client::parseJson() {
       emit jsonReceivedSignal(jsonDoc.object());
     }
   } else {
-    qDebug() << " byte array received";
     emit byteArrayReceivedSignal(json_data);
   }
   m_received_data.remove(0, 8 + json_size);
@@ -493,24 +445,20 @@ void Client::byteArrayReceived(const QByteArray &doc) {
   QByteArray content_image_array = doc.mid(4 + size, -1);
 
   QJsonParseError parseError;
-  // We try to create a json document with the data we received
   const QJsonDocument jsonDoc = QJsonDocument::fromJson(json, &parseError);
   if (parseError.error == QJsonParseError::NoError) {
-    // If the data was indeed valid JSON
-    if (jsonDoc.isObject()) { // and is a JSON object
-      // Actions depend on the type of message
+    if (jsonDoc.isObject()) {
       QJsonObject docObj = jsonDoc.object();
       const QJsonValue typeVal = docObj.value(QLatin1String("type"));
       if (typeVal.isNull() || !typeVal.isString())
-        return; // A message with no type was received
-      // so we just ignore it
+        return;
 
       if (typeVal.toString().compare(QLatin1String("file_to_open"),
                                      Qt::CaseInsensitive) == 0) {
-
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
         if (resultVal.isNull() || !resultVal.isBool())
           return;
+
         const bool success = resultVal.toBool();
         if (success) {
           const QJsonValue tot_symbolsVal =
@@ -518,7 +466,6 @@ void Client::byteArrayReceived(const QByteArray &doc) {
           if (tot_symbolsVal.isNull() || !tot_symbolsVal.toInt())
             return;
           int tot_symbols = tot_symbolsVal.toInt();
-          qDebug() << " tot symbols: " << tot_symbols;
 
           progress = new QProgressDialog(nullptr);
           progress_counter = 0;
@@ -535,20 +482,17 @@ void Client::byteArrayReceived(const QByteArray &doc) {
               qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(
                   content_image_array.left(4).data()));
 
-          qDebug() << "content size read: " << content_size;
-
           QVector<Symbol> vec;
           if (content_size != 0) {
             QByteArray content = content_image_array.mid(4, content_size);
             QDataStream out(&content, QIODevice::ReadOnly);
             out >> vec;
           } else {
-            // Empty added size
-            qDebug() << " CONTENUTO VUOTO: da gestire";
+            throw std::runtime_error("Empty content received.");
           }
           content_image_array = content_image_array.mid(content_size + 4);
-          qDebug() << "Contentuo size: " << vec.size();
 
+          // Add in editor and CRDT all the symbols received from server
           for (int i = vec.size() - 1; i >= 0; i--) {
             Symbol s = vec[i];
             emit remoteInsert(s);
@@ -578,21 +522,25 @@ void Client::byteArrayReceived(const QByteArray &doc) {
             return;
           const QJsonArray array_users = array.toArray();
           QList<QPair<QPair<QString, QString>, QPixmap>> connected;
-          qDebug() << "Users received " << array_users.size();
 
+          // Retrieve information (image, username/nickname) about users
+          // currently using the file
           foreach (const QJsonValue &v, array_users) {
             quint32 img_size =
                 qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(
                     content_image_array.left(4).data()));
 
+            // Retrieve image
             QPixmap p;
             if (img_size != 0) {
               QByteArray img = content_image_array.mid(4, img_size);
               p.loadFromData(img);
             } else {
-              // Empty added size
+              // Users don't send their image if it is the default one
               p.load(":/images/anonymous");
             }
+
+            // Retrieve username/nickname
             content_image_array = content_image_array.mid(img_size + 4);
             connected.append(QPair<QPair<QString, QString>, QPixmap>(
                 QPair<QString, QString>(
@@ -600,16 +548,16 @@ void Client::byteArrayReceived(const QByteArray &doc) {
                     v.toObject().value("nickname").toString()),
                 p));
           }
-          // emit contentReceived(cont.toString()); TODO: remove comment
+
           emit usersConnectedReceived(connected);
-
           emit correctOpenedFile();
-
         } else {
           this->openfile.clear();
           const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
           emit wrongListFiles(reasonVal.toString());
         }
+
+        // Information about new user connected to the file currently open
       } else if (typeVal.toString().compare(QLatin1String("connection"),
                                             Qt::CaseInsensitive) == 0) {
         const QJsonValue file = docObj.value(QLatin1String("filename"));
@@ -618,12 +566,14 @@ void Client::byteArrayReceived(const QByteArray &doc) {
         const QJsonValue name = docObj.value(QLatin1String("username"));
         if (name.isNull() || !name.isString())
           return;
+
         if (!file.toString().compare(this->openfile)) {
           QList<QPair<QPair<QString, QString>, QPixmap>> connected;
           quint32 img_size =
               qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(
                   content_image_array.left(4).data()));
 
+          // Add image and username/nickname
           if (img_size == 0) {
             connected.append(QPair<QPair<QString, QString>, QPixmap>(
                 QPair<QString, QString>(docObj.value("username").toString(),
@@ -645,30 +595,26 @@ void Client::byteArrayReceived(const QByteArray &doc) {
       } else if (typeVal.toString().compare(QLatin1String("login"),
                                             Qt::CaseInsensitive) == 0) {
         if (m_loggedIn)
-          return; // If we are already logged in we ignore
+          return;
         const QJsonValue resultVal = docObj.value(QLatin1String("success"));
         if (resultVal.isNull() || !resultVal.isBool())
-          return; // The message had no success field so we ignore
+          return;
         const bool loginSuccess = resultVal.toBool();
         if (loginSuccess) {
           const QJsonValue user = docObj.value(QLatin1String("username"));
-
           if (user.isNull() || !user.isString())
             return;
-
           const QString username = user.toString().simplified();
-          if (username.isEmpty()) {
+          if (username.isEmpty())
             return;
-          }
-          const QJsonValue nick = docObj.value(QLatin1String("nickname"));
 
+          const QJsonValue nick = docObj.value(QLatin1String("nickname"));
           if (nick.isNull() || !nick.isString())
             return;
-
           const QString nickname = nick.toString().simplified();
-          if (nickname.isEmpty()) {
+          if (nickname.isEmpty())
             return;
-          }
+
           this->username = username;
           this->nickname = nickname;
 
@@ -681,15 +627,14 @@ void Client::byteArrayReceived(const QByteArray &doc) {
             profile->loadFromData(img);
           }
 
-          m_loggedIn = true; // We logged in succesfully and we
-          // notify it via the loggedIn signal
+          m_loggedIn = true;
           emit loggedIn();
           return;
         }
-        // The login attempt failed, we extract the reason of the
-        // failure from the JSON and notify it via the loginError signal
         const QJsonValue reasonVal = docObj.value(QLatin1String("reason"));
         emit loginError(reasonVal.toString());
+
+        // Operation (insertion, deletion, modification) received
       } else if (typeVal.toString().compare(QLatin1String("operation"),
                                             Qt::CaseInsensitive) == 0) {
         const QJsonValue opType = docObj.value(QLatin1String("operation_type"));
@@ -707,29 +652,21 @@ void Client::byteArrayReceived(const QByteArray &doc) {
         if (tot_symbolsVal.isNull()) {
           return;
         }
-
         int tot_symbols = tot_symbolsVal.toInt();
 
         quint32 content_size =
             qFromLittleEndian<qint32>(reinterpret_cast<const uchar *>(
                 content_image_array.left(4).data()));
 
-        qDebug() << "content size read: " << content_size;
-        qDebug() << "Number of symbols: " << tot_symbols;
-
+        // Retrieve symbols
         QVector<Symbol> vec(tot_symbols);
         if (content_size != 0) {
-
           QByteArray content = content_image_array.mid(4, content_size);
           QDataStream out(&content, QIODevice::ReadOnly);
-          qDebug() << "content size kkk: " << content.size();
           out >> vec;
         } else {
-          // Empty added size
-          qDebug() << " CONTENUTO VUOTO: da gestire";
+          throw std::runtime_error("Empty content received.");
         }
-
-        qDebug() << "Contentuo size: " << vec.size();
 
         if (operation_type == PASTE)
           emit remotePaste(vec);
@@ -740,7 +677,7 @@ void Client::byteArrayReceived(const QByteArray &doc) {
       }
     }
   } else {
-    qDebug() << "Error json: " << parseError.error;
+    throw std::runtime_error("Invalid json received.");
   }
 }
 
@@ -776,7 +713,6 @@ void Client::sendProfileImage() {
 }
 
 void Client::overrideProfileImage(const QPixmap &pixmap) {
-  qDebug() << "qui";
   *this->profile = pixmap;
 }
 
@@ -820,7 +756,6 @@ QByteArray Client::createByteArrayFileContent(QJsonObject message,
   in << c;
   quint32 size_content = byte_array_content.size();
 
-  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array_msg);
   QByteArray ba_c((const char *)&size_content, sizeof(size_content));

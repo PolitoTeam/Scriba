@@ -93,8 +93,7 @@ Editor::Editor(QWidget *parent, Client *client)
   foreach (int size, standardSizes)
     comboSize->addItem(QString::number(size));
 
-  comboSize->setCurrentIndex(
-      standardSizes.indexOf(15));
+  comboSize->setCurrentIndex(standardSizes.indexOf(15));
 
   connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated),
           this, &Editor::textSize);
@@ -193,11 +192,9 @@ Editor::Editor(QWidget *parent, Client *client)
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
-  // qDebug()<<"Hash of: "<<str;
   auto hash = QCryptographicHash::hash(str.toLatin1(), QCryptographicHash::Md5);
+
   QDataStream data(hash);
-  // qDebug()<< "String to hash: "<<hash;
-  // qDebug()<< " type of hash: "<<typeid(hash).name();
   int intHash;
   data >> intHash;
   return intHash;
@@ -205,21 +202,15 @@ int Editor::fromStringToIntegerHash(QString str) {
 
 void Editor::on_showAssigned() {
   if (this->highlighter->document() == 0) {
-    // qDebug()<< "Assigning file";
     this->highlighter->setDocument(ui->textEdit->document());
-    // qDebug()<< "Assigned file";
   } else {
     this->highlighter->setDocument(0);
-    // qDebug()<< "Removing file";
   }
 }
 
 Editor::~Editor() { delete ui; }
 
-void Editor::textChange() {
-  //    //qDebug()<<"Cursor position:
-  //    "<<ui->textEdit->textCursor().position()<<endl;
-}
+void Editor::textChange() {}
 
 void Editor::printPdf() {
 #ifndef QT_NO_PRINTER
@@ -240,15 +231,12 @@ void Editor::printPdf() {
   //! [0]
 #endif
 }
+
 void Editor::exit() {
   this->clear(false);
-
-  //  crdt = new CRDT(client);
   crdt->setId(fromStringToIntegerHash(client->getUsername()));
-  // this->highlighter->setCRDT(crdt);
   this->highlighter->addLocal(fromStringToIntegerHash(client->getUsername()));
 
-  // doppio controllo
   if (actionShowAssigned->isChecked()) {
     actionShowAssigned->trigger();
   } else if (this->highlighter->document() != 0) {
@@ -263,19 +251,20 @@ void Editor::closeEvent(QCloseEvent *) { this->clear(false); }
 void Editor::peerYou() {
   QListWidgetItem *item = new QListWidgetItem();
   QPixmap orig = *client->getProfile();
-  // getting size if the original picture is not square
+
+  // Getting size if the original picture is not square
   int size = qMin(orig.width(), orig.height());
-  // creating a new transparent pixmap with equal sides
-  // creating circle clip area
+  // Creating circle clip area
   QPixmap rounded = QPixmap(size, size);
   rounded.fill(Qt::transparent);
   QPainterPath path;
   path.addEllipse(rounded.rect());
   QPainter painter(&rounded);
   painter.setClipPath(path);
-  // filling rounded area if needed
+
+  // Filling rounded area if needed
   painter.fillRect(rounded.rect(), Qt::black);
-  // getting offsets if the original picture is not square
+  // Getting offsets if the original picture is not square
   int x = qAbs(orig.width() - size) / 2;
   int y = qAbs(orig.height() - size) / 2;
   painter.drawPixmap(-x, -y, orig.width(), orig.height(), orig);
@@ -286,17 +275,16 @@ void Editor::peerYou() {
   path1.addEllipse(background.rect());
   QPainter painter1(&background);
   painter1.setClipPath(path1);
-  // filling rounded area if needed
+  // Filling rounded area if needed
   painter1.fillRect(background.rect(), QColor(0, 136, 86));
-  // getting offsets if the original picture is not square
+  // Getting offsets if the original picture is not square
   x = qAbs(rounded.width() - size - 50) / 2;
   y = qAbs(rounded.height() - size - 50) / 2;
   painter1.drawPixmap(x, y, rounded.width(), rounded.height(), rounded);
+
   item->setIcon(QIcon(background));
   item->setText(this->client->getNickname() + " (You)");
   item->setData(Qt::UserRole, this->client->getUsername());
-  // item->setTextAlignment(Qt::AlignHCenter);
-  // item->setBackground( QColor(124,252,0,127) );
   item->setFlags(item->flags() & ~Qt::ItemIsSelectable);
   item->setWhatsThis(this->client->getUsername());
   this->ui->listWidget->addItem(item);
@@ -321,20 +309,19 @@ void Editor::paste() {
 }
 
 void Editor::undo() {
-  // qDebug()<<"undo()";
   this->undoFlag = true;
-  ui->textEdit->document()
-      ->undo(); // the change due to the insert/delete are automatically managed
-                // by on_contents_change
-  // update alignment icon
+  ui->textEdit->document()->undo(); // the change due to the insert/delete
+                                    // are automatically managed
+                                    // by on_contents_change
+  // Update alignment icon
   alignmentChanged(ui->textEdit->alignment());
 }
 
 void Editor::redo() {
-  // qDebug()<<"redo";
   this->redoFlag = true;
   ui->textEdit->document()->redo();
-  // update alignment icon
+
+  // Update alignment icon
   alignmentChanged(ui->textEdit->alignment());
 }
 
@@ -1057,9 +1044,8 @@ void Editor::on_formatChange() {
 
   int end = ui->textEdit->textCursor().selectionEnd();
 
-  qDebug()<<"start: "<<start;
-  qDebug()<<"end: "<<end;
-
+  qDebug() << "start: " << start;
+  qDebug() << "end: " << end;
 
   QFont fontPrec;
   QColor colorPrec;
@@ -1070,13 +1056,13 @@ void Editor::on_formatChange() {
   int startLine;
   int endLine;
   QTextCursor cursor = ui->textEdit->textCursor();
-  if (start==end){
-      cursor.setPosition(start);
-      int line = cursor.blockNumber();
-      int index = cursor.positionInBlock();
+  if (start == end) {
+    cursor.setPosition(start);
+    int line = cursor.blockNumber();
+    int index = cursor.positionInBlock();
 
-      startLine=endLine=line;
-      startIndex=endIndex=index;
+    startLine = endLine = line;
+    startIndex = endIndex = index;
   }
   // qDebug() << "start/end selection" << start << end;
 
@@ -1156,13 +1142,13 @@ void Editor::on_formatChange(QTextCursor c) {
   int endLine;
   // qDebug() << "start/end selection" << start << end;
   QTextCursor cursor = ui->textEdit->textCursor();
-  if (start==end){
-      cursor.setPosition(start);
-      int line = cursor.blockNumber();
-      int index = cursor.positionInBlock();
+  if (start == end) {
+    cursor.setPosition(start);
+    int line = cursor.blockNumber();
+    int index = cursor.positionInBlock();
 
-      startLine=endLine=line;
-      startIndex=endIndex=index;
+    startLine = endLine = line;
+    startIndex = endIndex = index;
   }
   for (int i = start; i < end; i++) {
     cursor.setPosition(i);
