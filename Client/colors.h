@@ -5,6 +5,11 @@
 #include <QList>
 #include <QMap>
 
+// Twenty-two colors of maximum contrast by Kenneth L. Kelly
+// theory - http://www.iscc-archive.org/pdf/PC54_1724_001.pdf
+// kelly's colors - https://i.kinja-img.com/gawker-media/image/upload/1015680494325093012.JPG
+// hex values - http://hackerspace.kinja.com/iscc-nbs-number-hex-r-g-b-263-f2f3f4-242-243-244-267-22-1665795040
+
 class Colors {
 private:
   QSet<int> colors;
@@ -14,112 +19,27 @@ public:
   Colors() {
     colors = QSet<int>();
     list_colors =
-        QList<QColor>({QColor(255, 0, 255, 255),   QColor(255, 51, 255, 255),
-                       QColor(204, 0, 204, 255),   QColor(255, 102, 255, 255),
-                       QColor(204, 51, 204, 255),  QColor(153, 0, 153, 255),
-                       QColor(255, 153, 255, 255), QColor(204, 102, 204, 255),
-                       QColor(153, 51, 153, 255),  QColor(102, 0, 102, 255),
-                       QColor(255, 204, 255, 255), QColor(204, 153, 204, 255),
-                       QColor(153, 102, 153, 255), QColor(17, 117, 232, 255),
-                       QColor(102, 51, 102, 255),  QColor(51, 0, 51, 255),
-                       QColor(204, 0, 255, 255),   QColor(204, 51, 255, 255),
-                       QColor(153, 0, 204, 255),   QColor(204, 102, 255, 255),
-                       QColor(153, 51, 204, 255),  QColor(102, 0, 153, 255),
-                       QColor(204, 153, 255, 255), QColor(153, 102, 204, 255),
-                       QColor(102, 51, 153, 255),  QColor(51, 0, 102, 255),
-                       QColor(153, 0, 255, 255),   QColor(153, 51, 255, 255),
-                       QColor(102, 0, 204, 255),   QColor(153, 102, 255, 255),
-                       QColor(102, 51, 204, 255),  QColor(51, 0, 153, 255),
-                       QColor(102, 0, 255, 255),   QColor(102, 51, 255, 255),
-                       QColor(51, 0, 204, 255),    QColor(51, 0, 255, 255),
-                       QColor(0, 0, 255, 255),     QColor(51, 51, 255, 255),
-                       QColor(0, 0, 204, 255),     QColor(102, 102, 255, 255),
-                       QColor(51, 51, 204, 255),   QColor(0, 0, 153, 255),
-                       QColor(153, 153, 255, 255), QColor(102, 102, 204, 255),
-                       QColor(51, 51, 153, 255),   QColor(0, 0, 102, 255),
-                       QColor(204, 204, 255, 255), QColor(153, 153, 204, 255),
-                       QColor(102, 102, 153, 255), QColor(51, 51, 102, 255),
-                       QColor(0, 0, 51, 255),      QColor(0, 51, 255, 255),
-                       QColor(51, 102, 255, 255),  QColor(0, 51, 204, 255),
-                       QColor(0, 102, 255, 255),   QColor(102, 153, 255, 255),
-                       QColor(51, 102, 204, 255),  QColor(0, 51, 153, 255),
-                       QColor(51, 153, 255, 255),  QColor(0, 102, 204, 255),
-                       QColor(0, 153, 255, 255),   QColor(153, 204, 255, 255),
-                       QColor(102, 153, 204, 255), QColor(51, 102, 153, 255),
-                       QColor(0, 51, 102, 255),    QColor(102, 204, 255, 255),
-                       QColor(51, 153, 204, 255),  QColor(0, 102, 153, 255),
-                       QColor(51, 204, 255, 255),  QColor(0, 153, 204, 255),
-                       QColor(0, 204, 255, 255),   QColor(0, 255, 255, 255),
-                       QColor(51, 255, 255, 255),  QColor(0, 204, 204, 255),
-                       QColor(102, 255, 255, 255), QColor(51, 204, 204, 255),
-                       QColor(0, 153, 153, 255),   QColor(153, 255, 255, 255),
-                       QColor(102, 204, 204, 255), QColor(51, 153, 153, 255),
-                       QColor(0, 102, 102, 255),   QColor(204, 255, 255, 255),
-                       QColor(153, 204, 204, 255), QColor(102, 153, 153, 255),
-                       QColor(51, 102, 102, 255),  QColor(0, 51, 51, 255),
-                       QColor(0, 255, 204, 255),   QColor(51, 255, 204, 255),
-                       QColor(0, 204, 153, 255),   QColor(102, 255, 204, 255),
-                       QColor(51, 204, 153, 255),  QColor(0, 153, 102, 255),
-                       QColor(153, 255, 204, 255), QColor(102, 204, 153, 255),
-                       QColor(51, 153, 102, 255),  QColor(0, 102, 51, 255),
-                       QColor(0, 255, 153, 255),   QColor(51, 255, 153, 255),
-                       QColor(0, 204, 102, 255),   QColor(102, 255, 153, 255),
-                       QColor(51, 204, 102, 255),  QColor(0, 153, 51, 255),
-                       QColor(0, 255, 102, 255),   QColor(51, 255, 102, 255),
-                       QColor(0, 204, 51, 255),    QColor(0, 255, 51, 255),
-                       QColor(0, 255, 0, 255),     QColor(51, 255, 51, 255),
-                       QColor(0, 204, 0, 255),     QColor(102, 255, 102, 255),
-                       QColor(51, 204, 51, 255),   QColor(0, 153, 0, 255),
-                       QColor(153, 255, 153, 255), QColor(102, 204, 102, 255),
-                       QColor(51, 153, 51, 255),   QColor(0, 102, 0, 255),
-                       QColor(204, 255, 204, 255), QColor(153, 204, 153, 255),
-                       QColor(102, 153, 102, 255), QColor(51, 102, 51, 255),
-                       QColor(0, 51, 0, 255),      QColor(51, 255, 0, 255),
-                       QColor(102, 255, 51, 255),  QColor(51, 204, 0, 255),
-                       QColor(102, 255, 0, 255),   QColor(153, 255, 102, 255),
-                       QColor(102, 204, 51, 255),  QColor(51, 153, 0, 255),
-                       QColor(153, 255, 51, 255),  QColor(102, 204, 0, 255),
-                       QColor(153, 255, 0, 255),   QColor(204, 255, 153, 255),
-                       QColor(153, 204, 102, 255), QColor(102, 153, 51, 255),
-                       QColor(51, 102, 0, 255),    QColor(204, 255, 102, 255),
-                       QColor(153, 204, 51, 255),  QColor(102, 153, 0, 255),
-                       QColor(204, 255, 51, 255),  QColor(153, 204, 0, 255),
-                       QColor(204, 255, 0, 255),   QColor(255, 255, 0, 255),
-                       QColor(255, 255, 51, 255),  QColor(204, 204, 0, 255),
-                       QColor(255, 255, 102, 255), QColor(204, 204, 51, 255),
-                       QColor(153, 153, 0, 255),   QColor(255, 255, 153, 255),
-                       QColor(204, 204, 102, 255), QColor(153, 153, 51, 255),
-                       QColor(102, 102, 0, 255),   QColor(255, 255, 204, 255),
-                       QColor(204, 204, 153, 255), QColor(153, 153, 102, 255),
-                       QColor(102, 102, 51, 255),  QColor(51, 51, 0, 255),
-                       QColor(255, 204, 0, 255),   QColor(255, 204, 51, 255),
-                       QColor(204, 153, 0, 255),   QColor(255, 204, 102, 255),
-                       QColor(204, 153, 51, 255),  QColor(153, 102, 0, 255),
-                       QColor(255, 204, 153, 255), QColor(204, 153, 102, 255),
-                       QColor(153, 102, 51, 255),  QColor(102, 51, 0, 255),
-                       QColor(255, 153, 0, 255),   QColor(255, 153, 51, 255),
-                       QColor(204, 102, 0, 255),   QColor(255, 153, 102, 255),
-                       QColor(204, 102, 51, 255),  QColor(153, 51, 0, 255),
-                       QColor(255, 102, 0, 255),   QColor(255, 102, 51, 255),
-                       QColor(204, 51, 0, 255),    QColor(255, 51, 0, 255),
-                       QColor(255, 0, 0, 255),     QColor(255, 51, 51, 255),
-                       QColor(204, 0, 0, 255),     QColor(255, 102, 102, 255),
-                       QColor(204, 51, 51, 255),   QColor(153, 0, 0, 255),
-                       QColor(255, 153, 153, 255), QColor(204, 102, 102, 255),
-                       QColor(153, 51, 51, 255),   QColor(102, 0, 0, 255),
-                       QColor(255, 204, 204, 255), QColor(204, 153, 153, 255),
-                       QColor(153, 102, 102, 255), QColor(102, 51, 51, 255),
-                       QColor(51, 0, 0, 255),      QColor(255, 0, 51, 255),
-                       QColor(255, 51, 102, 255),  QColor(204, 0, 51, 255),
-                       QColor(255, 0, 102, 255),   QColor(255, 102, 153, 255),
-                       QColor(204, 51, 102, 255),  QColor(153, 0, 51, 255),
-                       QColor(255, 51, 153, 255),  QColor(204, 0, 102, 255),
-                       QColor(255, 0, 153, 255),   QColor(255, 153, 204, 255),
-                       QColor(204, 102, 153, 255), QColor(153, 51, 102, 255),
-                       QColor(102, 0, 51, 255),    QColor(255, 102, 204, 255),
-                       QColor(204, 51, 153, 255),  QColor(153, 0, 102, 255),
-                       QColor(255, 51, 204, 255),  QColor(204, 0, 153, 255),
-                       QColor(255, 0, 204, 255)});
+        QList<QColor>({
+                          QColor(243,	195,	0),
+                          QColor(135,	86,	146),
+                          QColor(243,	132,	0),
+                          QColor(161,	202,	241),
+                          QColor(190,	0,	50),
+                          QColor(194,	178,	128),
+                          QColor(132,	132,	130),
+                          QColor(230, 143,	172),
+                          QColor(0,	103,	165),
+                          QColor(249,	147,	121),
+                          QColor(96,	78,	151),
+                          QColor(246,	166,	0),
+                          QColor(179,	68,	108),
+                          QColor(220,	211,	0),
+                          QColor(136,	45,	23),
+                          QColor(141,	182,	0),
+                          QColor(101,	69,	34),
+                          QColor(226,	88,	34),
+                          QColor(43,	61,	38)
+                       });
   }
 
   void clear() { colors.clear(); }
@@ -144,7 +64,7 @@ public:
     if (index >= 0 && index < list_colors.size()) {
       return list_colors[index];
     } else if (index == -1) { // local
-      return QColor(124, 252, 0, 255);
+      return  QColor(0,	136,	86);
     } else if (index == -2) { // remote but offline
       return QColor(192, 192, 192, 255);
     } else {
