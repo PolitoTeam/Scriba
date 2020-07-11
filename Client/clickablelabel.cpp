@@ -21,7 +21,6 @@ void ClickableLabel::paintEvent(QPaintEvent *event) {
 
   QPixmap scaled = pixmap.scaled(w, h, Qt::KeepAspectRatioByExpanding,
                                  Qt::SmoothTransformation);
-  qDebug() << "width: " << w << " hegiht: " << h;
   QBrush brush(scaled);
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
@@ -32,7 +31,4 @@ void ClickableLabel::paintEvent(QPaintEvent *event) {
 
 void ClickableLabel::enterEvent(QEvent *ev) { setToolTip("Upload..."); }
 
-void ClickableLabel::leaveEvent(QEvent *ev) {
-  qDebug() << "e";
-  // this->setStyleSheet("{ border-color: rgb(252, 1, 7); }");
-}
+void ClickableLabel::leaveEvent(QEvent *ev) {}

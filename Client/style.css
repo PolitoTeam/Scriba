@@ -1,0 +1,34 @@
+QLineEdit[error="true"] {
+  border: 2px solid red;
+}
+QPushButton {
+  height: 28px;
+  color: rgb(255, 255, 255);
+  border: 0px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 255, 180);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+QPushButton[objectName^="t_push"]:hover {
+  color: rgb(135, 206, 250);
+}
+QPushButton[objectName^="t_push"] {
+  color: rgb(0, 0, 255);
+  height: 28px;
+  border: 0px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 255, 0);
+}
+QIcon {
+  border-radius: 10px;
+}
+QLineEdit {
+  height: 28px;
+  border-radius: 5px;
+  padding: 0 8px;
+  selection-background-color: darkgray;
+}
+QLineEdit:focus {
+  background-color: rgb(30, 144, 255, 20);
+}

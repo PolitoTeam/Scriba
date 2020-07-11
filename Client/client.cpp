@@ -5,7 +5,6 @@
 #include <QDataStream>
 #include <QDebug>
 #include <QDir>
-#include <QElapsedTimer>
 #include <QFile>
 #include <QHostAddress>
 #include <QJsonArray>
@@ -37,11 +36,8 @@ Client::Client(QObject *parent, QString addr, quint16 port)
   });
   connect(m_clientSocket, &QSslSocket::stateChanged, this,
           [](QAbstractSocket::SocketState socketState) {
-            qDebug() << socketState;
+            //            qDebug() << socketState;
           });
-
-  connect(this, &Client::connected, this,
-          []() -> void { /*qDebug()<<"New client Connected";*/ });
   connect(this, &Client::byteArrayReceivedSignal, this,
           &Client::byteArrayReceived, Qt::QueuedConnection);
   connect(this, &Client::jsonReceivedSignal, this, &Client::jsonReceived,
@@ -51,9 +47,6 @@ Client::Client(QObject *parent, QString addr, quint16 port)
   // that will take care of reading the data in
   connect(m_clientSocket, &QSslSocket::readyRead, this, &Client::onReadyRead,
           Qt::QueuedConnection);
-
-  connect(m_clientSocket, &QSslSocket::encrypted, this,
-          []() { /*qDebug()<<"encrypted!";*/ });
 
   /* QFile certFile("/Users/giuseppe.pastore/Documents/Programmazione di
   sistema/Progetto/SharedEditor/SharedEditor/certificates/server.pem");
@@ -546,13 +539,9 @@ void Client::byteArrayReceived(const QByteArray &doc) {
 
           QVector<Symbol> vec;
           if (content_size != 0) {
-            QElapsedTimer timer;
-            timer.start();
             QByteArray content = content_image_array.mid(4, content_size);
             QDataStream out(&content, QIODevice::ReadOnly);
             out >> vec;
-            qDebug() << "Time to receive: " << timer.elapsed()
-                     << "milliseconds";
           } else {
             // Empty added size
             qDebug() << " CONTENUTO VUOTO: da gestire";
@@ -560,8 +549,6 @@ void Client::byteArrayReceived(const QByteArray &doc) {
           content_image_array = content_image_array.mid(content_size + 4);
           qDebug() << "Contentuo size: " << vec.size();
 
-          QElapsedTimer timer;
-          timer.start();
           for (int i = vec.size() - 1; i >= 0; i--) {
             Symbol s = vec[i];
             emit remoteInsert(s);
@@ -571,8 +558,6 @@ void Client::byteArrayReceived(const QByteArray &doc) {
             progress_counter++;
             progress->setValue(progress_counter);
           }
-          qDebug() << "Time put in editor: " << timer.elapsed()
-                   << "milliseconds";
 
           progress->hide();
           progress->cancel();
@@ -735,23 +720,16 @@ void Client::byteArrayReceived(const QByteArray &doc) {
         QVector<Symbol> vec(tot_symbols);
         if (content_size != 0) {
 
-          QElapsedTimer timer;
-          timer.start();
           QByteArray content = content_image_array.mid(4, content_size);
           QDataStream out(&content, QIODevice::ReadOnly);
           qDebug() << "content size kkk: " << content.size();
           out >> vec;
-
-          qDebug() << "Time to receive: " << timer.elapsed() << "milliseconds";
         } else {
           // Empty added size
           qDebug() << " CONTENUTO VUOTO: da gestire";
         }
 
         qDebug() << "Contentuo size: " << vec.size();
-
-        QElapsedTimer timer;
-        timer.start();
 
         if (operation_type == PASTE)
           emit remotePaste(vec);
@@ -842,7 +820,7 @@ QByteArray Client::createByteArrayFileContent(QJsonObject message,
   in << c;
   quint32 size_content = byte_array_content.size();
 
-  // Depends on the endliness of the machine
+  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array_msg);
   QByteArray ba_c((const char *)&size_content, sizeof(size_content));

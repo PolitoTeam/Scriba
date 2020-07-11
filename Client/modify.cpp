@@ -72,7 +72,6 @@ void Modify::on_lineEditNickname_textChanged(const QString &) {
 }
 
 bool Modify::checkNickname(const QString &nickname) {
-
   if (nickname.isEmpty() || nickname.isNull()) {
     ui->labelInfoNick->setText("Empty nickname");
     return false;
@@ -119,10 +118,10 @@ void Modify::clearForm() {
   ui->icon_error_pass->setVisible(false);
   ui->icon_old_pass->setVisible(false);
   ui->icon_new_pass->setVisible(false);
+
   AppMainWindow::errorLineEdit(ui->lineEditOldPass, false);
   AppMainWindow::errorLineEdit(ui->lineEditNewPass, false);
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPass, false);
-  // ui->labelInfoOldPassword->clear();
 }
 
 void Modify::on_t_pushButtonFinish_clicked() {
@@ -207,11 +206,9 @@ void Modify::on_pushButtonSavePassword_clicked() {
   if (correct_old_password == UNCHECKED)
     client->checkOldPassword(oldpass);
 
-  qDebug() << "correct old password" << correct_old_password;
-  qDebug() << "valid new password" << valid_new_password;
-  // not send the request only if it's sure that the current onld password is
-  // wrong; send when is unchekced(pending request with yet no response, check
-  // only on server, or when is correct;
+  // Don't send the request only if it's sure that the current old password is
+  // wrong; send when it is unchecked (pending request with yet no response),
+  // checked only on server, or when is correct;
   if (valid_new_password && correct_old_password == CORRECT &&
       checkConfirmation(newpass, confirm)) {
     QMessageBox msgbox;
@@ -232,12 +229,10 @@ void Modify::on_lineEditOldPass_editingFinished() {
 
 void Modify::on_lineEditOldPass_textChanged(const QString &arg1) {
   correct_old_password = UNCHECKED;
-
   clearOldPasswordError();
 
   if (arg1.size() > 0) {
     ui->lineEditNewPass->setDisabled(false);
-
   } else {
     ui->lineEditNewPass->setDisabled(true);
     ui->lineEditConfirmPass->setDisabled(true);
@@ -249,19 +244,15 @@ void Modify::on_lineEditOldPass_textChanged(const QString &arg1) {
 
 void Modify::on_failedUpdatePassword(const QString &reason) {
   if (reason.contains("password") && !reason.contains("new")) {
-
     ui->icon_error_pass->setVisible(true);
     ui->icon_old_pass->setVisible(true);
     AppMainWindow::errorLineEdit(ui->lineEditOldPass, false);
-
   } else {
     if (reason.contains("Wrong password")) {
       correct_old_password = WRONG;
       ui->icon_old_pass->setVisible(true);
-
       AppMainWindow::errorLineEdit(ui->lineEditOldPass, false);
     } else {
-
       ui->icon_new_pass->setVisible(true);
       AppMainWindow::errorLineEdit(ui->lineEditNewPass, false);
     }
@@ -289,13 +280,11 @@ void Modify::on_wrongOldPasswordEntered(const QString &reason) {
 }
 
 void Modify::on_correctOldPasswordEntered() {
-  qDebug() << "on correct old password";
   correct_old_password = CORRECT;
   clearOldPasswordError();
 }
 
 void Modify::addPasswordError(QString error) {
-
   ui->icon_error_pass->setVisible(true);
 
   if (error.contains("Min") || error.contains("at least") ||
@@ -315,17 +304,20 @@ void Modify::addPasswordError(QString error) {
     AppMainWindow::errorLineEdit(ui->lineEditOldPass, true);
   }
 
-  // append if error not already signaled
-  if (!ui->labelInfoPass->text().contains(error))
-    if (ui->labelInfoPass->text().isEmpty())
+  // Append if error not already signaled
+  if (!ui->labelInfoPass->text().contains(error)) {
+    if (ui->labelInfoPass->text().isEmpty()) {
       ui->labelInfoPass->setText(error);
-    else
+    } else {
       ui->labelInfoPass->setText(ui->labelInfoPass->text() + "\n" + error);
+    }
+  }
 }
 
 void Modify::clearOldPasswordError() {
   ui->icon_old_pass->setVisible(false);
   AppMainWindow::errorLineEdit(ui->lineEditOldPass, false);
+
   if (ui->labelInfoPass->text().contains(QRegExp("\n?Wrong password\n?"))) {
     ui->labelInfoPass->setText(
         ui->labelInfoPass->text().replace(QRegExp("\n?Wrong password\n?"), ""));
@@ -336,7 +328,6 @@ void Modify::clearOldPasswordError() {
 }
 
 void Modify::clearNewPasswordError() {
-
   if (!ui->labelInfoPass->text().contains("match")) {
     ui->icon_new_pass->setVisible(false);
     AppMainWindow::errorLineEdit(ui->lineEditNewPass, false);

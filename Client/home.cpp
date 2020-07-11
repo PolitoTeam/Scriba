@@ -82,7 +82,6 @@ void Home::showActiveFiles(bool shared) {
   QStringList items;
   QList<QPair<QString, QString>> map_files = client->getActiveFiles();
 
-  qDebug() << map_files;
   for (auto i = map_files.begin(); i != map_files.end(); ++i) {
     if (!shared) {
       items << QString(i->first);
@@ -90,7 +89,8 @@ void Home::showActiveFiles(bool shared) {
       items << QString(i->first + " (" + i->second + ")");
     }
   }
-  // Sort entry by filename
+
+  // Sort entries by filename
   items.sort();
 
   bool ok;

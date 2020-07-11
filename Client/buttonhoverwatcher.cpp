@@ -23,13 +23,6 @@ bool ButtonHoverWatcher::eventFilter(QObject *watched, QEvent *event) {
   }
 
   if (event->type() == QEvent::Leave) {
-    // The push button is not hovered by mouse
-    // button->setIcon(QIcon(this->std));
-    /* if (this->std.isEmpty())
-           button->setIcon(QIcon());
-     else
-         button->setIcon(QIcon(this->hover));
-         */
     button->setIcon(QIcon());
     return true;
   }
