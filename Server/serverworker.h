@@ -1,13 +1,14 @@
 #ifndef SERVERWORKER_H
 #define SERVERWORKER_H
 
+#include "../Utility/byte_reader.h"
 #include "../Utility/serializesize.h"
 #include <QObject>
 #include <QReadWriteLock>
 #include <QSslSocket>
 
 class QJsonObject;
-class ServerWorker : public QObject {
+class ServerWorker : public QObject, ByteReader {
   Q_OBJECT
   Q_DISABLE_COPY(ServerWorker)
 public:
@@ -28,14 +29,14 @@ public:
 public slots:
   void disconnectFromClient();
   void onReadyRead();
-  bool parseJson();
+  //  bool parseJson();
 
 signals:
   void jsonReceived(const QJsonObject &jsonDoc);
   void disconnectedFromClient();
   void error();
   void logMessage(const QString &msg);
-  void byte_array_received(const QByteArray &jsonDoc);
+  void byteArrayReceived(const QByteArray &jsonDoc);
 
 private:
   QSslSocket *m_serverSocket;
@@ -46,7 +47,7 @@ private:
   QByteArray m_received_data;
   QBuffer m_buffer;
 
-  void extract_content_size();
+  //  void extract_content_size();
 };
 
 #endif // SERVERWORKER_H

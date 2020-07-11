@@ -32,9 +32,9 @@ Client::Client(QObject *parent, QString addr, quint16 port)
     this->m_received_data.clear();
     this->m_exptected_json_size = 0;
   });
-  connect(this, &Client::byteArrayReceivedSignal, this,
-          &Client::byteArrayReceived, Qt::QueuedConnection);
-  connect(this, &Client::jsonReceivedSignal, this, &Client::jsonReceived,
+  connect(this, &Client::byteArrayReceived, this, &Client::on_byteArrayReceived,
+          Qt::QueuedConnection);
+  connect(this, &Client::jsonReceived, this, &Client::on_jsonReceived,
           Qt::QueuedConnection);
 
   // Connect readyRead() to the slot
@@ -181,7 +181,7 @@ void Client::disconnectFromHost() {
   }
 }
 
-void Client::jsonReceived(const QJsonObject &docObj) {
+void Client::on_jsonReceived(const QJsonObject &docObj) {
   //  qDebug() << docObj;
 
   // Actions depend on the type of message
@@ -365,80 +365,11 @@ void Client::connectToServer(const QHostAddress &address, quint16 port) {
 }
 
 void Client::onReadyRead() {
-  if (m_clientSocket->bytesAvailable() > 0) {
-    m_received_data.append(m_clientSocket->readAll());
-  }
-
-  // 8 is the size of the integer (that contains content size)
-  if (m_received_data.isNull() || m_received_data.size() < 8) {
-    return;
-  }
-
-  if (m_exptected_json_size == 0) {
-    // Update m_received_data and m_exptected_json_size
-    extract_content_size();
-  }
-
-  // If data completely received
-  if (m_exptected_json_size > 0 &&
-      m_received_data.size() >= m_exptected_json_size + 8) {
-    if (parseJson()) {
-      m_exptected_json_size = 0;
-      onReadyRead();
-    }
-  }
+  onReadyRead_helper(m_clientSocket, m_received_data, m_exptected_json_size,
+                     m_buffer, *this);
 }
 
-void Client::extract_content_size() {
-  m_received_data.append(m_clientSocket->readAll());
-  QDataStream in;
-  QBuffer in_buffer;
-  in_buffer.setBuffer(&m_received_data);
-  in_buffer.open(QIODevice::ReadOnly);
-  in.setDevice(&in_buffer);
-  in.setVersion(QDataStream::Qt_5_7);
-  quint64 size = 0;
-  in >> size;
-  m_exptected_json_size = size;
-  in_buffer.close();
-}
-
-bool Client::parseJson() {
-  QByteArray json_data;
-  QDataStream in;
-  m_buffer.setBuffer(&m_received_data);
-  if (!m_buffer.open(QIODevice::ReadOnly))
-    return false;
-
-  in.setDevice(&m_buffer);
-  in.setVersion(QDataStream::Qt_5_7);
-  in.startTransaction();
-  quint64 json_size;
-  in >> json_size >> json_data;
-  json_data.truncate(json_size);
-
-  if (!in.commitTransaction()) {
-    m_buffer.close();
-    return false;
-  }
-  m_buffer.close();
-
-  QJsonParseError parseError;
-  QJsonDocument jsonDoc = QJsonDocument::fromJson(json_data, &parseError);
-
-  if (parseError.error == QJsonParseError::NoError) {
-
-    if (jsonDoc.isObject()) {
-      emit jsonReceivedSignal(jsonDoc.object());
-    }
-  } else {
-    emit byteArrayReceivedSignal(json_data);
-  }
-  m_received_data.remove(0, 8 + json_size);
-  return true;
-}
-
-void Client::byteArrayReceived(const QByteArray &doc) {
+void Client::on_byteArrayReceived(const QByteArray &doc) {
   quint32 size = qFromLittleEndian<qint32>(
       reinterpret_cast<const uchar *>(doc.left(4).data()));
   QByteArray json = doc.mid(4, size);
