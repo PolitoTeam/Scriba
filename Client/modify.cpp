@@ -100,14 +100,8 @@ void Modify::on_pushSaveNickname_clicked() {
 }
 
 void Modify::save_photo() {
-  QMessageBox msgbox;
-  msgbox.setText("Are you sure?");
-  msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-  msgbox.setDefaultButton(QMessageBox::Save);
-  if (msgbox.exec() == QMessageBox::Save) {
     client->overrideProfileImage(*this->profile_photo_temp);
     client->sendProfileImage();
-  }
 }
 
 void Modify::clearForm() {
