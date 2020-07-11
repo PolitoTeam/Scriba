@@ -87,11 +87,14 @@ Editor::Editor(QWidget *parent, Client *client)
   comboSize = new QComboBox(ui->toolBar);
   ui->toolBar->addWidget(comboSize);
 
-  const QList<int> standardSizes = QFontDatabase::standardSizes();
+  QList<int> standardSizes = QFontDatabase::standardSizes();
+  standardSizes.append(15);
+  std::sort(standardSizes.begin(), standardSizes.end());
   foreach (int size, standardSizes)
     comboSize->addItem(QString::number(size));
+
   comboSize->setCurrentIndex(
-      standardSizes.indexOf(QApplication::font().pointSize()));
+      standardSizes.indexOf(15));
 
   connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated),
           this, &Editor::textSize);
