@@ -36,6 +36,8 @@ private:
   Client *client;
   void clearLabel();
   void clearLineEdit();
+  void addError(QString error);
+  void clearError();
 };
 
 #endif // LOGIN_H

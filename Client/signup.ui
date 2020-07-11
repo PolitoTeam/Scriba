@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>604</width>
-    <height>526</height>
+    <height>534</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,36 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="4" column="3">
+     <item row="4" column="5">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Maximum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>100</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="2" colspan="3">
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="5" column="3">
       <widget class="QPushButton" name="t_pushButtonBackLogin">
        <property name="font">
         <font>
@@ -43,23 +72,23 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="5">
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+     <item row="2" column="2" colspan="3">
+      <widget class="QLabel" name="label_2">
+       <property name="font">
+        <font>
+         <family>CMU Sans Serif</family>
+         <pointsize>30</pointsize>
+        </font>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Maximum</enum>
+       <property name="text">
+        <string>Signup</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>100</width>
-         <height>20</height>
-        </size>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
-      </spacer>
+      </widget>
      </item>
-     <item row="6" column="2" colspan="3">
+     <item row="7" column="2" colspan="3">
       <spacer name="verticalSpacer_3">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -84,27 +113,14 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="client.qrc">:/images/google_logo.jpg</pixmap>
+        <pixmap>:/images/google_logo.jpg</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="0" column="2" colspan="3">
-      <spacer name="verticalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -120,7 +136,19 @@
        </property>
       </spacer>
      </item>
-     <item row="3" column="2" colspan="3">
+     <item row="3" column="2" colspan="3" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label_3">
+       <property name="font">
+        <font>
+         <pointsize>20</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Create your account</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2" colspan="3">
       <widget class="QGroupBox" name="groupBox">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -623,22 +651,6 @@ font-style:italic;</string>
          </widget>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item row="2" column="2" colspan="3">
-      <widget class="QLabel" name="label_2">
-       <property name="font">
-        <font>
-         <family>CMU Sans Serif</family>
-         <pointsize>30</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Signup</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
       </widget>
      </item>
     </layout>
