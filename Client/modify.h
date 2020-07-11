@@ -65,6 +65,8 @@ private:
   void clearNewPasswordError();
   void clearConfirmPasswordError();
   void clearForm();
+  void addErrorNickname(QString error);
+  void clearErrorNickname();
 };
 
 #endif // MODIFY_PROFILE_H

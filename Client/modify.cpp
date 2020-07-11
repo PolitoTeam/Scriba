@@ -15,9 +15,11 @@ Modify::Modify(QWidget *parent, Client *client)
   ui->icon_error_pass->setVisible(false);
   ui->icon_old_pass->setVisible(false);
   ui->icon_new_pass->setVisible(false);
+  ui->icon_error_nick->setVisible(false);
   AppMainWindow::errorLineEdit(ui->lineEditOldPass, false);
   AppMainWindow::errorLineEdit(ui->lineEditNewPass, false);
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPass, false);
+  AppMainWindow::errorLineEdit(ui->lineEditNickname, false);
 
   ButtonHoverWatcher *watcher = new ButtonHoverWatcher(
       ":/images/back_button.png", ":/images/back_button_hover.png", this);
@@ -68,12 +70,12 @@ void Modify::on_lineEditNickname_editingFinished() {
 }
 
 void Modify::on_lineEditNickname_textChanged(const QString &) {
-  ui->labelInfoNick->clear();
+  clearErrorNickname();
 }
 
 bool Modify::checkNickname(const QString &nickname) {
   if (nickname.isEmpty() || nickname.isNull()) {
-    ui->labelInfoNick->setText("Empty nickname");
+    addErrorNickname("Empty nickname");
     return false;
   }
   return true;
@@ -84,7 +86,7 @@ void Modify::on_pushSaveNickname_clicked() {
   QString original = client->getNickname();
 
   if (nickname.compare(original) == 0) {
-    ui->labelInfoNick->setText("Nickname not modified");
+    addErrorNickname("Nickname not modified");
     return;
   }
 
@@ -149,18 +151,21 @@ bool Modify::checkConfirmation(const QString &pass, const QString &conf) {
 void Modify::on_lineEditNewPass_textChanged(const QString &arg1) {
   QString conf = ui->lineEditConfirmPass->text();
   clearNewPasswordError();
-  if (conf.size() == 0) {
-    if (arg1.size() > 0) {
-      ui->lineEditConfirmPass->setDisabled(false);
 
-    } else {
+  if (arg1.size()==0){
       ui->lineEditConfirmPass->setDisabled(true);
-      clearConfirmPasswordError();
       ui->lineEditConfirmPass->clear();
-    }
-  } else {
-    checkPassword(arg1);
-    checkConfirmation(arg1, conf);
+      clearConfirmPasswordError();
+      return;
+  }
+  else{
+      checkPassword(arg1);
+
+      if(!ui->lineEditConfirmPass->isEnabled())
+            ui->lineEditConfirmPass->setDisabled(false);
+      else if (ui->lineEditConfirmPass->text().size()>0)
+          checkConfirmation(arg1, conf);
+
   }
 }
 
@@ -360,4 +365,16 @@ void Modify::clearConfirmPasswordError() {
 
   if (ui->labelInfoPass->text().isEmpty())
     ui->icon_error_pass->setVisible(false);
+}
+
+void Modify::addErrorNickname(QString error) {
+  ui->icon_error_nick->setVisible(true);
+  ui->labelInfoNick->setText(error);
+  AppMainWindow::errorLineEdit(ui->lineEditNickname, true);
+}
+
+void Modify::clearErrorNickname() {
+  ui->icon_error_nick->setVisible(false);
+  ui->labelInfoNick->clear();
+  AppMainWindow::errorLineEdit(ui->lineEditNickname, false);
 }

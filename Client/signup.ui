@@ -14,10 +14,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QToolTip { color: rgb(51, 51, 51); background-color: transparent; border: 0px; }
-
-
-</string>
+   <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
@@ -190,7 +187,7 @@
            </size>
           </property>
           <property name="cursor">
-           <cursorShape>ArrowCursor</cursorShape>
+           <cursorShape>PointingHandCursor</cursorShape>
           </property>
           <property name="toolTip">
            <string/>

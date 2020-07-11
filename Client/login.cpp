@@ -93,7 +93,7 @@ void Login::addError(QString error) {
   qDebug()<<error;
   // Append if error not already signaled
   if (!ui->labelMessage->text().contains(error)) {
-    if (ui->labelMessage->text().isEmpty()) {
+    if (ui->labelMessage->text().isEmpty() || error.contains("Invalid")) {
       ui->labelMessage->setText(error);
     } else {
       ui->labelMessage->setText(ui->labelMessage->text() + "\n" + error);
