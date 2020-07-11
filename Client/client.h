@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include "../Utility/byte_reader.h"
 #include "../Utility/serializesize.h"
 #include "../Utility/symbol.h"
 #include "remotecursor.h"
@@ -13,7 +14,7 @@
 class QHostAddress;
 class QJsonDocument;
 
-class Client : public QObject {
+class Client : public QObject, ByteReader {
   Q_OBJECT
   Q_DISABLE_COPY(Client)
 
@@ -56,8 +57,8 @@ public slots:
 
 private slots:
   void onReadyRead();
-  void byteArrayReceived(const QByteArray &doc);
-  void jsonReceived(const QJsonObject &doc);
+  void on_byteArrayReceived(const QByteArray &doc);
+  void on_jsonReceived(const QJsonObject &doc);
 
 signals:
   void connected();
@@ -94,8 +95,8 @@ signals:
   void existingUsername(const QString &username);
   void successUsernameCheck(const QString &username);
 
-  void byteArrayReceivedSignal(const QByteArray &doc);
-  void jsonReceivedSignal(const QJsonObject &doc);
+  void byteArrayReceived(const QByteArray &doc);
+  void jsonReceived(const QJsonObject &doc);
 
 private:
   QString addr;
@@ -116,9 +117,6 @@ private:
   QMap<int, QJsonArray> tmp_map;
   int tmp_symbols_counter = 0;
   int tmp_num_chunk = 0;
-
-  void extract_content_size();
-  bool parseJson();
 };
 
 #endif // CLIENT_H

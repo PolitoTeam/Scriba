@@ -86,7 +86,7 @@ void Server::incomingConnection(qintptr socketDescriptor) {
   connect(
       worker, &ServerWorker::jsonReceived, this,
       std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
-  connect(worker, &ServerWorker::byte_array_received, this,
+  connect(worker, &ServerWorker::byteArrayReceived, this,
           std::bind(&Server::handle_signup_updateImage_bulkOperation, this,
                     worker, std::placeholders::_1));
   connect(this, &Server::stopAllClients, worker,
