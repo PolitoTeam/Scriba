@@ -24,7 +24,6 @@ class Server : public QTcpServer {
 public:
   Server(QObject *parent = nullptr);
   ~Server() override;
-  bool tryConnectionToDatabase();
   bool tryConnectionToMongo();
 
 protected:
@@ -60,7 +59,8 @@ private:
   QMap<QString, bool> changed;
 
   void jsonFromLoggedOut(ServerWorker *sender, const QJsonObject &doc);
-  void signup_updateImage(ServerWorker *sender, const QByteArray &doc);
+  void handle_signup_updateImage_bulkOperation(ServerWorker *sender,
+                                               const QByteArray &doc);
   QJsonObject checkCredentials(ServerWorker *sender, const QJsonObject &doc);
   QJsonObject updateNick(ServerWorker *sender, const QJsonObject &doc);
   QJsonObject updatePass(const QJsonObject &doc);
@@ -81,7 +81,6 @@ private:
   void storeSymbolsServerMemory(QString filename, QVector<Symbol> array);
   bool udpateSymbolListAndCommunicateDisconnection(QString filename,
                                                    ServerWorker *sender);
-  static QString fromJsonArraytoString(const QJsonArray &data);
   static QString fromVectorIdentifiertoString(const QVector<Identifier> &data);
   void jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &doc);
   void sendJson(ServerWorker *destination, const QJsonObject &message);

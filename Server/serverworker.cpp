@@ -17,30 +17,16 @@ ServerWorker::ServerWorker(QObject *parent)
           &ServerWorker::onReadyRead);
   connect(m_serverSocket, &QSslSocket::disconnected, this,
           &ServerWorker::disconnectedFromClient);
-  connect(m_serverSocket, &QSslSocket::stateChanged, this,
-          [](QAbstractSocket::SocketState
-                 socketState) { /*qDebug()<<socketState;*/ });
-  connect(m_serverSocket, &QSslSocket::encrypted,
-          []() { /*qDebug()<<"Encrypted   done!";*/ });
-  connect(m_serverSocket,
-          QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors), this,
-          &ServerWorker::sslErrors);
-}
-
-void ServerWorker::sslErrors(const QList<QSslError> &errors) {
-  foreach (const QSslError &error, errors)
-    qDebug() << "ERROR :" << error.errorString();
 }
 
 bool ServerWorker::setSocketDescriptor(qintptr socketDescriptor, QSslKey key,
                                        QSslCertificate cert) {
   if (m_serverSocket->setSocketDescriptor(socketDescriptor)) {
     if (m_serverSocket->waitForConnected()) {
-      // qDebug()<<"key"<<key;
-      // qDebug()<<"cert"<<cert;
       m_serverSocket->setPrivateKey(key);
       m_serverSocket->setLocalCertificate(cert);
 
+      // "QSslSocket::VerifyPeer" not enable because doesn't work on macOS
       m_serverSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
       m_serverSocket->startServerEncryption();
     }
@@ -87,6 +73,7 @@ void ServerWorker::onReadyRead() {
     m_received_data.append(m_serverSocket->readAll());
   }
 
+  // 8 is the size of the integer (that contains content size)
   if (m_received_data.isNull() || m_received_data.size() < 8) {
     return;
   }
@@ -107,12 +94,14 @@ void ServerWorker::onReadyRead() {
 
 void ServerWorker::extract_content_size() {
   m_received_data.append(m_serverSocket->readAll());
+
   QDataStream in;
   QBuffer in_buffer;
   in_buffer.setBuffer(&m_received_data);
   in_buffer.open(QIODevice::ReadOnly);
   in.setDevice(&in_buffer);
   in.setVersion(QDataStream::Qt_5_7);
+
   quint64 size = 0;
   in >> size;
   m_exptected_json_size = size;
@@ -143,6 +132,8 @@ bool ServerWorker::parseJson() {
   QJsonParseError parseError;
   QJsonDocument jsonDoc = QJsonDocument::fromJson(json_data, &parseError);
 
+  // If not able to parse the json, it means that a QByteArray
+  // containing images or symbols has been received
   if (parseError.error == QJsonParseError::NoError) {
     if (jsonDoc.isObject()) {
       emit jsonReceived(jsonDoc.object());

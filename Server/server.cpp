@@ -1,7 +1,6 @@
 #include "server.h"
 #include "serverworker.h"
 #include <QDir>
-#include <QElapsedTimer>
 #include <QImage>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -18,6 +17,7 @@ Server::Server(QObject *parent)
     : QTcpServer(parent),
       // Ideal number of threads based on the number of processor cores
       m_idealThreadCount(qMax(QThread::idealThreadCount(), 1)) {
+
   // Pool of available threads:
   // each thread handles a certain number of clients
   m_availableThreads.reserve(m_idealThreadCount);
@@ -26,15 +26,6 @@ Server::Server(QObject *parent)
   mapFileWorkers = new QMap<QString, QList<ServerWorker *> *>();
   this->db.connect();
 
-  // Create folder to store profile images
-  QString profile_images_path = QDir::currentPath() + IMAGES_PATH;
-  QDir dir_images(profile_images_path);
-  if (!dir_images.exists()) {
-    qDebug().nospace() << "Folder " << profile_images_path << " created";
-    dir_images.mkpath(".");
-  }
-
-  // TODO: TO CHANGE WITH YOUR LOCAL DIRECTORY
   QFile keyFile(":/resources/certificates/server.key");
   keyFile.open(QIODevice::ReadOnly);
   key = QSslKey(keyFile.readAll(), QSsl::Rsa);
@@ -44,9 +35,6 @@ Server::Server(QObject *parent)
   certFile.open(QIODevice::ReadOnly);
   cert = QSslCertificate(certFile.readAll());
   certFile.close();
-  // qDebug()<<'\n Common Name:
-  // '<<cert.issuerInfo(QSslCertificate::CommonName)<<" SubjectName:
-  // "<<cert.subjectInfo(QSslCertificate::CommonName);
 
   // Timer to periodically save the open files
   QTimer *timer = new QTimer(this);
@@ -99,10 +87,11 @@ void Server::incomingConnection(qintptr socketDescriptor) {
       worker, &ServerWorker::jsonReceived, this,
       std::bind(&Server::jsonReceived, this, worker, std::placeholders::_1));
   connect(worker, &ServerWorker::byte_array_received, this,
-          std::bind(&Server::signup_updateImage, this, worker,
-                    std::placeholders::_1));
+          std::bind(&Server::handle_signup_updateImage_bulkOperation, this,
+                    worker, std::placeholders::_1));
   connect(this, &Server::stopAllClients, worker,
           &ServerWorker::disconnectFromClient);
+
   m_clients.append(worker);
 }
 
@@ -111,7 +100,7 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,
   QByteArray byte_array = QJsonDocument(message).toJson();
   quint32 size_json = byte_array.size();
 
-  // Depends on the endliness of the machine
+  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array);
 
@@ -142,7 +131,7 @@ QByteArray Server::createByteArrayFileContentImage(QJsonObject &message,
   in << c;
   quint32 size_content = byte_array_content.size();
 
-  // Depends on the endliness of the machine
+  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array_msg);
   QByteArray ba_c((const char *)&size_content, sizeof(size_content));
@@ -179,8 +168,6 @@ void Server::sendByteArray(ServerWorker *destination,
       std::bind(&ServerWorker::sendByteArray, destination, toSend));
 }
 
-bool Server::tryConnectionToDatabase() { return db.checkConnection(); }
-
 bool Server::tryConnectionToMongo() { return db.checkConnection(); }
 
 void Server::broadcast(const QJsonObject &message, ServerWorker *exclude) {
@@ -200,7 +187,7 @@ void Server::broadcastByteArray(const QJsonObject &message,
   QByteArray byte_array = QJsonDocument(message).toJson();
   quint32 size_json = byte_array.size();
 
-  // Depends on the endliness of the machine
+  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array);
 
@@ -226,7 +213,7 @@ void Server::broadcastByteArray(const QJsonObject &message,
 }
 
 void Server::jsonReceived(ServerWorker *sender, const QJsonObject &json) {
-  //	qDebug() << json;
+  //  qDebug() << json;
   if (sender->getNickname().isEmpty()) {
     return jsonFromLoggedOut(sender, json);
   } else {
@@ -266,6 +253,8 @@ void Server::jsonFromLoggedOut(ServerWorker *sender,
         tmp.push_back(image);
     }
     this->sendByteArray(sender, createByteArrayJsonImage(message, tmp));
+
+    // Used to check uniqueness of username during signup
   } else if (typeVal.toString().compare(QLatin1String("check_username"),
                                         Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->checkAlreadyExistingUsername(docObj);
@@ -295,22 +284,20 @@ QJsonObject Server::checkAlreadyExistingUsername(const QJsonObject &doc) {
     message["success"] = false;
     message["reason"] = QStringLiteral("Database error");
     return message;
-  }
-  if (result == ALREADY_EXISTING_USER) {
+  } else if (result == ALREADY_EXISTING_USER) {
     message["success"] = false;
     message["username"] = username;
     message["reason"] = QStringLiteral("The username already exists");
     return message;
   }
-  if (result == SUCCESS) {
-    message["success"] = true;
-    message["username"] = username;
-    return message;
-  }
+
+  message["success"] = true;
+  message["username"] = username;
+  return message;
 }
 
-void Server::signup_updateImage(ServerWorker *sender,
-                                const QByteArray &json_data) {
+void Server::handle_signup_updateImage_bulkOperation(
+    ServerWorker *sender, const QByteArray &json_data) {
   QJsonObject message;
   quint32 size = qFromLittleEndian<qint32>(
       reinterpret_cast<const uchar *>(json_data.left(4).data()));
@@ -323,8 +310,7 @@ void Server::signup_updateImage(ServerWorker *sender,
   QString typeValS;
 
   if (parseError.error == QJsonParseError::NoError && jsonDoc.isObject()) {
-    // and is a JSON object
-    // actions depend on the type of message
+    // Actions depend on the type of message
     QJsonObject docObj = jsonDoc.object();
     const QJsonValue typeVal = docObj.value(QLatin1String("type"));
     if (typeVal.isNull() || !typeVal.isString()) {
@@ -373,6 +359,7 @@ void Server::signup_updateImage(ServerWorker *sender,
           this->sendJson(sender, message);
           return;
         }
+
         DatabaseError result = this->db.signup(username, password);
         if (result == CONNECTION_ERROR || result == QUERY_ERROR) {
           message["success"] = false;
@@ -398,6 +385,7 @@ void Server::signup_updateImage(ServerWorker *sender,
         QImage p;
         p.loadFromData(img);
 
+        // Update profile image in database with the one received from client
         db.upsertImage(username, img);
       }
 
@@ -426,34 +414,21 @@ void Server::signup_updateImage(ServerWorker *sender,
         QVector<Symbol> vec;
         QByteArray content;
         if (content_size != 0) {
-          QElapsedTimer timer;
-          timer.start();
           content = content_array.mid(4, content_size);
-          qDebug() << "BYTES SERVER: " << content.size();
           QDataStream out(&content, QIODevice::ReadOnly);
           out >> vec;
-          qDebug() << "Time to receive: " << timer.elapsed() << "milliseconds";
         } else {
-          // Empty added size
-          qDebug() << " CONTENUTO VUOTO: da gestire";
+          throw std::runtime_error("Vector shouldn't be empty.");
         }
 
-        qDebug() << "to paste: " << vec.size();
-
-        QElapsedTimer timer;
-        timer.start();
-
         if (operation_type == DELETE) {
-
+          // Remove symbols from memory
           for (Symbol s : vec) {
-
             QString position = s.positionString();
-
             symbols_list.value(sender->getFilename())->remove(position);
           }
         } else {
-
-          // Save symbols in memory
+          // Save inserted/modified symbols in memory
           for (Symbol s : vec) {
             QString position = s.positionString();
             symbols_list.value(sender->getFilename())->insert(position, s);
@@ -473,7 +448,6 @@ void Server::signup_updateImage(ServerWorker *sender,
     message["success"] = false;
     message["reason"] = QStringLiteral("JSON error");
     this->sendJson(sender, message);
-    return;
   }
 }
 
@@ -495,6 +469,7 @@ QJsonObject Server::checkCredentials(ServerWorker *sender,
     return message;
   }
 
+  // User is not allowed to login again when already connected
   for (ServerWorker *client : m_clients) {
     if (client->getUsername() == username) {
       message["success"] = false;
@@ -516,6 +491,7 @@ QJsonObject Server::checkCredentials(ServerWorker *sender,
     message["reason"] = QStringLiteral("Empty password");
     return message;
   }
+
   QString nickname;
   int r = this->db.login(username, password, nickname);
   if (r == SUCCESS) {
@@ -549,33 +525,27 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj) {
                                  Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->updateNick(sender, docObj);
     this->sendJson(sender, message);
-  }
-  if (typeVal.toString().compare(QLatin1String("password"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(QLatin1String("password"),
+                                        Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->updatePass(docObj);
     this->sendJson(sender, message);
-  }
-  if (typeVal.toString().compare(QLatin1String("check_old_password"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(QLatin1String("check_old_password"),
+                                        Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->checkOldPass(docObj);
     this->sendJson(sender, message);
-  }
-
-  if (typeVal.toString().compare(QLatin1String("list_files"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(QLatin1String("list_files"),
+                                        Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->getFiles(docObj, false);
     this->sendJson(sender, message);
-  }
-
-  if (typeVal.toString().compare(QLatin1String("list_shared_files"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(QLatin1String("list_shared_files"),
+                                        Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->getFiles(docObj, true);
     this->sendJson(sender, message);
-  }
 
-  if (typeVal.toString().compare(QLatin1String("operation"),
-                                 Qt::CaseInsensitive) == 0) {
-
+    // Here only single modifications are handled: bulk operations
+    // are taken care of in 'handle_signup_updateImage_bulkOperation'
+  } else if (typeVal.toString().compare(QLatin1String("operation"),
+                                        Qt::CaseInsensitive) == 0) {
     int operation_type = docObj["operation_type"].toInt();
 
     // Update symbols in server memory
@@ -585,71 +555,32 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj) {
       Symbol s = Symbol::fromJson(symbol);
       QString position = s.positionString();
       symbols_list.value(sender->getFilename())->insert(position, s);
-    } /* else if (operation_type == DELETE) {
-         QJsonArray symbols = docObj["symbols"].toArray();
-         for (QJsonValue s_o: symbols) {
-             Symbol s = Symbol::fromJson(s_o.toObject());
-             QString position = s.positionString();
-
-             symbols_list.value(sender->getFilename())->remove(position);
-         }
-     } else if (operation_type == CHANGE) {
-         QJsonObject symbol = docObj["symbol"].toObject();
-         Symbol s =Symbol::fromJson(symbol);
-         QString position = s.positionString();
-         symbols_list.value(sender->getFilename())->insert(position,s );
-     }*/
-    else if (operation_type == ALIGN) {
+    } else if (operation_type == ALIGN) {
       QJsonObject symbol = docObj["symbol"].toObject();
       Symbol s = Symbol::fromJson(symbol);
       QString position = s.positionString();
       symbols_list.value(sender->getFilename())
           ->insert(position, Symbol::fromJson(symbol));
-    } /* else if (operation_type == PASTE) {
-         // Decode as QByteArray
-                     QByteArray bArray;
-                     bArray.append(docObj["symbols"].toString());
-                     QByteArray b64 = QByteArray::fromBase64(bArray);
-
-                     // Deserialize
-                     QVector<Symbol> vec;
-                     QDataStream out(&b64, QIODevice::ReadOnly);
-                     out >> vec;
-
-                     // Save symbols in memory
-                     for (Symbol s : vec) {
-             QString position = s.positionString();
-             symbols_list.value(sender->getFilename())->insert(position, s);
-                     }
-
-     }
-     */
+    }
 
     changed.insert(sender->getFilename(), true);
     broadcast(docObj, sender);
-  }
-
-  if (typeVal.toString().compare(QLatin1String("new_file"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(QLatin1String("new_file"),
+                                        Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->createNewFile(docObj, sender);
     this->sendJson(sender, message);
-  }
-  if (typeVal.toString().compare(QLatin1String("file_to_open"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(QLatin1String("file_to_open"),
+                                        Qt::CaseInsensitive) == 0) {
     // Send symbols in file to client
     QVector<QByteArray> bArray;
     QJsonObject message = this->sendFile(docObj, sender, bArray);
-    // QByteArray toSend = this->createByteArrayJsonImage(message,v);
-
-    // this->sendByteArray(sender,toSend);
-  }
-  if (typeVal.toString().compare(QLatin1String("close"), Qt::CaseInsensitive) ==
-      0) {
+  } else if (typeVal.toString().compare(QLatin1String("close"),
+                                        Qt::CaseInsensitive) == 0) {
     QJsonObject message = this->closeFile(docObj, sender);
     this->sendJson(sender, message);
-  }
-  if (typeVal.toString().compare(QLatin1String("filename_from_sharedLink"),
-                                 Qt::CaseInsensitive) == 0) {
+  } else if (typeVal.toString().compare(
+                 QLatin1String("filename_from_sharedLink"),
+                 Qt::CaseInsensitive) == 0) {
     QJsonObject message =
         this->getFilenameFromSharedLink(docObj, sender->getUsername());
     this->sendJson(sender, message);
@@ -672,6 +603,7 @@ QJsonObject Server::updateNick(ServerWorker *sender, const QJsonObject &doc) {
     message["reason"] = QStringLiteral("Empty email");
     return message;
   }
+
   const QJsonValue nick = doc.value(QLatin1String("nickname"));
   if (nick.isNull() || !nick.isString()) {
     message["success"] = false;
@@ -684,6 +616,7 @@ QJsonObject Server::updateNick(ServerWorker *sender, const QJsonObject &doc) {
     message["reason"] = QStringLiteral("Empty nickname");
     return message;
   }
+
   sender->setNickname(nickname);
   DatabaseError result = this->db.updateNickname(username, nickname);
   if (result == CONNECTION_ERROR || result == QUERY_ERROR) {
@@ -974,7 +907,6 @@ void Server::storeSymbolsServerMemory(QString filename, QVector<Symbol> array) {
   foreach (const Symbol &symbol, array) {
     Symbol s = symbol;
     QString position = s.positionString();
-
     symbols_list.value(filename)->insert(position, s);
   }
 
@@ -983,7 +915,6 @@ void Server::storeSymbolsServerMemory(QString filename, QVector<Symbol> array) {
 
 QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
                              QVector<QByteArray> &v) {
-
   QJsonObject message;
   message["type"] = QStringLiteral("file_to_open");
 
@@ -995,6 +926,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
     this->sendByteArray(sender, toSend);
     return message;
   }
+
   const QString filename = name.toString().simplified();
   if (filename.isEmpty()) {
     message["success"] = false;
@@ -1011,6 +943,7 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
   sender->setFilename(filename);
   int index = 0;
 
+  // Add user to the list of clients using that file
   if (mapFileWorkers->contains(filename)) {
     index = mapFileWorkers->value(filename)->size();
     mapFileWorkers->value(filename)->append(sender);
@@ -1054,32 +987,23 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
   bool store_in_memory = false;
   QVector<Symbol> l;
   if (symbols_list.contains(filename)) {
-    qDebug() << "Reading from memory";
+    // Read from memory
     for (Symbol s : symbols_list.value(filename)->values().toVector()) {
       l.append(s);
     }
   } else {
-    qDebug() << "Reading from database";
-
-    QElapsedTimer timer;
-    timer.start();
+    // Reading from database
     success = db.retrieveFile(filename, l);
-    qDebug() << "Time from db: " << timer.elapsed() << "milliseconds";
-
-    store_in_memory = true;
+    store_in_memory = true; // Boolean used to store in memory only once
+                            // data has been sent to client, so that client
+                            // doesn't wait for server operation
   }
 
-  //	QElapsedTimer timer_shared;
-  //	timer_shared.start();
   // Retrieve shared link
   QString sharedLink;
   db.getSharedLink(author, file, sharedLink);
-  //	qDebug() << "Time to shared: " << timer_shared.elapsed() <<
-  //"milliseconds";
 
   int tot_symbols = l.size();
-  //	QElapsedTimer timer_json;
-  //	timer_json.start();
   if (success == true) {
     message["success"] = true;
     message["filename"] = filename;
@@ -1091,13 +1015,9 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
     message["reason"] = QStringLiteral("File content "
                                        "different form json array");
   }
-  //	qDebug() << "Time to json: " << timer_json.elapsed() << "milliseconds";
 
-  QElapsedTimer timer;
-  timer.start();
   QByteArray toSend = this->createByteArrayFileContentImage(message, l, v);
   this->sendByteArray(sender, toSend);
-  qDebug() << "Time to send: " << timer.elapsed() << "milliseconds";
 
   // TODO: immagini solo se message[success]=true
 
@@ -1117,15 +1037,10 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
   }
 
   this->broadcastByteArray(message_broadcast, bArray, sender);
-
   if (store_in_memory) {
-    QElapsedTimer timer2;
-    timer2.start();
     storeSymbolsServerMemory(sender->getFilename(), l);
-    qDebug() << "Time to memory: " << timer2.elapsed() << "milliseconds";
   }
 
-  // TODO: remove, seems not used
   return message;
 }
 
@@ -1164,7 +1079,6 @@ bool Server::udpateSymbolListAndCommunicateDisconnection(QString filename,
 }
 
 QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender) {
-
   QJsonObject message;
   message["type"] = QStringLiteral("close");
 
@@ -1174,6 +1088,7 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender) {
     message["reason"] = QStringLiteral("Wrong filename format");
     return message;
   }
+
   const QString filename = name.toString().simplified();
   if (filename.isEmpty()) {
     message["success"] = false;
@@ -1182,7 +1097,6 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender) {
   }
 
   const QJsonValue user = doc.value(QLatin1String("username"));
-
   if (user.isNull() || !user.isString()) {
     message["success"] = false;
     message["reason"] = QStringLiteral("Wrong username format");
@@ -1196,7 +1110,6 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender) {
   }
 
   const QJsonValue nick = doc.value(QLatin1String("nickname"));
-
   if (nick.isNull() || !nick.isString()) {
     message["success"] = false;
     message["reason"] = QStringLiteral("Wrong nickname format");
@@ -1214,22 +1127,13 @@ QJsonObject Server::closeFile(const QJsonObject &doc, ServerWorker *sender) {
     message["reason"] = QStringLiteral("File not exist");
     return message;
   }
-  // forse questo si deve mettere fuori
   sender->closeFile();
 
   message["success"] = true;
   return message;
 }
 
-// TODO: remove? seems not used
-QString Server::fromJsonArraytoString(const QJsonArray &data) {
-  QJsonDocument doc;
-  doc.setArray(data);
-  QString str(doc.toJson());
-  qDebug() << "JSONTOSTRING INPUT: " << data << " OUTPUT: " << str;
-  return str;
-}
-
+// To periodically save all open files
 void Server::saveFile() {
   for (QString filename : symbols_list.keys()) {
     if (changed.value(filename) == true) {

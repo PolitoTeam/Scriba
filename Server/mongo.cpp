@@ -608,7 +608,6 @@ bool Mongo::retrieveFile(const QString filename, QVector<Symbol> &symbols) {
 
   // Convert from QByteArray to QVector
   // (to reverse the saving process, in which QVector is stored as binary)
-
   QDataStream in(qUncompress(bArray));
   in >> symbols;
   return true;
