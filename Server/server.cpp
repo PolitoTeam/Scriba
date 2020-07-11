@@ -100,7 +100,6 @@ QByteArray Server::createByteArrayJsonImage(QJsonObject &message,
   QByteArray byte_array = QJsonDocument(message).toJson();
   quint32 size_json = byte_array.size();
 
-  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array);
 
@@ -131,7 +130,6 @@ QByteArray Server::createByteArrayFileContentImage(QJsonObject &message,
   in << c;
   quint32 size_content = byte_array_content.size();
 
-  // Depends on the endianness of the machine
   QByteArray ba((const char *)&size_json, sizeof(size_json));
   ba.append(byte_array_msg);
   QByteArray ba_c((const char *)&size_content, sizeof(size_content));

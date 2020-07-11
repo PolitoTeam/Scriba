@@ -79,6 +79,7 @@ void ServerWorker::onReadyRead() {
   }
 
   if (m_exptected_json_size == 0) {
+    // Update m_received_data and m_exptected_json_size
     extract_content_size();
   }
 
@@ -138,7 +139,7 @@ bool ServerWorker::parseJson() {
     if (jsonDoc.isObject()) {
       emit jsonReceived(jsonDoc.object());
     } else {
-      qDebug() << "Invalid message: " + QString::fromUtf8(json_data);
+      throw std::runtime_error("Invalid json received.");
     }
   } else {
     emit byte_array_received(json_data);
