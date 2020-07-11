@@ -285,7 +285,7 @@ void Editor::peerYou() {
   QPainter painter1(&background);
   painter1.setClipPath(path1);
   // filling rounded area if needed
-  painter1.fillRect(background.rect(), QColor(124, 252, 0, 127));
+  painter1.fillRect(background.rect(), QColor(0,	136,	86));
   // getting offsets if the original picture is not square
   x = qAbs(rounded.width() - size - 50) / 2;
   y = qAbs(rounded.height() - size - 50) / 2;
@@ -820,7 +820,7 @@ void Editor::updateText(const QString &text) {
   QPainter painter1(&background);
   painter1.setClipPath(path1);
   // filling rounded area if needed
-  painter1.fillRect(background.rect(), QColor(124, 252, 0, 127));
+  painter1.fillRect(background.rect(), QColor(0,	136,	86));
   // getting offsets if the original picture is not square
   x = qAbs(rounded.width() - size - 50) / 2;
   y = qAbs(rounded.height() - size - 50) / 2;
