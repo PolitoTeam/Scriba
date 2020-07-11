@@ -128,12 +128,8 @@ void CRDT::localInsertGroup(int &line, int &index, QString partial, QFont font,
   message["operation_type"] = PASTE;
   message["tot_symbols"] = vector.length();
 
-  qDebug() << "PASTING..." << vector.length();
-
   QByteArray toSend = client->createByteArrayFileContent(message, vector);
   client->sendByteArray(toSend);
-
-  // client->sendJson(message);
 }
 
 void CRDT::localChangeAlignment(int line, SymbolFormat::Alignment align) {
@@ -346,8 +342,6 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
 
   QByteArray toSend = client->createByteArrayFileContent(message, vector);
   client->sendByteArray(toSend);
-
-  // client->sendJson(message);
 }
 
 void CRDT::cursorPositionChanged(int line, int index) {
@@ -478,10 +472,10 @@ void CRDT::handleRemoteAlignChange(const Symbol &s) {
 
 void CRDT::handleRemotePaste(const QVector<Symbol> &symbols) {
   QString partial;
-  qDebug() << "Symbols received to paste " << symbols.length();
   int firstLine, firstIndex;
   QTextCharFormat newFormat;
   QVector<Symbol> alignChanges;
+
   for (int i = 0; i < symbols.size(); i++) {
     Symbol s = symbols[i];
     int line, index;
@@ -694,7 +688,6 @@ void CRDT::handleRemoteErase(const QVector<Symbol> &symbols) {
 }
 
 void CRDT::handleRemoteChange(const QVector<Symbol> &symbols) {
-  qDebug() << " Handle remote change: " << symbols.size();
   for (Symbol s : symbols) {
     int line, index;
     bool res = findPosition(s, line, index);

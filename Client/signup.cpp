@@ -23,8 +23,6 @@ Signup::Signup(QWidget *parent, Client *client)
   this->popUp = new QMessageBox(this);
   valid = false;
 
-  // connect(ui->profile_image, &ClickableLabel::clicked, this,
-  // &Signup::on_pushButtonUpload_clicked);
   connect(client, &Client::signedUp, this, &Signup::signedUp);
   connect(client, &Client::signupError, this, &Signup::signupFailed);
   // Enable signup but pressing 'enter' on confirm password textfield
@@ -39,28 +37,15 @@ Signup::Signup(QWidget *parent, Client *client)
 
 Signup::~Signup() { delete ui; }
 
-/*
-void Signup::on_pushButtonClear_clicked()
-{
-        this->clearLineEdit();
-        this->clearLabel();
-        QPixmap pix(":/images/anonymous");
-    photo=false;
-        ui->profile_image->setPixmap(pix.scaled(IMAGE_WIDTH, IMAGE_HEIGHT,
-                                                                                        Qt::KeepAspectRatioByExpanding));
-        ui->lineEditConfirmPassword->setDisabled(true);
-        valid = false;
-}*/
-
 void Signup::signedUp() {
   // Enable buttons after receiving server reply
   ui->pushButtonSignup->setEnabled(true);
-  // ui->pushButtonClear->setEnabled(true);
   ui->t_pushButtonBackLogin->setEnabled(true);
 
   ui->lineEditUsername->clear();
   ui->lineEditPassword->clear();
   ui->lineEditConfirmPassword->clear();
+
   AppMainWindow::errorLineEdit(ui->lineEditPassword, false);
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, false);
   AppMainWindow::errorLineEdit(ui->lineEditUsername, false);
@@ -69,7 +54,7 @@ void Signup::signedUp() {
   ui->iconInfoUser->setVisible(false);
   ui->iconInfoPass->setVisible(false);
 
-  QPixmap pix(":/images/anonymous"); // cercare .png
+  QPixmap pix(":/images/anonymous");
   ui->profile_image->setCustomPixmap(pix);
   photo = false;
   client->disconnectFromHost();
@@ -102,7 +87,6 @@ void Signup::signupFailed(const QString &reason) {
   clearLabel();
   clearLineEdit();
   ui->pushButtonSignup->setEnabled(true);
-  // ui->pushButtonClear->setEnabled(true);
   ui->t_pushButtonBackLogin->setEnabled(true);
 }
 
@@ -118,7 +102,6 @@ void Signup::on_pushButtonSignup_clicked() {
       checkConfirmation(password, confirm)) {
     // Disable buttons before receiving server reply
     ui->pushButtonSignup->setEnabled(false);
-    // ui->pushButtonClear->setEnabled(false);
     ui->t_pushButtonBackLogin->setEnabled(false);
     if (photo == false)
       client->signup(username, password, nullptr);
@@ -288,6 +271,7 @@ bool Signup::checkConfirmation(const QString &pass, const QString &conf) {
     if (res != 0) {
       ui->labelInfoPass->setText("Passwords don't match");
       ui->iconInfoPass->setVisible(true);
+
       AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
       AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, true);
       return false;
@@ -299,6 +283,7 @@ bool Signup::checkConfirmation(const QString &pass, const QString &conf) {
 void Signup::on_t_pushButtonBackLogin_clicked() {
   this->clearLabel();
   this->clearLineEdit();
+
   QPixmap image(":/images/anonymous");
   ui->profile_image->setCustomPixmap(image);
   photo = false;
@@ -310,6 +295,7 @@ void Signup::clearLabel() {
   ui->labelInfoUser->clear();
   ui->iconInfoUser->setVisible(false);
   ui->iconInfoPass->setVisible(false);
+
   AppMainWindow::errorLineEdit(ui->lineEditUsername, false);
   AppMainWindow::errorLineEdit(ui->lineEditPassword, false);
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, false);
@@ -323,7 +309,6 @@ void Signup::clearLineEdit() {
 
 void Signup::enableAllButtons() {
   ui->pushButtonSignup->setEnabled(true);
-  // ui->pushButtonClear->setEnabled(true);
   ui->t_pushButtonBackLogin->setEnabled(true);
 }
 

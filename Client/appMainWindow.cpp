@@ -16,50 +16,15 @@ AppMainWindow::AppMainWindow(QWidget *parent, Client *c)
                                         this->size(),
                                         qApp->desktop()->availableGeometry()));
 
-  //"font: CMU Sans Serif;"
-  qApp->setStyleSheet("QLineEdit[error='true']"
-                      "{"
-                      "border:2px solid red;"
-                      "}"
-                      "QPushButton{ "
-                      "height: 28px;"
-                      "color: rgb(255, 255, 255);"
-                      "border:0px;"
-                      "border-radius: 5px;"
-                      "background-color:  rgba(0, 0, 255,180);"
-                      "padding-left: 10px;"
-                      "padding-right: 10px;"
-
-                      "}"
-
-                      "QPushButton[objectName^='t_push']:hover"
-                      "{"
-                      "color: rgb(135,206,250);"
-                      "}"
-                      "QPushButton[objectName^='t_push']"
-                      "{"
-                      "color: rgb(0, 0, 255);"
-                      "height: 28px;"
-                      "border:0px;"
-                      "border-radius: 5px;"
-                      "background-color:  rgba(0, 0, 255,0);"
-                      "}"
-
-                      "QIcon {"
-                      "border-radius:10px;"
-                      "}"
-
-                      "QLineEdit{ "
-                      "height: 28px;"
-                      "border-radius: 5px;"
-                      "padding: 0 8px;"
-                      "selection-background-color: darkgray;"
-                      "}"
-                      "QLineEdit:focus { "
-                      "background-color:rgb(30,144,255,20);}");
+  // Read stylesheet from css file
+  QString stylesheet;
+  QFile cssFile(":resources/style.css");
+  if (cssFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    stylesheet.append(cssFile.readAll().data());
+  }
+  qApp->setStyleSheet(stylesheet);
 
   // Set fixed window size
-  qDebug() << "Set fixed size " << this->size();
   this->setFixedSize(QSize(640, 800));
 
   ui->setupUi(this);
@@ -139,15 +104,11 @@ void AppMainWindow::error(QAbstractSocket::SocketError socketError) {
   // ProxyConnectionClosedError (note that there is no break in the
   // 'case') when the server window is closed or the server crashes
   case QAbstractSocket::RemoteHostClosedError:
-    // qDebug()<<"Remote Host Closed Error";
-
     // This is called alone (not in couple with QAbstractSocket::
     // RemoteHostClosedError) only when the button stop
     // is pressed in the server GUI
   case QAbstractSocket::ProxyConnectionClosedError: // stop
-
     this->on_logOut();
-
     QMessageBox::warning(this, tr("Disconnected"),
                          tr("The host terminated the connection"));
     on_changeWidget(LOGIN);

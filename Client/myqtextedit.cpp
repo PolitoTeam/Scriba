@@ -36,6 +36,7 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
     if (this->document()->isRedoAvailable()) {
       emit redo();
     }
+    // 16777219 = code of delete key
   } else if (e->key() == 16777219 && this->document()->isEmpty()) {
     emit resetDefaultAlignment(true);
   } else {
