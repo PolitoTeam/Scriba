@@ -7,7 +7,8 @@
 #include <qabstracttextdocumentlayout.h>
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent) {
-  this->setFont(QFont("American Typewriter"));
+  this->setFont(QFont("American Typewriter",15));
+
 }
 
 void MyQTextEdit::paintEvent(QPaintEvent *e) {
