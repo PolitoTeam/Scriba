@@ -21,11 +21,15 @@ void ClickableLabel::paintEvent(QPaintEvent *event) {
 
   QPixmap scaled = pixmap.scaled(w, h, Qt::KeepAspectRatioByExpanding,
                                  Qt::SmoothTransformation);
-  QBrush brush(scaled);
+
+  QRect rect(scaled.rect().center().x()-w/2,scaled.rect().center().y()-h/2, w, h);
+  QPixmap cropped = scaled.copy(rect);
+
+  QBrush brush(cropped);
   QPainter painter(this);
   painter.setRenderHint(QPainter::Antialiasing);
   painter.setBrush(brush);
-  painter.drawRoundedRect(2, 2, w - 10, h - 10, 100, 100);
+  painter.drawRoundedRect(1, 1, w -4, h -4 , 100, 100);
   QLabel::paintEvent(event);
 }
 
