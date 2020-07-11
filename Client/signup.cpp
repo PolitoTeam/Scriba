@@ -22,6 +22,7 @@ Signup::Signup(QWidget *parent, Client *client)
   ui->lineEditConfirmPassword->setDisabled(true);
   this->popUp = new QMessageBox(this);
   valid = false;
+  ui->lineEditConfirmPassword->setEnabled(false);
 
   connect(client, &Client::signedUp, this, &Signup::signedUp);
   connect(client, &Client::signupError, this, &Signup::signupFailed);
@@ -120,6 +121,7 @@ void Signup::on_lineEditUsername_editingFinished() {
 
 void Signup::on_lineEditPassword_editingFinished() {
   QString password = ui->lineEditPassword->text();
+
   checkPassword(password);
   if (valid == true) {
     if (ui->lineEditConfirmPassword->text().size() > 0)
@@ -155,17 +157,20 @@ void Signup::on_lineEditPassword_textChanged(const QString &arg) {
   AppMainWindow::errorLineEdit(ui->lineEditPassword, false);
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, false);
   ui->iconInfoPass->setVisible(false);
-  if (conf.size() == 0) {
-    if (arg.size() > 0) {
-      ui->lineEditConfirmPassword->setDisabled(false);
 
-    } else {
+  if (arg.size()==0){
       ui->lineEditConfirmPassword->setDisabled(true);
       ui->lineEditConfirmPassword->clear();
-    }
-  } else {
-    checkPassword(arg);
-    checkConfirmation(arg, conf);
+      return;
+  }
+  else{
+      checkPassword(arg);
+
+      if(!ui->lineEditConfirmPassword->isEnabled())
+            ui->lineEditConfirmPassword->setDisabled(false);
+      else if (ui->lineEditConfirmPassword->text().size()>0)
+          checkConfirmation(arg, conf);
+
   }
 }
 
@@ -266,13 +271,21 @@ void Signup::checkPassword(const QString &password) {
 }
 
 bool Signup::checkConfirmation(const QString &pass, const QString &conf) {
-  if (conf.size() > 0 && valid == true) {
+  if (valid == true) {
+      if (conf.isNull() || conf.isEmpty()){
+          ui->labelInfoPass->setText("Empty confirmation password");
+          ui->iconInfoPass->setVisible(true);
+
+          AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
+          AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, true);
+          return false;
+      }
+
     int res = QString::compare(pass, conf, Qt::CaseSensitive);
     if (res != 0) {
       ui->labelInfoPass->setText("Passwords don't match");
       ui->iconInfoPass->setVisible(true);
 
-      AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
       AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, true);
       return false;
     }
