@@ -4,15 +4,18 @@
 #include <QPaintEvent>
 #include <QRegularExpression>
 #include <QTextBlock>
+#include <QtWidgets>
 #include <qabstracttextdocumentlayout.h>
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent) {
   this->setFont(QFont("American Typewriter",15));
+   selected=false;
 
 }
 
 void MyQTextEdit::paintEvent(QPaintEvent *e) {
   QPainter p(viewport());
+  selected=!this->textCursor().selection().isEmpty();
 
   for (RemoteCursor *cursor : remote_cursors) {
     QColor c = cursor->getColor();
@@ -77,3 +80,5 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
 void MyQTextEdit::setLine(int *line) { this->line = line; }
 
 void MyQTextEdit::setIndex(int *index) { this->index = index; }
+
+bool MyQTextEdit::getSelected(){return selected;}

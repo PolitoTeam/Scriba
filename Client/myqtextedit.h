@@ -16,10 +16,12 @@ public:
   void insertFromMimeData(const QMimeData *source) override;
   void setLine(int *line);
   void setIndex(int *index);
+  bool getSelected();
 
 private:
   QTextCursor cursor;
   int *line, *index;
+  bool selected;
 
 protected:
   void paintEvent(QPaintEvent *event) override;
