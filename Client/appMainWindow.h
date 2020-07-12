@@ -31,7 +31,7 @@ private slots:
   void on_logOut();
   void error(QAbstractSocket::SocketError socketError);
   void on_changeWidget(int widget);
-  void on_changeLoginLabel(const QString &label);
+  void on_changeLoginLabel();
 
 private:
   Ui::Index *ui;

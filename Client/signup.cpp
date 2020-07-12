@@ -60,7 +60,7 @@ void Signup::signedUp() {
   photo = false;
   client->disconnectFromHost();
 
-  emit changeLoginLabel("Correctly signed up");
+  emit changeLoginLabel();
   emit changeWidget(LOGIN);
 }
 

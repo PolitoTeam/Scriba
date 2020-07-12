@@ -102,8 +102,8 @@ void AppMainWindow::on_changeWidget(int widget) {
   }
 }
 
-void AppMainWindow::on_changeLoginLabel(const QString &label) {
-  login->setLabel(label);
+void AppMainWindow::on_changeLoginLabel() {
+  login->correctlySignedup();
 }
 
 void AppMainWindow::error(QAbstractSocket::SocketError socketError) {

@@ -13,6 +13,7 @@ public:
                           Qt::WindowFlags f = Qt::WindowFlags());
   ~ClickableLabel();
   void setCustomPixmap(const QPixmap &p);
+  void disableTooltip();
 
 signals:
   void clicked();
@@ -25,6 +26,8 @@ protected:
 
 private:
   QPixmap pixmap;
+  bool tooltip=true;
+
 };
 
 #endif // CLICKABLELABEL_H

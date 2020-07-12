@@ -4,6 +4,7 @@
 #include "appMainWindow.h"
 #include "client.h"
 #include <QMainWindow>
+#include <QtWidgets>
 
 namespace Ui {
 class Login;
@@ -16,7 +17,8 @@ public:
   Login(QWidget *parent = nullptr, Client *client = nullptr);
   ~Login();
   void enableAllButtons();
-  void setLabel(const QString &label);
+  void correctlySignedup();
+
 
 private slots:
   void try_to_log();
@@ -24,6 +26,7 @@ private slots:
   void loggedIn();
   void loginFailed(const QString &reason);
   void on_lineEditUsername_textChanged(const QString &arg);
+
 
 public slots:
   void disconnect();
@@ -38,6 +41,7 @@ private:
   void clearLineEdit();
   void addError(QString error);
   void clearError();
+  QMessageBox *popUp;
 };
 
 #endif // LOGIN_H

@@ -33,6 +33,10 @@ void ClickableLabel::paintEvent(QPaintEvent *event) {
   QLabel::paintEvent(event);
 }
 
-void ClickableLabel::enterEvent(QEvent *ev) { setToolTip("Upload..."); }
+void ClickableLabel::disableTooltip(){
+    this->tooltip=false;
+}
+
+void ClickableLabel::enterEvent(QEvent *ev) { if (tooltip) setToolTip("Upload..."); }
 
 void ClickableLabel::leaveEvent(QEvent *ev) {}

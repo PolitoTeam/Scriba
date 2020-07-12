@@ -21,6 +21,7 @@ Home::Home(QWidget *parent, Client *client)
   ButtonHoverWatcher *watcher =
       new ButtonHoverWatcher("", ":/images/exit.png", this);
   ui->pushButtonLogOut->installEventFilter(watcher);
+  ui->profileImage->disableTooltip();
 }
 
 Home::~Home() { delete ui; }
@@ -112,4 +113,5 @@ void Home::setProfile() {
   this->ui->usernameLabel->setText(this->client->getUsername());
   this->ui->nickNameLabel->setText(this->client->getNickname());
   this->ui->profileImage->setCustomPixmap(*this->client->getProfile());
+
 }

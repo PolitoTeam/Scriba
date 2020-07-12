@@ -8,6 +8,7 @@
 Login::Login(QWidget *parent, Client *client)
     : QWidget(parent), ui(new Ui::Login), client(client) {
   ui->setupUi(this);
+  this->popUp = new QMessageBox(this);
   clearError();
 
   connect(client, &Client::loggedIn, this, &Login::loggedIn);
@@ -15,6 +16,8 @@ Login::Login(QWidget *parent, Client *client)
 
   // Try to login by clicking login button or pressing 'enter'
   connect(ui->pushButtonLogin, &QPushButton::clicked, this, &Login::try_to_log);
+  connect(ui->lineEditPassword, &QLineEdit::returnPressed, this,
+          &Login::try_to_log);
   connect(ui->lineEditPassword, &QLineEdit::returnPressed, this,
           &Login::try_to_log);
 }
@@ -86,7 +89,15 @@ void Login::on_lineEditUsername_textChanged(const QString &) {
   this->clearLabel();
 }
 
-void Login::setLabel(const QString &label) { ui->labelMessage->setText(label); }
+void Login::correctlySignedup() {
+    // Show popup for 1 second
+    this->popUp->setText("Correctly signed up");
+    this->popUp->setWindowTitle("");
+    this->popUp->setStandardButtons(this->popUp->NoButton);
+    this->popUp->setModal(false);
+    QTimer::singleShot(1000, this->popUp, &QMessageBox::hide); // 1000 ms
+    this->popUp->show();
+}
 
 void Login::addError(QString error) {
   ui->icon_error->setVisible(true);
