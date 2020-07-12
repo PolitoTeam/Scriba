@@ -937,7 +937,7 @@ void Editor::removeUser(const QString &username, const QString &nickname) {
         // qDebug()<< "Assigned file";
       }
       this->ui->listWidget->removeItemWidget(item);
-      //  ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
+        ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
       delete item;
       break;
     }
