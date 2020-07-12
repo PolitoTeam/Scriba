@@ -28,19 +28,22 @@
 Editor::Editor(QWidget *parent, Client *client)
     : QMainWindow(parent), ui(new Ui::Editor), client(client) {
   ui->setupUi(this);
-  this->popUp = new QMessageBox(this);
-
   QPixmap share(":/images/share");
+  undoFlag = false;
+  crdt = new CRDT(client);
+  highlighter = new Highlighter(0, crdt);
 
-  // Show popup for 1 second
+  // Setup popup
+  this->popUp = new QMessageBox(this);
   this->popUp->setText("Link copied to clipboard.");
   this->popUp->setWindowTitle("Shared Link");
   this->popUp->setStandardButtons(this->popUp->NoButton);
   this->popUp->setModal(false);
-  this->popUp->setIconPixmap(share.scaled(30, 30, Qt::KeepAspectRatioByExpanding,
-                                             Qt::SmoothTransformation));
+  this->popUp->setIconPixmap(share.scaled(
+      30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
   this->popUp->setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
 
+  // Connect actions
   connect(ui->actionPrint, &QAction::triggered, this, &Editor::printPdf);
   connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
   connect(ui->actionCopy, &QAction::triggered, this, &Editor::copy);
@@ -53,48 +56,47 @@ Editor::Editor(QWidget *parent, Client *client)
   connect(ui->actionUnderline, &QAction::triggered, this,
           &Editor::setFontUnderline);
   connect(ui->actionItalic, &QAction::triggered, this, &Editor::setFontItalic);
+  connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
+
+  // Connect with client
   connect(client, &Client::usersConnectedReceived, this, &Editor::addUsers);
   connect(client, &Client::contentReceived, this, &Editor::updateText);
-  connect(ui->textEdit, &QTextEdit::textChanged, this, &Editor::textChange);
   connect(client, &Client::userDisconnected, this, &Editor::removeUser);
   connect(client, &Client::addCRDTterminator, this,
           &Editor::on_addCRDTterminator);
   connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
-  connect(ui->actionSharedLink, &QAction::triggered, this, &Editor::sharedLink);
-  undoFlag = false;
-  crdt = new CRDT(client);
-  highlighter = new Highlighter(0, crdt);
-
-  connect(this->client, &Client::loggedIn, this, [this] {
+  connect(client, &Client::loggedIn, this, [this] {
     int site_id = fromStringToIntegerHash(this->client->getUsername());
     this->crdt->setId(site_id);
     this->highlighter->addLocal(site_id);
   });
 
+  // Connect with textedit
+  connect(ui->textEdit, &QTextEdit::textChanged, this, &Editor::textChange);
   connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
           &Editor::on_contentsChange);
+  connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
+          &Editor::saveCursorPosition);
+  connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this,
+          &Editor::on_currentCharFormatChanged);
+
+  // Connect with crdt
   connect(crdt, &CRDT::insert, this, &Editor::on_insert);
   connect(crdt, &CRDT::insertGroup, this, &Editor::on_insertGroup);
   connect(crdt, &CRDT::erase, this, &Editor::on_erase);
   connect(crdt, &CRDT::change, this, &Editor::on_change);
   connect(crdt, &CRDT::changeAlignment, this, &Editor::on_changeAlignment);
 
-  connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
-          &Editor::saveCursorPosition);
-  connect(ui->textEdit, &QTextEdit::currentCharFormatChanged, this,
-          &Editor::on_currentCharFormatChanged);
-
-  // ADD font, size and color to toolbar (cannot be otherwise achieved using Qt
-  // creator GUI):
-  // 1. font
+  // Add font, size and color to toolbar (cannot be otherwise achieved
+  // using Qt creator GUI):
+  // 1. Font
   comboFont = new QFontComboBox(ui->toolBar);
   ui->toolBar->addWidget(comboFont);
   connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated),
           this, &Editor::textFamily);
   comboFont->setCurrentFont(QFont("American Typewriter"));
-  // this->textFamily("American Typewriter");
 
-  // 2. size
+  // 2. Size
   comboSize = new QComboBox(ui->toolBar);
   ui->toolBar->addWidget(comboSize);
 
@@ -105,32 +107,26 @@ Editor::Editor(QWidget *parent, Client *client)
     comboSize->addItem(QString::number(size));
 
   comboSize->setCurrentIndex(standardSizes.indexOf(15));
-
   connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated),
           this, &Editor::textSize);
 
-  // 3. color
+  // 3. Color
   QPixmap pix(16, 16);
   pix.fill(Qt::black);
   actionTextColor =
       ui->toolBar->addAction(pix, tr("&Color..."), this, &Editor::textColor);
 
-  // undo/redo config
+  // Undo/redo config
   connect(ui->textEdit->document(), &QTextDocument::undoAvailable,
           ui->actionUndo, &QAction::setEnabled);
   connect(ui->textEdit->document(), &QTextDocument::redoAvailable,
           ui->actionRedo, &QAction::setEnabled);
+  connect(ui->textEdit, &MyQTextEdit::undo, this, &Editor::undo);
+  connect(ui->textEdit, &MyQTextEdit::redo, this, &Editor::redo);
   ui->actionUndo->setEnabled(ui->textEdit->document()->isUndoAvailable());
   ui->actionRedo->setEnabled(ui->textEdit->document()->isRedoAvailable());
-  connect(ui->textEdit, &MyQTextEdit::undo,
-          []() { qDebug() << "Received UNDO"; });
-  connect(ui->textEdit, &MyQTextEdit::undo, this, &Editor::undo);
 
-  connect(ui->textEdit, &MyQTextEdit::redo,
-          []() { qDebug() << "Received REDO"; });
-  connect(ui->textEdit, &MyQTextEdit::redo, this, &Editor::redo);
-
-  // copy/paste/cut config
+  // Copy/paste/cut config
 #ifndef QT_NO_CLIPBOARD
   ui->actionCut->setEnabled(false);
   connect(ui->textEdit, &QTextEdit::copyAvailable, ui->actionCut,
@@ -142,7 +138,7 @@ Editor::Editor(QWidget *parent, Client *client)
           &Editor::clipboardDataChanged);
 #endif
 
-  // add alignment icons
+  // Add alignment icons
   const QIcon leftIcon =
       QIcon::fromTheme("format-justify-left", QIcon(":/images/textleft.png"));
   actionAlignLeft = new QAction(leftIcon, tr("&Left"), this);
@@ -175,9 +171,8 @@ Editor::Editor(QWidget *parent, Client *client)
   ui->toolBar->addSeparator();
   connect(ui->textEdit, &MyQTextEdit::resetDefaultAlignment, actionAlignLeft,
           &QAction::trigger);
-  // connect(ui->textEdit,&MyQTextEdit::resetDefaultAlignment,actionAlignLeft,&QAction::trigger);
 
-  // show assigned text
+  // Show assigned text
   const QIcon assigned =
       QIcon::fromTheme("Cursor", QIcon(":/images/cursor.png"));
   actionShowAssigned = new QAction(assigned, tr("Cursor"), this);
@@ -186,17 +181,6 @@ Editor::Editor(QWidget *parent, Client *client)
   ui->toolBar->addAction(actionShowAssigned);
   connect(actionShowAssigned, &QAction::triggered, this,
           &Editor::on_showAssigned);
-
-  //
-  //    connect(ui->actionFont, &QAction::triggered, this,
-  //    &Editor::on_formatChange); connect(ui->actionBold, &QAction::triggered,
-  //    this, &Editor::on_formatChange); connect(ui->actionUnderline,
-  //    &QAction::triggered, this, &Editor::on_formatChange); connect(comboFont,
-  //    &QFontComboBox::currentFontChanged, this, &Editor::on_formatChange);
-  //    connect(comboSize, &QComboBox::, this, &Editor::on_formatChange);
-  //    connect(actionTextColor, &QAction::triggered, this,
-  //    &Editor::on_formatChange);
-  //      connect(this, &Editor::formatChange, this, &Editor::on_formatChange);
 
   ui->textEdit->setLine(&line);
   ui->textEdit->setIndex(&index);
@@ -239,9 +223,9 @@ void Editor::printPdf() {
   printer.setOutputFormat(QPrinter::PdfFormat);
   printer.setOutputFileName(fileName);
   ui->textEdit->document()->print(&printer);
-  QString msg=tr("  Exported \"%1\"").arg(QDir::toNativeSeparators(fileName));
+  QString msg = tr("  Exported \"%1\"").arg(QDir::toNativeSeparators(fileName));
 
-  statusBar()->showMessage(msg,3000);
+  statusBar()->showMessage(msg, 3000);
   //! [0]
 #endif
 }
@@ -360,7 +344,6 @@ void Editor::sharedLink() {
   QClipboard *clipboard = QGuiApplication::clipboard();
   clipboard->setText(client->getSharedLink());
 
-
   QTimer::singleShot(1000, this->popUp, &QMessageBox::hide); // 1000 ms
   this->popUp->show();
 }
@@ -377,11 +360,9 @@ void Editor::textAlign(QAction *a) {
   int start = ui->textEdit->textCursor().selectionStart();
   cursor.setPosition(start);
   int line_start = cursor.blockNumber();
-  // qDebug()<<"START POSITION: "<< line_start;
   int end = ui->textEdit->textCursor().selectionEnd();
   cursor.setPosition(end);
   int line_end = cursor.blockNumber();
-  // qDebug()<<"END POSITION: "<< line_end;
 
   QTextBlockFormat n;
   SymbolFormat::Alignment sf;
@@ -403,40 +384,23 @@ void Editor::textAlign(QAction *a) {
 }
 
 SymbolFormat::Alignment Editor::alignmentConversion(Qt::Alignment a) {
-
   if (a == (Qt::AlignLeft | Qt::AlignLeading) ||
       a == (Qt::AlignLeading | Qt::AlignAbsolute)) {
-    // qDebug()<<"Convertsion: "<<a<<" -> SymbolFormat::Alignment::ALIGN_LEFT";
     return SymbolFormat::Alignment::ALIGN_LEFT;
-  }
-
-  else if (a == Qt::AlignCenter || a == Qt::AlignHCenter) {
-    // qDebug()<<"Convertsion: "<<a<<" ->
-    // SymbolFormat::Alignment::ALIGN_CENTER";
+  } else if (a == Qt::AlignCenter || a == Qt::AlignHCenter) {
     return SymbolFormat::Alignment::ALIGN_CENTER;
-  }
-
-  else if (a == Qt::AlignRight || a == Qt::AlignTrailing | Qt::AlignAbsolute) {
-    // qDebug()<<"Convertsion: "<<a<<" -> SymbolFormat::Alignment::ALIGN_RIGHT";
+  } else if (a == Qt::AlignRight ||
+             a == (Qt::AlignTrailing | Qt::AlignAbsolute)) {
     return SymbolFormat::Alignment::ALIGN_RIGHT;
   }
 }
 
 Qt::Alignment Editor::alignmentConversion(SymbolFormat::Alignment a) {
-
   if (a == SymbolFormat::Alignment::ALIGN_LEFT) {
-    // qDebug()<<"Conversion: "<<a<<" -> "<< "Qt::AlignLeft|Qt::AlignLeading";
     return (Qt::AlignLeft | Qt::AlignLeading);
-  }
-
-  if (a == SymbolFormat::Alignment::ALIGN_CENTER) {
-    // qDebug()<<"Conversion: "<<a<<" -> "<< "Qt::AlignHCenter";
+  } else if (a == SymbolFormat::Alignment::ALIGN_CENTER) {
     return Qt::AlignHCenter;
-  }
-
-  if (a == SymbolFormat::Alignment::ALIGN_RIGHT) {
-    // qDebug()<<"Conversion: "<<a<<" -> "<<
-    // "Qt::AlignTrailing|Qt::AlignAbsolute";
+  } else if (a == SymbolFormat::Alignment::ALIGN_RIGHT) {
     return Qt::AlignTrailing | Qt::AlignAbsolute;
   }
 }
@@ -480,128 +444,125 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   // "charsAdded - charsRemoved" and "charsRemoved - charsAdded" are conditions
   // added to handle QTextDocument::contentsChange bug QTBUG-3495
 
-  //substitute selection
-  if (ui->textEdit->getSelected() && charsAdded>0 && charsRemoved>0){
-      qDebug()<<"qui si deve operare";
-          disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
-                     &Editor::on_contentsChange);
-          disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
-                     &Editor::saveCursorPosition);
-          QString removed;
+  // substitute selection
+  if (ui->textEdit->getSelected() && charsAdded > 0 && charsRemoved > 0) {
+    qDebug() << "qui si deve operare";
+    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
+               &Editor::on_contentsChange);
+    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
+               &Editor::saveCursorPosition);
+    QString removed;
 
+    ui->textEdit->document()->undo();
+    removed =
+        ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
+    ui->textEdit->document()->redo();
 
-          ui->textEdit->document()->undo();
-          removed =
-                ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
-          ui->textEdit->document()->redo();
+    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
+            &Editor::on_contentsChange);
+    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
+            &Editor::saveCursorPosition);
+    QTextCursor tmp_cursor = ui->textEdit->textCursor();
+    tmp_cursor.setPosition(position);
+    int tmp_line = tmp_cursor.blockNumber();
+    int tmp_index = tmp_cursor.positionInBlock();
+    // remove multiple chars
+    // qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
+    if (removed.length()) {
+      crdt->localErase(tmp_line, tmp_index, removed.length());
+    }
 
-          connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
-                  &Editor::on_contentsChange);
-          connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
-                  &Editor::saveCursorPosition);
-          QTextCursor tmp_cursor = ui->textEdit->textCursor();
-          tmp_cursor.setPosition(position);
-          int tmp_line = tmp_cursor.blockNumber();
-          int tmp_index = tmp_cursor.positionInBlock();
-          // remove multiple chars
-          // qDebug()<<"Before remove line and index: "<<"("<<line<<","<<index<<")";
-          if (removed.length()) {
-            crdt->localErase(tmp_line, tmp_index, removed.length());
-          }
+    this->undoFlag = false;
+    QString added = ui->textEdit->toPlainText().mid(position, charsAdded);
+    qDebug() << "added " << added;
+    if (added.at(0) == '\0')
+      return;
+    // move cursor before first char to insert
+    QTextCursor cursor = ui->textEdit->textCursor();
+    cursor.setPosition(position);
+    // single character
+    int line = cursor.blockNumber();
+    int index = cursor.positionInBlock();
+    if (charsAdded == 1) {
 
-          this->undoFlag = false;
-          QString added =
-              ui->textEdit->toPlainText().mid(position, charsAdded );
-          qDebug()<<"added "<<added;
-          if (added.at(0) == '\0')
-            return;
-          // move cursor before first char to insert
-          QTextCursor cursor = ui->textEdit->textCursor();
-          cursor.setPosition(position);
-          // single character
-          int line = cursor.blockNumber();
-          int index = cursor.positionInBlock();
-          if (charsAdded == 1) {
+      // qDebug() << "Added " << added.at(0) << "in position (" << line << ","
+      // << index << ")";
 
-            // qDebug() << "Added " << added.at(0) << "in position (" << line << ","
-            // << index << ")";
+      // to retrieve the format it is necessary to be on the RIGHT of the target
+      // char
+      cursor.movePosition(QTextCursor::Right);
+      QFont font = cursor.charFormat().font();
+      ui->textEdit->update();
+      crdt->localInsert(line, index, added.at(0).unicode(), font,
+                        cursor.charFormat().foreground().color(),
+                        getCurrentAlignment());
+    } else {
+      this->undoFlag = false;
+      QFont fontPrec;
+      QColor colorPrec;
+      QString partial;
+      QFont font;
+      QColor color;
+      Qt::Alignment align;
+      Qt::Alignment alignPrec = ui->textEdit->document()
+                                    ->findBlockByNumber(line)
+                                    .blockFormat()
+                                    .alignment();
+      int linePrec = line;
+      int numLines = line;
+      // add multiple chars
+      // qDebug() << "Multiple chars: position" << cursor.position()<<"
+      // (line,index): ( "<<line<<","<< index<<")";
+      for (int i = 0; i < charsAdded; i++) {
 
-            // to retrieve the format it is necessary to be on the RIGHT of the target
-            // char
-            cursor.movePosition(QTextCursor::Right);
-            QFont font = cursor.charFormat().font();
-            ui->textEdit->update();
-            crdt->localInsert(line, index, added.at(0).unicode(), font,
-                              cursor.charFormat().foreground().color(),
-                              getCurrentAlignment());
-          } else {
-            this->undoFlag = false;
-            QFont fontPrec;
-            QColor colorPrec;
-            QString partial;
-            QFont font;
-            QColor color;
-            Qt::Alignment align;
-            Qt::Alignment alignPrec = ui->textEdit->document()
-                                          ->findBlockByNumber(line)
-                                          .blockFormat()
-                                          .alignment();
-            int linePrec = line;
-            int numLines = line;
-            // add multiple chars
-            // qDebug() << "Multiple chars: position" << cursor.position()<<"
-            // (line,index): ( "<<line<<","<< index<<")";
-            for (int i = 0; i < charsAdded; i++) {
+        // int line = cursor.blockNumber();
+        // int index = cursor.positionInBlock();
 
-              // int line = cursor.blockNumber();
-              // int index = cursor.positionInBlock();
+        // to retrieve the format it is necessary to be on the RIGHT of the
+        // target char
+        cursor.movePosition(QTextCursor::Right);
+        // qDebug()<<"Added at: "<<i<<" -> "<<added.at(i).unicode();
+        font = cursor.charFormat().font();
+        color = cursor.charFormat().foreground().color();
+        align = alignPrec;
+        if (i == 0) {
+          fontPrec = font;
+          colorPrec = color;
+        }
 
-              // to retrieve the format it is necessary to be on the RIGHT of the
-              // target char
-              cursor.movePosition(QTextCursor::Right);
-              // qDebug()<<"Added at: "<<i<<" -> "<<added.at(i).unicode();
-              font = cursor.charFormat().font();
-              color = cursor.charFormat().foreground().color();
-              align = alignPrec;
-              if (i == 0) {
-                fontPrec = font;
-                colorPrec = color;
-              }
+        if (numLines != linePrec) {
+          QTextBlock block =
+              ui->textEdit->document()->findBlockByNumber(numLines);
+          QTextBlockFormat textBlockFormat = block.blockFormat();
+          align = textBlockFormat.alignment();
+          // qDebug()<<"line: "<<numLines<<" alignment: "<<align;
+        }
 
-              if (numLines != linePrec) {
-                QTextBlock block =
-                    ui->textEdit->document()->findBlockByNumber(numLines);
-                QTextBlockFormat textBlockFormat = block.blockFormat();
-                align = textBlockFormat.alignment();
-                // qDebug()<<"line: "<<numLines<<" alignment: "<<align;
-              }
+        if (font == fontPrec && color == colorPrec && align == alignPrec) {
+          // qDebug()<<"concatenated: "<<added.at(i).unicode();
+          partial.append(added.at(i).unicode());
+        } else {
+          crdt->localInsertGroup(line, index, partial, fontPrec, colorPrec,
+                                 alignPrec);
+          // qDebug()<<"Inserted: "<<partial;
+          fontPrec = font;
+          colorPrec = color;
+          alignPrec = align;
+          partial.clear();
+          partial.append(added.at(i).unicode());
+        }
 
-              if (font == fontPrec && color == colorPrec && align == alignPrec) {
-                // qDebug()<<"concatenated: "<<added.at(i).unicode();
-                partial.append(added.at(i).unicode());
-              } else {
-                crdt->localInsertGroup(line, index, partial, fontPrec, colorPrec,
-                                       alignPrec);
-                // qDebug()<<"Inserted: "<<partial;
-                fontPrec = font;
-                colorPrec = color;
-                alignPrec = align;
-                partial.clear();
-                partial.append(added.at(i).unicode());
-              }
+        linePrec = numLines;
+        if (added.at(i) == '\n') {
+          numLines++;
+        }
+      }
 
-              linePrec = numLines;
-              if (added.at(i) == '\n') {
-                numLines++;
-              }
-            }
-
-            if (!partial.isNull() && !partial.isEmpty()) {
-              crdt->localInsertGroup(line, index, partial, font, color, align);
-            }
-          }
-  }
-  else if ( charsAdded > 0 && charsAdded - charsRemoved > 0) {
+      if (!partial.isNull() && !partial.isEmpty()) {
+        crdt->localInsertGroup(line, index, partial, font, color, align);
+      }
+    }
+  } else if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
     this->undoFlag = false;
     QString added =
         ui->textEdit->toPlainText().mid(position, charsAdded - charsRemoved);
@@ -889,39 +850,40 @@ void Editor::on_erase(int line, int index, int lenght) {
   // qDebug().noquote() << crdt->to_string();
 }
 
-void Editor::on_change( const QVector<Symbol> &symbols) {
+void Editor::on_change(const QVector<Symbol> &symbols) {
   qDebug() << "ON_CHANGE";
-  QTextCursor tempCursor=ui->textEdit->textCursor();;
-  bool first=true;
+  QTextCursor tempCursor = ui->textEdit->textCursor();
+  ;
+  bool first = true;
   QTextCharFormat newFormat;
 
-  for (Symbol s: symbols){
-      int line,index;
-      this->crdt->findPosition(s,line,index);
-      qDebug() << "changing in (line,index) "<<line<<" "<<index;
-      //QTextCursor cursor = ui->textEdit->textCursor();
-      QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
-      //cursor.setPosition(block.position() + index);
+  for (Symbol s : symbols) {
+    int line, index;
+    this->crdt->findPosition(s, line, index);
+    qDebug() << "changing in (line,index) " << line << " " << index;
+    // QTextCursor cursor = ui->textEdit->textCursor();
+    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    // cursor.setPosition(block.position() + index);
 
-      // save old format to restore it later
-      //QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+    // save old format to restore it later
+    // QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
 
-      //    cursor.setCharFormat(newFormat);
-      //    cursor.insertText(QString(1, s.getValue()));
-      //tempCursor = cursor;
-      if  (first){
-          first=false;
-          tempCursor.setPosition(block.position() + index);
-          newFormat= s.getQTextCharFormat();
-      }
+    //    cursor.setCharFormat(newFormat);
+    //    cursor.insertText(QString(1, s.getValue()));
+    // tempCursor = cursor;
+    if (first) {
+      first = false;
+      tempCursor.setPosition(block.position() + index);
+      newFormat = s.getQTextCharFormat();
+    }
 
-      tempCursor.setPosition(block.position() + index + 1, QTextCursor::KeepAnchor);
+    tempCursor.setPosition(block.position() + index + 1,
+                           QTextCursor::KeepAnchor);
 
-      //ui->textEdit->setCurrentCharFormat(oldFormat);
+    // ui->textEdit->setCurrentCharFormat(oldFormat);
   }
   tempCursor.setCharFormat(newFormat);
-  qDebug()<<"Selected"<<tempCursor.selection().toPlainText();
-
+  qDebug() << "Selected" << tempCursor.selection().toPlainText();
 
   // qDebug().noquote() << crdt->to_string();
 }
@@ -1053,6 +1015,10 @@ void Editor::clear(bool serverDisconnected) {
   ui->listWidget->clear();
   ui->textEdit->clear();
 
+  actionAlignLeft->setChecked(false);
+  actionAlignCenter->setChecked(false);
+  actionAlignRight->setChecked(false);
+
   // ... and then riconnect (because we want to remove chars locally without
   // deleteling them in server)
   connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
@@ -1077,7 +1043,7 @@ void Editor::removeUser(const QString &username, const QString &nickname) {
         // qDebug()<< "Assigned file";
       }
       this->ui->listWidget->removeItemWidget(item);
-        ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
+      ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
       delete item;
       break;
     }
@@ -1232,12 +1198,11 @@ void Editor::on_formatChange() {
       continue;
     }
 
-    //qDebug() << "Font: " << font;
-    //qDebug() << "FontPrec: " << fontPrec;
+    // qDebug() << "Font: " << font;
+    // qDebug() << "FontPrec: " << fontPrec;
 
-
-    //qDebug() << "Color: " << color;
-    //qDebug() << "ColorPrec: " << colorPrec;
+    // qDebug() << "Color: " << color;
+    // qDebug() << "ColorPrec: " << colorPrec;
 
     // position AFTER the char to read its format
     cursor.setPosition(i + 1);
@@ -1324,8 +1289,8 @@ void Editor::on_formatChange(QTextCursor c) {
       fontPrec = font;
       colorPrec = color;
     }
-    //qDebug() << "Font: " << font;
-    //qDebug() << "FontPrec: " << fontPrec;
+    // qDebug() << "Font: " << font;
+    // qDebug() << "FontPrec: " << fontPrec;
 
     if (font == fontPrec && color == colorPrec) {
       // qDebug()<<"concatenated: "<<added.at(i).unicode();
