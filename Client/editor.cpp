@@ -766,22 +766,39 @@ void Editor::on_erase(int line, int index, int lenght) {
   // qDebug().noquote() << crdt->to_string();
 }
 
-void Editor::on_change(int line, int index, const Symbol &s) {
-  // qDebug() << "ON_CHANGE";
-  QTextCursor cursor = ui->textEdit->textCursor();
-  QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
-  cursor.setPosition(block.position() + index);
+void Editor::on_change( const QVector<Symbol> &symbols) {
+  qDebug() << "ON_CHANGE";
+  QTextCursor tempCursor=ui->textEdit->textCursor();;
+  bool first=true;
+  QTextCharFormat newFormat;
 
-  // save old format to restore it later
-  QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
-  QTextCharFormat newFormat = s.getQTextCharFormat();
-  //    cursor.setCharFormat(newFormat);
-  //    cursor.insertText(QString(1, s.getValue()));
-  QTextCursor tempCursor = cursor;
-  tempCursor.setPosition(block.position() + index);
-  tempCursor.setPosition(block.position() + index + 1, QTextCursor::KeepAnchor);
+  for (Symbol s: symbols){
+      int line,index;
+      this->crdt->findPosition(s,line,index);
+      qDebug() << "changing in (line,index) "<<line<<" "<<index;
+      //QTextCursor cursor = ui->textEdit->textCursor();
+      QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+      //cursor.setPosition(block.position() + index);
+
+      // save old format to restore it later
+      //QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+
+      //    cursor.setCharFormat(newFormat);
+      //    cursor.insertText(QString(1, s.getValue()));
+      //tempCursor = cursor;
+      if  (first){
+          first=false;
+          tempCursor.setPosition(block.position() + index);
+          newFormat= s.getQTextCharFormat();
+      }
+
+      tempCursor.setPosition(block.position() + index + 1, QTextCursor::KeepAnchor);
+
+      //ui->textEdit->setCurrentCharFormat(oldFormat);
+  }
   tempCursor.setCharFormat(newFormat);
-  ui->textEdit->setCurrentCharFormat(oldFormat);
+  qDebug()<<"Selected"<<tempCursor.selection().toPlainText();
+
 
   // qDebug().noquote() << crdt->to_string();
 }

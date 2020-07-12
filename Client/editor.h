@@ -52,7 +52,7 @@ private slots:
                       QTextCharFormat newFormat);
   void on_changeAlignment(int align, int line, int index);
   void on_erase(int startLine, int startIndex, int lenght);
-  void on_change(int line, int index, const Symbol &s);
+  void on_change(const QVector<Symbol> &symbols);
   void addUsers(const QList<QPair<QPair<QString, QString>, QPixmap>> users);
   void updateText(const QString &text);
   void removeUser(const QString &username, const QString &nickname);

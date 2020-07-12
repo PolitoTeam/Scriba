@@ -39,6 +39,7 @@ public:
   SymbolFormat::Alignment getAlignmentLine(int line);
   QTextCharFormat getSymbolFormat(int line, int index);
   int lineSize(int line);
+  bool findPosition(Symbol s, int &line, int &index);
 
 private slots:
   void handleRemoteInsert(const Symbol &s);
@@ -52,7 +53,7 @@ signals:
   void insertGroup(int firstLine, int firstIndex, QString partial,
                    QTextCharFormat newFormat);
   void erase(int startLine, int startIndex, int lenght);
-  void change(int line, int index, const Symbol &s);
+  void change(const QVector<Symbol> &symbols);
   void changeAlignment(int align, int line, int index);
 
 private:
@@ -71,7 +72,7 @@ private:
   bool generateRandomBool();
   int generateRandomNumBetween(int n1, int n2);
 
-  bool findPosition(Symbol s, int &line, int &index);
+
   int findIndexInLine(Symbol s, QVector<Symbol> line);
   void findInsertPosition(Symbol s, int &line, int &index);
   int findInsertIndexInLine(Symbol s, QVector<Symbol> line);
