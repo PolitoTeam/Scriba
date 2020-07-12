@@ -30,6 +30,17 @@ Editor::Editor(QWidget *parent, Client *client)
   ui->setupUi(this);
   this->popUp = new QMessageBox(this);
 
+  QPixmap share(":/images/share");
+
+  // Show popup for 1 second
+  this->popUp->setText("Link copied to clipboard.");
+  this->popUp->setWindowTitle("Shared Link");
+  this->popUp->setStandardButtons(this->popUp->NoButton);
+  this->popUp->setModal(false);
+  this->popUp->setIconPixmap(share.scaled(30, 30, Qt::KeepAspectRatioByExpanding,
+                                             Qt::SmoothTransformation));
+  this->popUp->setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+
   connect(ui->actionPrint, &QAction::triggered, this, &Editor::printPdf);
   connect(ui->actionExit, &QAction::triggered, this, &Editor::exit);
   connect(ui->actionCopy, &QAction::triggered, this, &Editor::copy);
@@ -349,11 +360,7 @@ void Editor::sharedLink() {
   QClipboard *clipboard = QGuiApplication::clipboard();
   clipboard->setText(client->getSharedLink());
 
-  // Show popup for 1 second
-  this->popUp->setText("Link copied to clipboard.");
-  this->popUp->setWindowTitle("Shared Link");
-  this->popUp->setStandardButtons(this->popUp->NoButton);
-  this->popUp->setModal(false);
+
   QTimer::singleShot(1000, this->popUp, &QMessageBox::hide); // 1000 ms
   this->popUp->show();
 }

@@ -28,6 +28,7 @@
         <file>images/back_button.png</file>
         <file>images/back_button_hover.png</file>
         <file>images/scriba.png</file>
+        <file>images/check.png</file>
     </qresource>
     <qresource prefix="/resources">
         <file>certificates/rootCA.crt</file>

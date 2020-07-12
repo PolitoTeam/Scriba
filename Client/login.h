@@ -41,7 +41,7 @@ private:
   void clearLineEdit();
   void addError(QString error);
   void clearError();
-  QMessageBox *popUp;
+
 };
 
 #endif // LOGIN_H

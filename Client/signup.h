@@ -6,6 +6,7 @@
 #include <QPixmap>
 #include <QWidget>
 #include <qmessagebox.h>
+#include <QtWidgets>
 
 #define IMAGE_WIDTH 150
 #define IMAGE_HEIGHT 150
@@ -59,6 +60,8 @@ private:
   bool checkConfirmation(const QString &pass, const QString &conf);
   void clearLabel();
   void clearLineEdit();
+  QPixmap* success;
+  QPixmap* failed;
 };
 
 #endif // SIGNUP_H

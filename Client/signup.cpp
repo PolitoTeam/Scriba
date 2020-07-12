@@ -12,6 +12,13 @@ Signup::Signup(QWidget *parent, Client *client)
     : QWidget(parent), ui(new Ui::Signup), client(client) {
   ui->setupUi(this);
   profile = new QPixmap(":/images/anonymous");
+  this->popUp = new QMessageBox(this);
+  success = new QPixmap(":/images/check");
+  failed = new QPixmap(":/images/warning");
+
+  this->popUp->setStandardButtons(this->popUp->NoButton);
+  this->popUp->setModal(false);
+  this->popUp->setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
   photo = false;
   ui->profile_image->setCustomPixmap(*profile);
   ui->iconInfoUser->setVisible(false);
@@ -20,7 +27,6 @@ Signup::Signup(QWidget *parent, Client *client)
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, false);
   AppMainWindow::errorLineEdit(ui->lineEditUsername, false);
   ui->lineEditConfirmPassword->setDisabled(true);
-  this->popUp = new QMessageBox(this);
   valid = false;
   ui->lineEditConfirmPassword->setEnabled(false);
 
@@ -60,7 +66,11 @@ void Signup::signedUp() {
   photo = false;
   client->disconnectFromHost();
 
-  emit changeLoginLabel();
+  this->popUp->setText("Correctly signed up");
+  this->popUp->setIconPixmap(success->scaled(30, 30, Qt::KeepAspectRatioByExpanding,
+                                            Qt::SmoothTransformation));
+  this->popUp->show();
+  QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
   emit changeWidget(LOGIN);
 }
 
@@ -79,9 +89,8 @@ void Signup::signupFailed(const QString &reason) {
   }
   // Show popup for 1 second
   this->popUp->setText("Failed sign up");
-  this->popUp->setWindowTitle("Sign up");
-  this->popUp->setStandardButtons(this->popUp->NoButton);
-  this->popUp->setModal(false);
+  this->popUp->setIconPixmap(failed->scaled(30, 30, Qt::KeepAspectRatioByExpanding,
+                                            Qt::SmoothTransformation));
   QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
   this->popUp->show();
 
