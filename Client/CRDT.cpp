@@ -305,6 +305,8 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
     }
   } else {
     for (int i = startIndex; i < _symbols[startLine].length(); i++) {
+       if (i==startIndex)
+           qDebug()<<"firstLine";
       // UPDATE INDEX & LINE
       Symbol s = _symbols[startLine][i];
       // Update font and color
@@ -313,6 +315,8 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
       vector.push_back(s);
     }
     for (int i = 0; i <= endIndex; i++) {
+        if (i==0)
+            qDebug()<<"lastLine";
       // UPDATE INDEX & LINE
       Symbol s = _symbols[endLine][i];
       // Update font and color
@@ -320,7 +324,8 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
       _symbols[endLine][i] = s;
       vector.push_back(s);
     }
-    for (int j = startLine + 1; j < endLine - 1; j++) {
+    for (int j = startLine + 1; j <= endLine - 1; j++) {
+        qDebug()<<"line: "<<j;
       for (int i = 0; i < _symbols[j].length(); i++) {
         // UPDATE INDEX & LINE
         Symbol s = _symbols[j][i];
