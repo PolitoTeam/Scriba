@@ -184,8 +184,6 @@ Editor::Editor(QWidget *parent, Client *client)
 
   ui->textEdit->setLine(&line);
   ui->textEdit->setIndex(&index);
-
-  statusBar()->setStyleSheet("color: green; font: 14pt; ");
 }
 
 int Editor::fromStringToIntegerHash(QString str) {
