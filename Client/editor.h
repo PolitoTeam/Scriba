@@ -87,8 +87,10 @@ private:
   void fontChanged(const QFont &f);
   void colorChanged(const QColor &c);
   void alignmentChanged(Qt::Alignment a);
+  void on_formatChange(const QString &changed, int start, int end);
   void on_formatChange();
   void on_formatChange(QTextCursor cursor);
+  QPixmap addImageInPeerBar(const QPixmap &orig, QColor color);
   void on_showAssigned();
   void closeEvent(QCloseEvent *event);
 };
