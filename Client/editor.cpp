@@ -798,7 +798,7 @@ void Editor::on_insert(int line, int index, const Symbol &s) {
   qDebug() << line << index;
   qDebug() << this->line << this->index;
   qDebug() << cursor.blockNumber() << cursor.positionInBlock();
-  on_formatChange();
+  //  on_formatChange();
   //  on_formatChange(cursor);
 }
 
