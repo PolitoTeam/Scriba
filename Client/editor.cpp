@@ -1054,6 +1054,7 @@ Qt::Alignment Editor::getCurrentAlignment() {
 void Editor::textFamily(const QString &f) {
   ui->textEdit->setFontFamily(f);
   on_formatChange();
+  ui->textEdit->setFocus();
 }
 
 void Editor::textSize(const QString &p) {
@@ -1062,6 +1063,7 @@ void Editor::textSize(const QString &p) {
     ui->textEdit->setFontPointSize(pointSize);
   }
   on_formatChange();
+  ui->textEdit->setFocus();
 }
 
 void Editor::moveCursorToEnd() {
