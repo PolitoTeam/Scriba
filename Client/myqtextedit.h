@@ -17,14 +17,23 @@ public:
   void setLine(int *line);
   void setIndex(int *index);
   bool getSelected();
+  bool getInserted();
+  void setInserted(bool inserted);
+
+public slots:
+  void paste();
+
+
 
 private:
   QTextCursor cursor;
   int *line, *index;
   bool selected;
+  bool inserted=false;
 
 protected:
   void paintEvent(QPaintEvent *event) override;
+
 
 signals:
   void undo();

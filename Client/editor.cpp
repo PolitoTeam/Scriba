@@ -480,8 +480,10 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   // "charsAdded - charsRemoved" and "charsRemoved - charsAdded" are conditions
   // added to handle QTextDocument::contentsChange bug QTBUG-3495
 
+  qDebug()<<"Inserted "<<ui->textEdit->getInserted();
+
   //substitute selection
-  if (ui->textEdit->getSelected() && charsAdded>0 && charsRemoved>0){
+  if (ui->textEdit->getSelected() && charsAdded>0 && charsRemoved>0 && ui->textEdit->getInserted()){
       qDebug()<<"qui si deve operare";
           disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
                      &Editor::on_contentsChange);
@@ -801,6 +803,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     this->undoFlag = false;
     this->redoFlag = false;
   }
+  ui->textEdit->setInserted(false);
 }
 
 void Editor::on_changeAlignment(int align, int line, int index) {
@@ -891,7 +894,7 @@ void Editor::on_erase(int line, int index, int lenght) {
 
 void Editor::on_change( const QVector<Symbol> &symbols) {
   qDebug() << "ON_CHANGE";
-  QTextCursor tempCursor=ui->textEdit->textCursor();;
+  QTextCursor tempCursor=ui->textEdit->textCursor();
   bool first=true;
   QTextCharFormat newFormat;
 
@@ -919,6 +922,7 @@ void Editor::on_change( const QVector<Symbol> &symbols) {
 
       //ui->textEdit->setCurrentCharFormat(oldFormat);
   }
+  //(!first)
   tempCursor.setCharFormat(newFormat);
   qDebug()<<"Selected"<<tempCursor.selection().toPlainText();
 
@@ -1207,6 +1211,7 @@ void Editor::on_formatChange() {
   int endLine;
   QTextCursor cursor = ui->textEdit->textCursor();
   if (start == end) {
+       return;
     cursor.setPosition(start);
     int line = cursor.blockNumber();
     int index = cursor.positionInBlock();
@@ -1220,11 +1225,12 @@ void Editor::on_formatChange() {
     cursor.setPosition(i);
     int line = cursor.blockNumber();
     int index = cursor.positionInBlock();
-    if (i == start) {
-      startIndex = endIndex = index;
-      startLine = endLine = line;
+    if(i==start){
+        startIndex=endIndex=index;
+        startLine=endLine=line;
     }
-    // qDebug() << "line/index/char" << line << index << changed.at(i - start);
+
+    //qDebug() << "line/index/char" << line << index << changed.at(i - start);
 
     // if newline ('\n') do nothing
     if (changed.at(i - start) == QChar(0x2029)) {
@@ -1241,6 +1247,7 @@ void Editor::on_formatChange() {
 
     // position AFTER the char to read its format
     cursor.setPosition(i + 1);
+
     font = cursor.charFormat().font();
     color = cursor.charFormat().foreground().color();
     if (i == start) {
@@ -1253,11 +1260,12 @@ void Editor::on_formatChange() {
       endIndex = index;
       endLine = line;
     } else {
+        qDebug() << "Local change group; startLine: " << startLine
+                 << " endLine: " << endLine << " startIndex: " << startIndex
+                 << " endIndex: " << endIndex;
       crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                              colorPrec);
-      qDebug() << "Local change group; startLine: " << startLine
-               << " endLine: " << endLine << " startIndex: " << startIndex
-               << " endIndex: " << endIndex;
+
       fontPrec = font;
       colorPrec = color;
       startIndex = index;
@@ -1266,12 +1274,13 @@ void Editor::on_formatChange() {
       endLine = line;
     }
   }
-
-  crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
-                         colorPrec);
   qDebug() << "Local change group; startLine: " << startLine
            << " endLine: " << endLine << " startIndex: " << startIndex
            << " endIndex: " << endIndex;
+
+  crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
+                         colorPrec);
+
 }
 
 void Editor::on_formatChange(QTextCursor c) {
@@ -1293,6 +1302,7 @@ void Editor::on_formatChange(QTextCursor c) {
   // qDebug() << "start/end selection" << start << end;
   QTextCursor cursor = ui->textEdit->textCursor();
   if (start == end) {
+      return;
     cursor.setPosition(start);
     int line = cursor.blockNumber();
     int index = cursor.positionInBlock();
@@ -1304,10 +1314,11 @@ void Editor::on_formatChange(QTextCursor c) {
     cursor.setPosition(i);
     int line = cursor.blockNumber();
     int index = cursor.positionInBlock();
-    if (i == start) {
-      startIndex = endIndex = index;
-      startLine = endLine = line;
+    if(i==start){
+        startIndex=endIndex=index;
+        startLine=endLine=line;
     }
+
     // qDebug() << "line/index/char" << line << index << changed.at(i - start);
 
     // if newline ('\n') do nothing
@@ -1377,7 +1388,9 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     ui->textEdit->remote_cursors.insert(editor_id, remote_cursor);
   } else {
     RemoteCursor *remote_cursor = ui->textEdit->remote_cursors.value(editor_id);
+
     remote_cursor->moveTo(block, index);
+    ui->textEdit->update();
   }
 
   // connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,

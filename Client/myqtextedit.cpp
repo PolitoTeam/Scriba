@@ -6,6 +6,7 @@
 #include <QTextBlock>
 #include <QtWidgets>
 #include <qabstracttextdocumentlayout.h>
+#include <math.h>
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent) {
   this->setFont(QFont("American Typewriter",15));
@@ -24,13 +25,19 @@ void MyQTextEdit::paintEvent(QPaintEvent *e) {
     pen.setColor(c);
     p.setPen(pen);
     p.setBrush(pincel);
+
     QRect r = this->cursorRect(cursor->getCursor());
+
     p.drawRect(r);
   }
   this->QTextEdit::paintEvent(e);
 }
 
 void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
+
+  if (e->modifiers().testFlag(Qt::NoModifier))
+      inserted=true;
+
   if (e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier)) {
     if (this->document()->isUndoAvailable()) {
       emit undo();
@@ -46,6 +53,11 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
   } else {
     QTextEdit::keyPressEvent(e);
   }
+}
+
+void MyQTextEdit::paste(){
+    inserted=true;
+    QTextEdit::paste();
 }
 
 void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
@@ -82,3 +94,6 @@ void MyQTextEdit::setLine(int *line) { this->line = line; }
 void MyQTextEdit::setIndex(int *index) { this->index = index; }
 
 bool MyQTextEdit::getSelected(){return selected;}
+
+bool MyQTextEdit::getInserted(){return inserted;}
+void MyQTextEdit::setInserted(bool inserted){this->inserted=inserted;}
