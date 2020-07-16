@@ -796,6 +796,7 @@ void Editor::on_insert(int line, int index, const Symbol &s) {
   cursor.setCharFormat(newFormat);
   cursor.insertText(QChar(s.getValue()));
   ui->textEdit->setCurrentCharFormat(oldFormat);
+  ui->textEdit->update();
 
   // qDebug().noquote() << crdt->to_string();
   //  QTextCharFormat f = cursor.charFormat();
@@ -1203,6 +1204,5 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
     RemoteCursor *remote_cursor = ui->textEdit->remote_cursors.value(editor_id);
 
     remote_cursor->moveTo(block, index);
-    ui->textEdit->update();
   }
 }
