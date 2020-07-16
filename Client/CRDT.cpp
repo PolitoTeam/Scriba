@@ -509,7 +509,7 @@ void CRDT::handleRemotePaste(const QVector<Symbol> &symbols) {
     partial.append(s.getValue());
   }
   emit insertGroup(firstLine, firstIndex, partial, newFormat);
-  // TODO: not optimal
+
   for (int i = 0; i < alignChanges.size(); i++) {
     handleRemoteAlignChange(alignChanges.at(i));
   }
@@ -691,13 +691,12 @@ void CRDT::handleRemoteErase(const QVector<Symbol> &symbols) {
 }
 
 void CRDT::handleRemoteChange(const QVector<Symbol> &symbols) {
-  bool first=false;
+  bool first = false;
   for (Symbol s : symbols) {
-    int line,index;
+    int line, index;
     bool res = findPosition(s, line, index);
     if (!res)
       return;
-
 
     // Update symbol
     _symbols[line][index] = s;
@@ -705,8 +704,6 @@ void CRDT::handleRemoteChange(const QVector<Symbol> &symbols) {
 
   emit change(symbols);
 }
-
-
 
 Symbol CRDT::getSymbol(int line, int index) {
   Symbol s = _symbols[line][index];

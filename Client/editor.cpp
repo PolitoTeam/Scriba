@@ -410,10 +410,10 @@ Qt::Alignment Editor::alignmentConversion(SymbolFormat::Alignment a) {
   }
 }
 
-/****************************************************
-        LOCAL OPERATION: update textedit THEN crdt
-        REMOTE OPERATION: update crdt THEN textedit
-****************************************************/
+/******************************************************************************
+                LOCAL OPERATION: update textedit THEN crdt
+                REMOTE OPERATION: update crdt THEN textedit
+******************************************************************************/
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   // REMOTE OPERATION: insert/delete received from remote client:
   // nothing to update
@@ -429,18 +429,15 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   // "charsAdded - charsRemoved" and "charsRemoved - charsAdded" are conditions
   // added to handle QTextDocument::contentsChange bug QTBUG-3495
 
-  qDebug() << "Inserted " << ui->textEdit->getInserted();
-
-  // substitute selection
+  // Handle text substitution (text selected and then paste or char insertion)
   if (ui->textEdit->getSelected() && charsAdded > 0 && charsRemoved > 0 &&
       ui->textEdit->getInserted()) {
-    qDebug() << "qui si deve operare";
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
                &Editor::on_contentsChange);
     disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
                &Editor::saveCursorPosition);
-    QString removed;
 
+    QString removed;
     ui->textEdit->document()->undo();
     removed =
         ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
@@ -550,6 +547,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         crdt->localInsertGroup(line, index, partial, font, color, align);
       }
     }
+    // Handle insertion
   } else if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
 
     this->undoFlag = false;
@@ -644,7 +642,6 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     }
     // Handle deletion
   } else if (charsRemoved > 0 && charsRemoved - charsAdded > 0) {
-    // qDebug()<<"----DEL";
     // undo to retrieve the content deleted
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
                &Editor::on_contentsChange);
@@ -778,98 +775,50 @@ void Editor::on_changeAlignment(int align, int line, int index) {
 
 // Handle remote insert
 void Editor::on_insert(int line, int index, const Symbol &s) {
-  // qDebug() << "ON_INSERT REMOTE";
   QTextCursor cursor = ui->textEdit->textCursor();
-  //    cursor.setPosition(index);
-
   QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
   cursor.setPosition(block.position() + index);
 
-  // save old format to restore it later
-  QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
-  //    //qDebug() << "oldFormat" << oldFormat.font().italic() <<
-  //    oldFormat.font().bold() << oldFormat.font().underline();
   QTextCharFormat newFormat = s.getQTextCharFormat();
-  //    //qDebug() << "format" << newFormat.font().bold();
   cursor.setCharFormat(newFormat);
   cursor.insertText(QChar(s.getValue()));
-  ui->textEdit->setCurrentCharFormat(oldFormat);
   ui->textEdit->update();
-
-  // qDebug().noquote() << crdt->to_string();
-  //  QTextCharFormat f = cursor.charFormat();
-
-  //  qDebug() << "CursorFORMAT" << f.font().pointSize();
-  qDebug() << line << index;
-  qDebug() << this->line << this->index;
-  qDebug() << cursor.blockNumber() << cursor.positionInBlock();
-  //  on_formatChange();
-  //  on_formatChange(cursor);
 }
 
 // Handle remote group insertion
 void Editor::on_insertGroup(int line, int index, const QString &s,
                             QTextCharFormat newFormat) {
-  // qDebug() << "ON_INSERT";
   QTextCursor cursor = ui->textEdit->textCursor();
-  //    cursor.setPosition(index);
-
   QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
   cursor.setPosition(block.position() + index);
 
-  // save old format to restore it later
-  QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
-  //    //qDebug() << "oldFormat" << oldFormat.font().italic() <<
-  //    oldFormat.font().bold() << oldFormat.font().underline();
-
-  //    //qDebug() << "format" << newFormat.font().bold();
   cursor.setCharFormat(newFormat);
   cursor.insertText(s);
-  ui->textEdit->setCurrentCharFormat(oldFormat);
-
-  // qDebug().noquote() << crdt->to_string();
 }
 
 void Editor::on_erase(int line, int index, int lenght) {
-  // qDebug()<<"ON ERASE";
   QTextCursor cursor = ui->textEdit->textCursor();
-  //    //qDebug() << line << index;
   QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
   cursor.setPosition(block.position() + index);
+
   for (int i = 0; i < lenght; i++) {
     cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
   }
-  //    //qDebug() << "block position" << block.position();
 
-  //    //qDebug() << "before deleting";
   cursor.removeSelectedText();
-  //    //qDebug() << "after deleting";
-
-  // qDebug().noquote() << crdt->to_string();
 }
 
+// Handle remote change
 void Editor::on_change(const QVector<Symbol> &symbols) {
-  qDebug() << "ON_CHANGE";
-
   QTextCursor tempCursor = ui->textEdit->textCursor();
   bool first = true;
-
   QTextCharFormat newFormat;
 
   for (Symbol s : symbols) {
     int line, index;
     this->crdt->findPosition(s, line, index);
-    qDebug() << "changing in (line,index) " << line << " " << index;
-    // QTextCursor cursor = ui->textEdit->textCursor();
     QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
-    // cursor.setPosition(block.position() + index);
 
-    // save old format to restore it later
-    // QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
-
-    //    cursor.setCharFormat(newFormat);
-    //    cursor.insertText(QString(1, s.getValue()));
-    // tempCursor = cursor;
     if (first) {
       first = false;
       tempCursor.setPosition(block.position() + index);
@@ -878,17 +827,11 @@ void Editor::on_change(const QVector<Symbol> &symbols) {
 
     tempCursor.setPosition(block.position() + index + 1,
                            QTextCursor::KeepAnchor);
-
-    // ui->textEdit->setCurrentCharFormat(oldFormat);
   }
-  //(!first)
-  tempCursor.setCharFormat(newFormat);
-  qDebug() << "Selected" << tempCursor.selection().toPlainText();
 
-  // qDebug().noquote() << crdt->to_string();
+  tempCursor.setCharFormat(newFormat);
 }
 
-// TODO: da cambiare
 void Editor::updateText(const QString &text) {
   ui->listWidget->clear();
   QListWidgetItem *item = new QListWidgetItem;
@@ -927,22 +870,22 @@ void Editor::addUsers(
       item->setWhatsThis(users.at(i).first.first);
       this->ui->listWidget->addItem(item);
     }
-
-  } // TODO: per ora è visualizzato l'username per faciliatare la cancellazione
-    // senza riferimenti alla riga
+  }
 }
 
 void Editor::clear(bool serverDisconnected) {
   if (!serverDisconnected)
     client->closeFile();
   highlighter->freeAll();
-  // clean the editor: disconnect...
+
+  // Clean the editor: disconnect...
   disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
              &Editor::on_contentsChange);
   disconnect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
   disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
              &Editor::saveCursorPosition);
-  // create new CRDT with connections
+
+  // Create new CRDT with connections
   crdt->clear();
   ui->listWidget->clear();
   ui->textEdit->clear();
@@ -969,12 +912,10 @@ void Editor::removeUser(const QString &username, const QString &nickname) {
 
   for (QListWidgetItem *item : items) {
     if (item->data(Qt::UserRole).toString() == username) {
-      // qDebug()<<"ITEM TO REMOVE: "<<username;
       highlighter->freeColor(fromStringToIntegerHash(username));
       if (this->highlighter->document() != 0) {
-        // qDebug()<< "Assigning file";
+        // Assigning file
         this->highlighter->setDocument(ui->textEdit->document());
-        // qDebug()<< "Assigned file";
       }
       this->ui->listWidget->removeItemWidget(item);
       ui->textEdit->remote_cursors.remove(fromStringToIntegerHash(username));
@@ -994,15 +935,13 @@ void Editor::saveCursorPosition() {
   this->index = cursor.positionInBlock();
   fontChanged(cursor.charFormat().font());
 
-  // use positon of symbol AFTER cursor as reference
-  // qDebug() << "cursor position before" << this->line << this->index;
-  // correct_position(this->line, this->index);
+  // Notify server of the cursor position change
   crdt->cursorPositionChanged(this->line, this->index);
 }
 
 void Editor::showEvent(QShowEvent *) {
   QString windowTitle = client->getOpenedFile().replace(",", " (") + ")";
-  this->setWindowTitle(windowTitle + " - Shared Editor");
+  this->setWindowTitle(windowTitle + " - Scriba");
   moveCursorToEnd();
 }
 
@@ -1095,18 +1034,12 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
   int startLine;
   int endLine;
 
-  QTextCursor cursor = ui->textEdit->textCursor();
+  // If no symbol selected
   if (start == end) {
     return;
-    cursor.setPosition(start);
-    int line = cursor.blockNumber();
-    int index = cursor.positionInBlock();
-
-    startLine = endLine = line;
-    startIndex = endIndex = index;
   }
-  qDebug() << "start/end selection" << start << end;
 
+  QTextCursor cursor = ui->textEdit->textCursor();
   for (int i = start; i < end; i++) {
     cursor.setPosition(i);
     int line = cursor.blockNumber();
@@ -1116,22 +1049,13 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
       startLine = endLine = line;
     }
 
-    // qDebug() << "line/index/char" << line << index << changed.at(i - start);
-
     // If newline ('\n') do nothing
     if (changed.at(i - start) == QChar(0x2029)) {
       continue;
     }
 
-    // qDebug() << "Font: " << font;
-    // qDebug() << "FontPrec: " << fontPrec;
-
-    // qDebug() << "Color: " << color;
-    // qDebug() << "ColorPrec: " << colorPrec;
-
     // Position AFTER the char to read its format
     cursor.setPosition(i + 1);
-
     font = cursor.charFormat().font();
     color = cursor.charFormat().foreground().color();
     if (i == start) {
@@ -1140,16 +1064,11 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
     }
 
     if (font == fontPrec && color == colorPrec) {
-      // qDebug()<<"concatenated: "<<added.at(i).unicode();
       endIndex = index;
       endLine = line;
     } else {
-      qDebug() << "Local change group; startLine: " << startLine
-               << " endLine: " << endLine << " startIndex: " << startIndex
-               << " endIndex: " << endIndex;
       crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                              colorPrec);
-
       fontPrec = font;
       colorPrec = color;
       startIndex = index;
@@ -1158,10 +1077,6 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
       endLine = line;
     }
   }
-  qDebug() << "Local change group; startLine: " << startLine
-           << " endLine: " << endLine << " startIndex: " << startIndex
-           << " endIndex: " << endIndex;
-
   crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                          colorPrec);
 }
