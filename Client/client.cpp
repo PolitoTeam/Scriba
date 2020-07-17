@@ -144,8 +144,6 @@ void Client::updatePassword(const QString &oldpassword,
   sendByteArray(QJsonDocument(message).toJson(QJsonDocument::Compact));
 }
 
-// TODO: GUARDARE QUESTA IN CASO DI ERRORE PER RIPRISTINARE SE IN CASO LA
-// SENDBYTEARRAY NON VA
 void Client::checkOldPassword(const QString &old_password) {
   QJsonObject message;
   message["type"] = QStringLiteral("check_old_password");

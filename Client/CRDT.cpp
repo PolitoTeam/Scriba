@@ -508,7 +508,7 @@ void CRDT::handleRemotePaste(const QVector<Symbol> &symbols) {
     partial.append(s.getValue());
   }
   emit insertGroup(firstLine, firstIndex, partial, newFormat);
-  // TODO: not optimal
+
   for (int i = 0; i < alignChanges.size(); i++) {
     handleRemoteAlignChange(alignChanges.at(i));
   }

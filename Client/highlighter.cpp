@@ -47,7 +47,6 @@ QColor Highlighter::getColor(int editor_id) {
   if (users.contains(editor_id)) {
     return list_colors.getColor(users[editor_id]);
   }
-  // TODO: da gestire
   return QColor('white');
 }
 

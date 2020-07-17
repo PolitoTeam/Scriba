@@ -94,6 +94,7 @@ private:
   QPixmap addImageInPeerBar(const QPixmap &orig, QColor color);
   void on_showAssigned();
   void closeEvent(QCloseEvent *event);
+  void handleLocalInsertion(int position, int num_chars);
 };
 
 #endif // EDITOR_H

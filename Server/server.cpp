@@ -954,11 +954,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
   QList<ServerWorker *> *list = mapFileWorkers->value(filename);
   QJsonArray array_users;
 
-  // TODO: per ora manda il contenuto del file insieme alla lista di chi è
-  // connesso;
-  // d agestire il caso in cui le connessioni cambiano mentre o dopo il
-  // messaggio è inviato
-
   for (int i = 0; i < list->count(); i++) {
     // Use initializer list to construct QJsonObject
     if (sender->getUsername() == list->at(i)->getUsername()) {
@@ -1016,8 +1011,6 @@ QJsonObject Server::sendFile(const QJsonObject &doc, ServerWorker *sender,
 
   QByteArray toSend = this->createByteArrayFileContentImage(message, l, v);
   this->sendByteArray(sender, toSend);
-
-  // TODO: immagini solo se message[success]=true
 
   // Inform all the connected clients of the new connection
   QJsonObject message_broadcast;
