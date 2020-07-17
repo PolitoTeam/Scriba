@@ -1,4 +1,4 @@
-  <img height="150" src="https://github.com/pastaalforno/SharedEditor/blob/master/Client/images/scriba_logo_cropped.png">
+ <img height="150" src="https://github.com/pastaalforno/SharedEditor/blob/master/Client/images/scriba_logo_cropped.png">
   
 # Scriba: Jot down your ideas, share them with the world
 A **collaborative real-time editor** written in C++ using Qt GUI framework.  
@@ -46,3 +46,6 @@ To use a custom address and port:
 
 * **Enrico Loparco** - *enrico.loparco@studenti.polito.it*
 * **Giuseppe Pastore** - *s257649@studenti.polito.it*
+
+## License
+[MIT](https://github.com/pastaalforno/SharedEditor/blob/master/LICENSE.md)
