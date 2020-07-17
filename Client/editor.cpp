@@ -64,6 +64,8 @@ Editor::Editor(QWidget *parent, Client *client)
   connect(client, &Client::userDisconnected, this, &Editor::removeUser);
   connect(client, &Client::addCRDTterminator, this,
           &Editor::on_addCRDTterminator);
+  connect(client, &Client::correctOpenedFile, this,
+          &Editor::clearUndoRedoStack);
   connect(client, &Client::remoteCursor, this, &Editor::on_remoteCursor);
   connect(client, &Client::loggedIn, this, [this] {
     int site_id = fromStringToIntegerHash(this->client->getUsername());
@@ -778,7 +780,7 @@ void Editor::on_changeAlignment(int align, int line, int index) {
 
 // Handle remote insert
 void Editor::on_insert(int line, int index, const Symbol &s) {
-  // qDebug() << "ON_INSERT REMOTE";
+  qDebug() << "ON_INSERT REMOTE";
   QTextCursor cursor = ui->textEdit->textCursor();
   //    cursor.setPosition(index);
 
@@ -786,15 +788,14 @@ void Editor::on_insert(int line, int index, const Symbol &s) {
   cursor.setPosition(block.position() + index);
 
   // save old format to restore it later
-  QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+  // QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
   //    //qDebug() << "oldFormat" << oldFormat.font().italic() <<
   //    oldFormat.font().bold() << oldFormat.font().underline();
   QTextCharFormat newFormat = s.getQTextCharFormat();
   //    //qDebug() << "format" << newFormat.font().bold();
   cursor.setCharFormat(newFormat);
   cursor.insertText(QChar(s.getValue()));
-  ui->textEdit->setCurrentCharFormat(oldFormat);
-  ui->textEdit->update();
+  // ui->textEdit->setCurrentCharFormat(oldFormat);
 
   // qDebug().noquote() << crdt->to_string();
   //  QTextCharFormat f = cursor.charFormat();
@@ -818,14 +819,14 @@ void Editor::on_insertGroup(int line, int index, const QString &s,
   cursor.setPosition(block.position() + index);
 
   // save old format to restore it later
-  QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
+  // QTextCharFormat oldFormat = ui->textEdit->currentCharFormat();
   //    //qDebug() << "oldFormat" << oldFormat.font().italic() <<
   //    oldFormat.font().bold() << oldFormat.font().underline();
 
   //    //qDebug() << "format" << newFormat.font().bold();
   cursor.setCharFormat(newFormat);
   cursor.insertText(s);
-  ui->textEdit->setCurrentCharFormat(oldFormat);
+  // ui->textEdit->setCurrentCharFormat(oldFormat);
 
   // qDebug().noquote() << crdt->to_string();
 }
@@ -1205,4 +1206,9 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
 
     remote_cursor->moveTo(block, index);
   }
+}
+
+void Editor::clearUndoRedoStack() {
+  qDebug() << " clear undo/redo stack";
+  ui->textEdit->document()->clearUndoRedoStacks();
 }

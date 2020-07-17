@@ -27,6 +27,7 @@ public:
   SymbolFormat::Alignment alignmentConversion(Qt::Alignment a);
   Qt::Alignment alignmentConversion(SymbolFormat::Alignment a);
   void peerYou();
+  void clearUndoRedoStack();
 
 signals:
   void changeWidget(int);

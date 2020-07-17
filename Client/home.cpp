@@ -49,7 +49,10 @@ void Home::newFileCompleted() {
   emit changeWidget(EDITOR);
 }
 
-void Home::openFileCompleted() { emit changeWidget(EDITOR); }
+void Home::openFileCompleted() {
+  qDebug() << "openFilecompleted";
+  emit changeWidget(EDITOR);
+}
 
 void Home::newFileError(const QString &reason) {
   QMessageBox::critical(this, tr("Error"), reason, QMessageBox::Close);
@@ -113,5 +116,4 @@ void Home::setProfile() {
   this->ui->usernameLabel->setText(this->client->getUsername());
   this->ui->nickNameLabel->setText(this->client->getNickname());
   this->ui->profileImage->setCustomPixmap(*this->client->getProfile());
-
 }

@@ -2,8 +2,7 @@
 #include <QFont>
 
 CRDT::CRDT(Client *client) : client(client) {
-  connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert,
-          Qt::QueuedConnection);
+  connect(client, &Client::remoteInsert, this, &CRDT::handleRemoteInsert);
   connect(client, &Client::remotePaste, this, &CRDT::handleRemotePaste);
   connect(client, &Client::remoteErase, this, &CRDT::handleRemoteErase);
   connect(client, &Client::remoteChange, this, &CRDT::handleRemoteChange);
@@ -534,6 +533,7 @@ void CRDT::handleRemoteInsert(const Symbol &s) {
 
   // Insert in text editor
   emit insert(line, index, s);
+  qDebug() << "After isnerted in the editor";
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {
@@ -691,13 +691,12 @@ void CRDT::handleRemoteErase(const QVector<Symbol> &symbols) {
 }
 
 void CRDT::handleRemoteChange(const QVector<Symbol> &symbols) {
-  bool first=false;
+  bool first = false;
   for (Symbol s : symbols) {
-    int line,index;
+    int line, index;
     bool res = findPosition(s, line, index);
     if (!res)
       return;
-
 
     // Update symbol
     _symbols[line][index] = s;
@@ -705,8 +704,6 @@ void CRDT::handleRemoteChange(const QVector<Symbol> &symbols) {
 
   emit change(symbols);
 }
-
-
 
 Symbol CRDT::getSymbol(int line, int index) {
   Symbol s = _symbols[line][index];

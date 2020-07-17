@@ -427,6 +427,7 @@ void Client::on_byteArrayReceived(const QByteArray &doc) {
           for (int i = vec.size() - 1; i >= 0; i--) {
             Symbol s = vec[i];
             emit remoteInsert(s);
+            qDebug() << "Inserted " << s.getValue();
             if (s.getValue() == '\n' || s.getValue() == '\0')
               emit remoteAlignChange(s);
 

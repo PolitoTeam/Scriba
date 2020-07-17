@@ -86,13 +86,12 @@ void AppMainWindow::on_changeWidget(int widget) {
     editor->show();
   } else {
     editor->hide();
-    if (widget==LOGIN || widget==HOME){
-        // Set fixed window size
-        this->setFixedSize(QSize(640, 600));
-    }
-    else{
-        // Set fixed window size
-        this->setFixedSize(QSize(640, 700));
+    if (widget == LOGIN || widget == HOME) {
+      // Set fixed window size
+      this->setFixedSize(QSize(640, 600));
+    } else {
+      // Set fixed window size
+      this->setFixedSize(QSize(640, 700));
     }
     if (widget == HOME) {
       this->home->setProfile();
@@ -102,9 +101,7 @@ void AppMainWindow::on_changeWidget(int widget) {
   }
 }
 
-void AppMainWindow::on_changeLoginLabel() {
-  login->correctlySignedup();
-}
+void AppMainWindow::on_changeLoginLabel() { login->correctlySignedup(); }
 
 void AppMainWindow::error(QAbstractSocket::SocketError socketError) {
   switch (socketError) {

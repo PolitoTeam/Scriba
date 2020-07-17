@@ -10,9 +10,7 @@ RemoteCursor::RemoteCursor(QTextCursor cursor, QTextBlock initial_block,
   this->color = color;
 }
 
-void RemoteCursor::setColor(const QColor color){
-    this->color = color;
-}
+void RemoteCursor::setColor(const QColor color) { this->color = color; }
 
 RemoteCursor::RemoteCursor() {} // Necessary to use QMap
 

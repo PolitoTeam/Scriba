@@ -98,6 +98,8 @@ signals:
   void byteArrayReceived(const QByteArray &doc);
   void jsonReceived(const QJsonObject &doc);
 
+  void openedFile();
+
 private:
   QString addr;
   quint16 port;
