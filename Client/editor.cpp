@@ -520,41 +520,52 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   qDebug() << "inserted: " << ui->textEdit->getInserted();
   qDebug() << "chars added " << charsAdded;
   qDebug() << "chars removed " << charsRemoved;
+  qDebug() << "chars pasted " << ui->textEdit->getPasted();
 
   if (ui->textEdit->getSelected() && charsAdded > 0 && charsRemoved > 0 &&
-      ui->textEdit->getInserted()) {
+      (ui->textEdit->getInserted() || ui->textEdit->getPasted())) {
     qDebug() << "qui si deve operare";
-    // Manage selection removal
-    disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
-               &Editor::on_contentsChange);
-    disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
-               &Editor::saveCursorPosition);
 
-    QString removed;
-    ui->textEdit->document()->undo();
-    removed =
-        ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
-    ui->textEdit->document()->redo();
+    if (position == 0 && ui->textEdit->getPasted() > 0) {
+      QTextCursor tmp_cursor = ui->textEdit->textCursor();
+      tmp_cursor.setPosition(position);
+      int tmp_line = tmp_cursor.blockNumber();
+      int tmp_index = tmp_cursor.positionInBlock();
+      crdt->localErase(tmp_line, tmp_index,
+                       ui->textEdit->getPasted() - (charsAdded - charsRemoved));
+    } else {
+      // Manage selection removal
+      disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
+                 &Editor::on_contentsChange);
+      disconnect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
+                 &Editor::saveCursorPosition);
 
-    connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
-            &Editor::on_contentsChange);
-    connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
-            &Editor::saveCursorPosition);
+      QString removed;
+      ui->textEdit->document()->undo();
+      removed =
+          ui->textEdit->document()->toPlainText().mid(position, charsRemoved);
+      ui->textEdit->document()->redo();
 
-    QTextCursor tmp_cursor = ui->textEdit->textCursor();
-    tmp_cursor.setPosition(position);
-    int tmp_line = tmp_cursor.blockNumber();
-    int tmp_index = tmp_cursor.positionInBlock();
-    qDebug() << "remvoed " << removed.length() << " characters in position "
-             << tmp_line << " " << tmp_index;
-    // Remove multiple chars
-    if (removed.length()) {
-      crdt->localErase(tmp_line, tmp_index, removed.length());
+      connect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
+              &Editor::on_contentsChange);
+      connect(ui->textEdit, &QTextEdit::cursorPositionChanged, this,
+              &Editor::saveCursorPosition);
+
+      QTextCursor tmp_cursor = ui->textEdit->textCursor();
+      tmp_cursor.setPosition(position);
+      int tmp_line = tmp_cursor.blockNumber();
+      int tmp_index = tmp_cursor.positionInBlock();
+      qDebug() << "remvoed " << removed.length() << " characters in position "
+               << tmp_line << " " << tmp_index;
+      // Remove multiple chars
+      if (removed.length()) {
+        crdt->localErase(tmp_line, tmp_index, removed.length());
+      }
     }
     qDebug() << "prima di insertion " << position;
     // Manage insertion over selected text
-    if (position == 0)
-      handleLocalInsertion(position, charsAdded - 1);
+    if (position == 0 && ui->textEdit->getPasted() > 0)
+      handleLocalInsertion(position, ui->textEdit->getPasted());
     else {
       handleLocalInsertion(position, charsAdded);
     }
@@ -659,6 +670,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     this->redoFlag = false;
   }
   ui->textEdit->setInserted(false);
+  ui->textEdit->setPasted(0);
 }
 
 void Editor::on_changeAlignment(int align, int line, int index) {

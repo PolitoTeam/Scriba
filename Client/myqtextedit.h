@@ -19,21 +19,21 @@ public:
   bool getSelected();
   bool getInserted();
   void setInserted(bool inserted);
+  int getPasted();
+  void setPasted(int pasted);
 
 public slots:
   void paste();
-
-
 
 private:
   QTextCursor cursor;
   int *line, *index;
   bool selected;
-  bool inserted=false;
+  bool inserted = false;
+  int pasted = 0;
 
 protected:
   void paintEvent(QPaintEvent *event) override;
-
 
 signals:
   void undo();

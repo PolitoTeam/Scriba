@@ -36,8 +36,7 @@ void MyQTextEdit::paintEvent(QPaintEvent *e) {
 
 void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
-  if (e->modifiers().testFlag(Qt::NoModifier) ||
-      (e->key() == Qt::Key_V && e->modifiers().testFlag(Qt::ControlModifier)))
+  if (e->modifiers().testFlag(Qt::NoModifier))
     inserted = true;
 
   if (e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier)) {
@@ -88,6 +87,7 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
       temp.mergeBlockFormat(newformat);
     }
   }
+  pasted = source->text().length();
   this->QTextEdit::insertFromMimeData(source);
 }
 
@@ -99,3 +99,5 @@ bool MyQTextEdit::getSelected() { return selected; }
 
 bool MyQTextEdit::getInserted() { return inserted; }
 void MyQTextEdit::setInserted(bool inserted) { this->inserted = inserted; }
+int MyQTextEdit::getPasted() { return pasted; }
+void MyQTextEdit::setPasted(int pasted) { this->pasted = pasted; }
