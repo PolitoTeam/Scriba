@@ -5,18 +5,18 @@
 #include <QRegularExpression>
 #include <QTextBlock>
 #include <QtWidgets>
-#include <qabstracttextdocumentlayout.h>
 #include <math.h>
+#include <qabstracttextdocumentlayout.h>
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent) {
-  this->setFont(QFont("American Typewriter",15));
-   selected=false;
-
+  this->setFont(QFont("American Typewriter", 15));
+  selected = false;
 }
 
 void MyQTextEdit::paintEvent(QPaintEvent *e) {
+  qDebug() << "Paint event";
   QPainter p(viewport());
-  selected=!this->textCursor().selection().isEmpty();
+  selected = !this->textCursor().selection().isEmpty();
 
   for (RemoteCursor *cursor : remote_cursors) {
     QColor c = cursor->getColor();
@@ -30,13 +30,13 @@ void MyQTextEdit::paintEvent(QPaintEvent *e) {
 
     p.drawRect(r);
   }
-  this->QTextEdit::paintEvent(e);
+  QTextEdit::paintEvent(e);
 }
 
 void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
   if (e->modifiers().testFlag(Qt::NoModifier))
-      inserted=true;
+    inserted = true;
 
   if (e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier)) {
     if (this->document()->isUndoAvailable()) {
@@ -55,9 +55,9 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
   }
 }
 
-void MyQTextEdit::paste(){
-    inserted=true;
-    QTextEdit::paste();
+void MyQTextEdit::paste() {
+  inserted = true;
+  QTextEdit::paste();
 }
 
 void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
@@ -93,7 +93,7 @@ void MyQTextEdit::setLine(int *line) { this->line = line; }
 
 void MyQTextEdit::setIndex(int *index) { this->index = index; }
 
-bool MyQTextEdit::getSelected(){return selected;}
+bool MyQTextEdit::getSelected() { return selected; }
 
-bool MyQTextEdit::getInserted(){return inserted;}
-void MyQTextEdit::setInserted(bool inserted){this->inserted=inserted;}
+bool MyQTextEdit::getInserted() { return inserted; }
+void MyQTextEdit::setInserted(bool inserted) { this->inserted = inserted; }

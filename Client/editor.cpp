@@ -513,8 +513,10 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   // added to handle QTextDocument::contentsChange bug QTBUG-3495
 
   // Handle text substitution (text selected and then paste or char insertion)
+  // qDebug() << "qui";
   if (ui->textEdit->getSelected() && charsAdded > 0 && charsRemoved > 0 &&
       ui->textEdit->getInserted()) {
+    // qDebug() << "qui";
     // Manage selection removal
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
                &Editor::on_contentsChange);
@@ -540,7 +542,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     if (removed.length()) {
       crdt->localErase(tmp_line, tmp_index, removed.length());
     }
-
+    // qDebug() << "prima di insertion";
     // Manage insertion over selected text
     handleLocalInsertion(position, charsAdded);
 
@@ -1015,6 +1017,6 @@ void Editor::on_remoteCursor(int editor_id, Symbol s) {
 }
 
 void Editor::clearUndoRedoStack() {
-  qDebug() << " clear undo/redo stack";
+  // qDebug() << " clear undo/redo stack";
   ui->textEdit->document()->clearUndoRedoStacks();
 }

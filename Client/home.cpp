@@ -50,7 +50,7 @@ void Home::newFileCompleted() {
 }
 
 void Home::openFileCompleted() {
-  qDebug() << "openFilecompleted";
+  // qDebug() << "openFilecompleted";
   emit changeWidget(EDITOR);
 }
 

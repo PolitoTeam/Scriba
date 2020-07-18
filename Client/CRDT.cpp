@@ -61,6 +61,7 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font,
 
   // Generate symbol
   Symbol s(value, newPos, ++_counter, font, color);
+  // qDebug() << "Symbol " << s.toJson();
 
   if (s.getValue() == '\0' || s.getValue() == '\n') {
     if (align == Qt::AlignLeft)
@@ -533,7 +534,7 @@ void CRDT::handleRemoteInsert(const Symbol &s) {
 
   // Insert in text editor
   emit insert(line, index, s);
-  qDebug() << "After isnerted in the editor";
+  // qDebug() << "After isnerted in the editor";
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {
