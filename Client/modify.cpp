@@ -99,20 +99,23 @@ void Modify::on_pushSaveNickname_clicked() {
   }
 
   if (checkNickname(nickname)) {
-    QMessageBox msgbox;
+    QMessageBox msgbox(this);
     msgbox.setText("Are you sure?");
     msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgbox.setDefaultButton(QMessageBox::Save);
+    msgbox.move(x() + (width() - msgbox.width()) / 2,
+                y() + (height() - msgbox.height()) / 2);
+
     if (msgbox.exec() == QMessageBox::Save) {
       client->updateNickname(nickname);
-    }
 
-    // Show popup
-    this->popUp->setText("Nickname correctly updated");
-    this->popUp->setIconPixmap(success->scaled(
-        30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
-    this->popUp->show();
-    QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
+      // Show popup
+      this->popUp->setText("Nickname correctly updated");
+      this->popUp->setIconPixmap(success->scaled(
+          30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+      this->popUp->show();
+      QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
+    }
   }
 }
 
@@ -223,10 +226,13 @@ void Modify::on_pushButtonSavePassword_clicked() {
   // checked only on server, or when is correct;
   if (valid_new_password && correct_old_password == CORRECT &&
       checkConfirmation(newpass, confirm)) {
-    QMessageBox msgbox;
+    QMessageBox msgbox(this);
     msgbox.setText("Are you sure?");
     msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgbox.setDefaultButton(QMessageBox::Save);
+    msgbox.move(x() + (width() - msgbox.width()) / 2,
+                y() + (height() - msgbox.height()) / 2);
+
     if (msgbox.exec() == QMessageBox::Save) {
       client->updatePassword(oldpass, newpass);
     }
