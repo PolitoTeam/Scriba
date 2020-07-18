@@ -3,6 +3,7 @@
 
 #include "appMainWindow.h"
 #include "client.h"
+#include <QMessageBox>
 #include <QWidget>
 
 #define IMAGE_WIDTH 170
@@ -55,6 +56,10 @@ private:
     WRONG,
     UNCHECKED
   } correct_old_password = UNCHECKED;
+
+  QMessageBox *popUp;
+  QPixmap *success;
+  QPixmap *failed;
 
   void clearLabels();
   void checkPassword(const QString &password);
