@@ -14,7 +14,8 @@ MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent) {
 }
 
 void MyQTextEdit::paintEvent(QPaintEvent *e) {
-  qDebug() << "Paint event";
+
+  viewport()->update();
   QPainter p(viewport());
   selected = !this->textCursor().selection().isEmpty();
 
@@ -35,7 +36,8 @@ void MyQTextEdit::paintEvent(QPaintEvent *e) {
 
 void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
-  if (e->modifiers().testFlag(Qt::NoModifier))
+  if (e->modifiers().testFlag(Qt::NoModifier) ||
+      (e->key() == Qt::Key_V && e->modifiers().testFlag(Qt::ControlModifier)))
     inserted = true;
 
   if (e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier)) {

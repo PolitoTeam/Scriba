@@ -468,7 +468,7 @@ void Editor::handleLocalInsertion(int position, int num_chars) {
         QTextBlockFormat textBlockFormat = block.blockFormat();
         align = textBlockFormat.alignment();
       }
-
+      qDebug() << "here";
       if (font == fontPrec && color == colorPrec && align == alignPrec) {
         partial.append(added.at(i).unicode());
       } else {
@@ -498,6 +498,7 @@ void Editor::handleLocalInsertion(int position, int num_chars) {
                 REMOTE OPERATION: update crdt THEN textedit
 ******************************************************************************/
 void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
+
   // REMOTE OPERATION: insert/delete received from remote client:
   // nothing to update
   if (((charsAdded - charsRemoved) > 0 &&
@@ -514,9 +515,15 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
   // Handle text substitution (text selected and then paste or char insertion)
   // qDebug() << "qui";
+  qDebug() << "position " << position;
+  qDebug() << "selected: " << ui->textEdit->getSelected();
+  qDebug() << "inserted: " << ui->textEdit->getInserted();
+  qDebug() << "chars added " << charsAdded;
+  qDebug() << "chars removed " << charsRemoved;
+
   if (ui->textEdit->getSelected() && charsAdded > 0 && charsRemoved > 0 &&
       ui->textEdit->getInserted()) {
-    // qDebug() << "qui";
+    qDebug() << "qui si deve operare";
     // Manage selection removal
     disconnect(ui->textEdit->document(), &QTextDocument::contentsChange, this,
                &Editor::on_contentsChange);
@@ -538,16 +545,24 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     tmp_cursor.setPosition(position);
     int tmp_line = tmp_cursor.blockNumber();
     int tmp_index = tmp_cursor.positionInBlock();
+    qDebug() << "remvoed " << removed.length() << " characters in position "
+             << tmp_line << " " << tmp_index;
     // Remove multiple chars
     if (removed.length()) {
       crdt->localErase(tmp_line, tmp_index, removed.length());
     }
-    // qDebug() << "prima di insertion";
+    qDebug() << "prima di insertion " << position;
     // Manage insertion over selected text
-    handleLocalInsertion(position, charsAdded);
+    if (position == 0)
+      handleLocalInsertion(position, charsAdded - 1);
+    else {
+      handleLocalInsertion(position, charsAdded);
+    }
 
     // Handle insertion
   } else if (charsAdded > 0 && charsAdded - charsRemoved > 0) {
+    qDebug() << "position insertion: " << position;
+
     handleLocalInsertion(position, charsAdded - charsRemoved);
 
     // Handle deletion
