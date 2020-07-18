@@ -66,6 +66,7 @@ private slots:
   void moveCursorToEnd();
   void on_addCRDTterminator();
   void on_remoteCursor(int editor_id, Symbol s);
+  void checkAlignment(int position);
 
 private:
   Ui::Editor *ui;
@@ -74,6 +75,7 @@ private:
   int line = 0, index = 0;
   Highlighter *highlighter;
   QMessageBox *popUp;
+  bool alignment = false;
 
   QFontComboBox *comboFont;
   QComboBox *comboSize;

@@ -36,16 +36,18 @@ void MyQTextEdit::paintEvent(QPaintEvent *e) {
 
 void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
-  if (e->modifiers().testFlag(Qt::NoModifier))
+  if (e->modifiers().testFlag(Qt::NoModifier) && e->key() != 16777219)
     inserted = true;
 
   if (e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier)) {
     if (this->document()->isUndoAvailable()) {
+
       emit undo();
     }
   } else if (e->key() == Qt::Key_Y &&
              e->modifiers().testFlag(Qt::ControlModifier)) {
     if (this->document()->isRedoAvailable()) {
+      qDebug() << "redo";
       emit redo();
     }
     // 16777219 = code of delete key
