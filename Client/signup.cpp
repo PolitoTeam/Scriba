@@ -12,13 +12,15 @@ Signup::Signup(QWidget *parent, Client *client)
     : QWidget(parent), ui(new Ui::Signup), client(client) {
   ui->setupUi(this);
   profile = new QPixmap(":/images/anonymous");
+
+  // Setup popup
   this->popUp = new QMessageBox(this);
   success = new QPixmap(":/images/check");
   failed = new QPixmap(":/images/warning");
-
   this->popUp->setStandardButtons(this->popUp->NoButton);
   this->popUp->setModal(false);
   this->popUp->setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+
   photo = false;
   ui->profile_image->setCustomPixmap(*profile);
   ui->iconInfoUser->setVisible(false);
@@ -67,8 +69,8 @@ void Signup::signedUp() {
   client->disconnectFromHost();
 
   this->popUp->setText("Correctly signed up");
-  this->popUp->setIconPixmap(success->scaled(30, 30, Qt::KeepAspectRatioByExpanding,
-                                            Qt::SmoothTransformation));
+  this->popUp->setIconPixmap(success->scaled(
+      30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
   this->popUp->show();
   QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
   emit changeWidget(LOGIN);
@@ -89,8 +91,8 @@ void Signup::signupFailed(const QString &reason) {
   }
   // Show popup for 1 second
   this->popUp->setText("Failed sign up");
-  this->popUp->setIconPixmap(failed->scaled(30, 30, Qt::KeepAspectRatioByExpanding,
-                                            Qt::SmoothTransformation));
+  this->popUp->setIconPixmap(failed->scaled(
+      30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
   QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
   this->popUp->show();
 
@@ -167,19 +169,17 @@ void Signup::on_lineEditPassword_textChanged(const QString &arg) {
   AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, false);
   ui->iconInfoPass->setVisible(false);
 
-  if (arg.size()==0){
-      ui->lineEditConfirmPassword->setDisabled(true);
-      ui->lineEditConfirmPassword->clear();
-      return;
-  }
-  else{
-      checkPassword(arg);
+  if (arg.size() == 0) {
+    ui->lineEditConfirmPassword->setDisabled(true);
+    ui->lineEditConfirmPassword->clear();
+    return;
+  } else {
+    checkPassword(arg);
 
-      if(!ui->lineEditConfirmPassword->isEnabled())
-            ui->lineEditConfirmPassword->setDisabled(false);
-      else if (ui->lineEditConfirmPassword->text().size()>0)
-          checkConfirmation(arg, conf);
-
+    if (!ui->lineEditConfirmPassword->isEnabled())
+      ui->lineEditConfirmPassword->setDisabled(false);
+    else if (ui->lineEditConfirmPassword->text().size() > 0)
+      checkConfirmation(arg, conf);
   }
 }
 
@@ -281,14 +281,14 @@ void Signup::checkPassword(const QString &password) {
 
 bool Signup::checkConfirmation(const QString &pass, const QString &conf) {
   if (valid == true) {
-      if (conf.isNull() || conf.isEmpty()){
-          ui->labelInfoPass->setText("Empty confirmation password");
-          ui->iconInfoPass->setVisible(true);
+    if (conf.isNull() || conf.isEmpty()) {
+      ui->labelInfoPass->setText("Empty confirmation password");
+      ui->iconInfoPass->setVisible(true);
 
-          AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
-          AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, true);
-          return false;
-      }
+      AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
+      AppMainWindow::errorLineEdit(ui->lineEditConfirmPassword, true);
+      return false;
+    }
 
     int res = QString::compare(pass, conf, Qt::CaseSensitive);
     if (res != 0) {

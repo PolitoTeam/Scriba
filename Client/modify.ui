@@ -452,6 +452,15 @@ font-style:italic;</string>
    <header>clickablelabel.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>lineEditNickname</tabstop>
+  <tabstop>pushSaveNickname</tabstop>
+  <tabstop>lineEditOldPass</tabstop>
+  <tabstop>lineEditNewPass</tabstop>
+  <tabstop>lineEditConfirmPass</tabstop>
+  <tabstop>pushButtonSavePassword</tabstop>
+  <tabstop>t_pushButtonFinish</tabstop>
+ </tabstops>
  <resources>
   <include location="client.qrc"/>
  </resources>

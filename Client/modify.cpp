@@ -10,6 +10,14 @@ Modify::Modify(QWidget *parent, Client *client)
     : QWidget(parent), ui(new Ui::modify), client(client) {
   ui->setupUi(this);
 
+  // Setup popup
+  this->popUp = new QMessageBox(this);
+  success = new QPixmap(":/images/check");
+  failed = new QPixmap(":/images/warning");
+  this->popUp->setStandardButtons(this->popUp->NoButton);
+  this->popUp->setModal(false);
+  this->popUp->setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+
   ui->lineEditConfirmPass->setDisabled(true);
   ui->lineEditNewPass->setDisabled(true);
   ui->icon_error_pass->setVisible(false);
@@ -91,19 +99,29 @@ void Modify::on_pushSaveNickname_clicked() {
   }
 
   if (checkNickname(nickname)) {
-    QMessageBox msgbox;
+    QMessageBox msgbox(this);
     msgbox.setText("Are you sure?");
     msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgbox.setDefaultButton(QMessageBox::Save);
+    msgbox.move(x() + (width() - msgbox.width()) / 2,
+                y() + (height() - msgbox.height()) / 2);
+
     if (msgbox.exec() == QMessageBox::Save) {
       client->updateNickname(nickname);
+
+      // Show popup
+      this->popUp->setText("Nickname correctly updated");
+      this->popUp->setIconPixmap(success->scaled(
+          30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+      this->popUp->show();
+      QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
     }
   }
 }
 
 void Modify::save_photo() {
-    client->overrideProfileImage(*this->profile_photo_temp);
-    client->sendProfileImage();
+  client->overrideProfileImage(*this->profile_photo_temp);
+  client->sendProfileImage();
 }
 
 void Modify::clearForm() {
@@ -152,20 +170,18 @@ void Modify::on_lineEditNewPass_textChanged(const QString &arg1) {
   QString conf = ui->lineEditConfirmPass->text();
   clearNewPasswordError();
 
-  if (arg1.size()==0){
-      ui->lineEditConfirmPass->setDisabled(true);
-      ui->lineEditConfirmPass->clear();
-      clearConfirmPasswordError();
-      return;
-  }
-  else{
-      checkPassword(arg1);
+  if (arg1.size() == 0) {
+    ui->lineEditConfirmPass->setDisabled(true);
+    ui->lineEditConfirmPass->clear();
+    clearConfirmPasswordError();
+    return;
+  } else {
+    checkPassword(arg1);
 
-      if(!ui->lineEditConfirmPass->isEnabled())
-            ui->lineEditConfirmPass->setDisabled(false);
-      else if (ui->lineEditConfirmPass->text().size()>0)
-          checkConfirmation(arg1, conf);
-
+    if (!ui->lineEditConfirmPass->isEnabled())
+      ui->lineEditConfirmPass->setDisabled(false);
+    else if (ui->lineEditConfirmPass->text().size() > 0)
+      checkConfirmation(arg1, conf);
   }
 }
 
@@ -210,10 +226,13 @@ void Modify::on_pushButtonSavePassword_clicked() {
   // checked only on server, or when is correct;
   if (valid_new_password && correct_old_password == CORRECT &&
       checkConfirmation(newpass, confirm)) {
-    QMessageBox msgbox;
+    QMessageBox msgbox(this);
     msgbox.setText("Are you sure?");
     msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     msgbox.setDefaultButton(QMessageBox::Save);
+    msgbox.move(x() + (width() - msgbox.width()) / 2,
+                y() + (height() - msgbox.height()) / 2);
+
     if (msgbox.exec() == QMessageBox::Save) {
       client->updatePassword(oldpass, newpass);
     }
@@ -261,7 +280,14 @@ void Modify::on_failedUpdatePassword(const QString &reason) {
 
 void Modify::on_successUpdatePassword() {
   correct_old_password = CORRECT;
-  ui->labelInfoPass->setText("Password correctly updated");
+
+  // Show popup
+  this->popUp->setText("Password correctly updated");
+  this->popUp->setIconPixmap(success->scaled(
+      30, 30, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+  this->popUp->show();
+  QTimer::singleShot(1500, this->popUp, &QMessageBox::hide); // 1000 ms
+
   ui->icon_error_pass->setVisible(false);
   ui->icon_old_pass->setVisible(false);
   ui->icon_new_pass->setVisible(false);
