@@ -60,6 +60,7 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
 void MyQTextEdit::paste() {
   inserted = true;
+  qDebug() << "paste";
   QTextEdit::paste();
 }
 
@@ -90,6 +91,7 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
     }
   }
   pasted = source->text().length();
+  qDebug() << "here pasted: " << pasted;
   this->QTextEdit::insertFromMimeData(source);
 }
 

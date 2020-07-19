@@ -521,7 +521,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   qDebug() << "inserted: " << ui->textEdit->getInserted();
   qDebug() << "chars added " << charsAdded;
   qDebug() << "chars removed " << charsRemoved;
-  qDebug() << "chars pasted " << ui->textEdit->getPasted();
+  qDebug() << "chars pasted " << ui->textEdit->getPasted() << "\n";
 
   /*if (ui->textEdit->getSelected() && charsAdded > 0 && charsRemoved > 0 &&
       (ui->textEdit->getInserted() || ui->textEdit->getPasted())) {
@@ -588,7 +588,8 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     if (position == 0 && (ui->textEdit->getPasted() > 0 ||
                           (charsRemoved > charsAdded && this->undoFlag) ||
                           (charsAdded > charsRemoved && this->redoFlag))) {
-      qDebug() << "here";
+      qDebug() << "position = 0\n";
+
       // caso in cui sto sostituendo del test in prima posizione incollandolo
       if (ui->textEdit->getPasted() > 0 && ui->textEdit->getSelected()) {
 
@@ -603,7 +604,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
         handleLocalInsertion(position, charsAdded - charsRemoved);
 
     } else {
-      qDebug() << "fcound";
+      qDebug() << "normal contents change\n";
 
       if (charsRemoved > 0)
         crdt->localErase(tmp_line, tmp_index, charsRemoved);
