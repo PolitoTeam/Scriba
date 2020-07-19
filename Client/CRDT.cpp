@@ -313,15 +313,7 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
       _symbols[startLine][i] = s;
       vector.push_back(s);
     }
-    for (int i = 0; i <= endIndex; i++) {
 
-      // UPDATE INDEX & LINE
-      Symbol s = _symbols[endLine][i];
-      // Update font and color
-      s.setFormat(font, color);
-      _symbols[endLine][i] = s;
-      vector.push_back(s);
-    }
     for (int j = startLine + 1; j <= endLine - 1; j++) {
 
       for (int i = 0; i < _symbols[j].length(); i++) {
@@ -334,6 +326,16 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
 
         vector.push_back(s);
       }
+    }
+    for (int i = 0; i <= endIndex; i++) {
+      qDebug() << "qui";
+
+      // UPDATE INDEX & LINE
+      Symbol s = _symbols[endLine][i];
+      // Update font and color
+      s.setFormat(font, color);
+      _symbols[endLine][i] = s;
+      vector.push_back(s);
     }
   }
   // Broadcast
@@ -692,7 +694,6 @@ void CRDT::handleRemoteErase(const QVector<Symbol> &symbols) {
 }
 
 void CRDT::handleRemoteChange(const QVector<Symbol> &symbols) {
-  bool first = false;
   for (Symbol s : symbols) {
     int line, index;
     bool res = findPosition(s, line, index);

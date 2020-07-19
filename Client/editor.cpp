@@ -810,11 +810,14 @@ void Editor::on_change(const QVector<Symbol> &symbols) {
   QTextCursor tempCursor = ui->textEdit->textCursor();
   bool first = true;
   QTextCharFormat newFormat;
+  QTextBlock block;
 
   for (Symbol s : symbols) {
     int line, index;
+
     this->crdt->findPosition(s, line, index);
-    QTextBlock block = ui->textEdit->document()->findBlockByNumber(line);
+    qDebug() << "on update: " << line << " " << index;
+    block = ui->textEdit->document()->findBlockByNumber(line);
 
     if (first) {
       first = false;
@@ -825,7 +828,7 @@ void Editor::on_change(const QVector<Symbol> &symbols) {
     tempCursor.setPosition(block.position() + index + 1,
                            QTextCursor::KeepAnchor);
   }
-
+  qDebug() << "pppp: " << tempCursor.position();
   tempCursor.setCharFormat(newFormat);
 }
 
@@ -1069,6 +1072,10 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
       endIndex = index;
       endLine = line;
     } else {
+      qDebug() << "STARTLINE: " << startLine;
+      qDebug() << "EndLine: " << endLine;
+      qDebug() << "StartIndex: " << startIndex;
+      qDebug() << "EndIndex: " << endIndex;
       crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                              colorPrec);
       fontPrec = font;
@@ -1079,6 +1086,10 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
       endLine = line;
     }
   }
+  qDebug() << "STARTLINE: " << startLine;
+  qDebug() << "EndLine: " << endLine;
+  qDebug() << "StartIndex: " << startIndex;
+  qDebug() << "EndIndex: " << endIndex;
   crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                          colorPrec);
 }
