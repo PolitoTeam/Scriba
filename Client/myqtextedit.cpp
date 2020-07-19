@@ -51,8 +51,13 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
       emit redo();
     }
     // 16777219 = code of delete key
-  } else if (e->key() == 16777219 && this->document()->isEmpty()) {
-    emit resetDefaultAlignment(true);
+  } else if (e->key() == 16777219) {
+    deleted = true;
+    if (this->document()->isEmpty()) {
+      emit resetDefaultAlignment(true);
+    } else {
+      QTextEdit::keyPressEvent(e);
+    }
   } else {
     QTextEdit::keyPressEvent(e);
   }
@@ -105,3 +110,5 @@ bool MyQTextEdit::getInserted() { return inserted; }
 void MyQTextEdit::setInserted(bool inserted) { this->inserted = inserted; }
 int MyQTextEdit::getPasted() { return pasted; }
 void MyQTextEdit::setPasted(int pasted) { this->pasted = pasted; }
+bool MyQTextEdit::getDeleted() { return deleted; }
+void MyQTextEdit::setDeleted(bool deleted) { this->deleted = deleted; }

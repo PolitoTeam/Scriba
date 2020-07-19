@@ -574,7 +574,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   } else if (charsAdded >= 0 || charsRemoved >= 0) {*/
   if (charsRemoved == charsAdded &&
       (this->undoFlag == true || this->redoFlag == true))
-    checkAlignment(position);
+    qDebug() << "jdsbfgjsdbj " << checkAlignment(position);
   if (!(ui->textEdit->getInserted() || ui->textEdit->getPasted()) &&
       charsAdded == charsRemoved) {
     qDebug() << "alignment";
@@ -585,33 +585,42 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
     int tmp_line = tmp_cursor.blockNumber();
     int tmp_index = tmp_cursor.positionInBlock();
 
-    if (position == 0 && (ui->textEdit->getPasted() > 0 ||
-                          (charsRemoved > charsAdded && this->undoFlag) ||
-                          (charsAdded > charsRemoved && this->redoFlag))) {
+    if (position == 0 &&
+        ((ui->textEdit->getSelected() > 0 && !ui->textEdit->getDeleted()) ||
+         (charsRemoved > charsAdded && this->undoFlag) ||
+         (charsAdded > charsRemoved && this->redoFlag))) {
       qDebug() << "position = 0\n";
 
       // caso in cui sto sostituendo del test in prima posizione incollandolo
-      if (ui->textEdit->getPasted() > 0 && ui->textEdit->getSelected()) {
+      if (ui->textEdit->getSelected()) {
+        int add = 1;
+        if (ui->textEdit->getPasted() > 0)
+          add = ui->textEdit->getPasted();
+
+        qDebug() << "here :" << add;
 
         crdt->localErase(tmp_line, tmp_index,
-                         ui->textEdit->getPasted() -
-                             (charsAdded - charsRemoved));
-        handleLocalInsertion(position, ui->textEdit->getPasted());
+                         add - (charsAdded - charsRemoved));
+        handleLocalInsertion(position, add);
       }
       if (charsRemoved > charsAdded && this->undoFlag)
         crdt->localErase(tmp_line, tmp_index, charsRemoved - charsAdded);
       if (charsAdded > charsRemoved && this->redoFlag)
         handleLocalInsertion(position, charsAdded - charsRemoved);
-
     } else {
       qDebug() << "normal contents change\n";
 
-      if (charsRemoved > 0)
-        crdt->localErase(tmp_line, tmp_index, charsRemoved);
-      if (charsAdded > 0)
+      if (position == 0 &&
+          (ui->textEdit->getPasted() > 0 || ui->textEdit->getInserted())) {
+        handleLocalInsertion(position, charsAdded - charsRemoved);
+      } else {
 
-        handleLocalInsertion(position, charsAdded);
-      // }
+        if (charsRemoved > 0)
+          crdt->localErase(tmp_line, tmp_index, charsRemoved);
+        if (charsAdded > 0)
+
+          handleLocalInsertion(position, charsAdded);
+      }
     }
   }
   /*
@@ -686,9 +695,12 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
   ui->textEdit->setInserted(false);
   ui->textEdit->setPasted(0);
+  ui->textEdit->setDeleted(false);
+  this->undoFlag = false;
+  this->redoFlag = false;
 }
 
-void Editor::checkAlignment(int position) {
+bool Editor::checkAlignment(int position) {
   // Format/alignment change by redo/undo
   QTextCursor cursor = ui->textEdit->textCursor();
   cursor.setPosition(position);
@@ -723,10 +735,17 @@ void Editor::checkAlignment(int position) {
     // Change alignment
     line_m = cursor.blockNumber();
     index_m = cursor.positionInBlock();
+    bool alignChange = false;
+
     QTextBlockFormat a = cursor.blockFormat();
     Qt::Alignment align = a.alignment();
     Qt::Alignment align_SL =
         alignmentConversion(this->crdt->getAlignmentLine(line_m));
+    if (align != align_SL) {
+      qDebug() << "align: " << align;
+      qDebug() << "alignSL " << align_SL;
+      alignChange = true;
+    }
     this->crdt->localChangeAlignment(line_m, alignmentConversion(align));
 
     while (true) {
@@ -741,6 +760,9 @@ void Editor::checkAlignment(int position) {
       line_m = cursor.blockNumber();
       index_m = cursor.positionInBlock();
       align_SL = alignmentConversion(this->crdt->getAlignmentLine(line_m));
+      if (align != align_SL) {
+        alignChange = true;
+      }
       this->crdt->localChangeAlignment(line_m, alignmentConversion(align));
     }
   }

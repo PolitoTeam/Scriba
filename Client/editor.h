@@ -66,7 +66,7 @@ private slots:
   void moveCursorToEnd();
   void on_addCRDTterminator();
   void on_remoteCursor(int editor_id, Symbol s);
-  void checkAlignment(int position);
+  bool checkAlignment(int position);
 
 private:
   Ui::Editor *ui;

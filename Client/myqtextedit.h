@@ -21,6 +21,8 @@ public:
   void setInserted(bool inserted);
   int getPasted();
   void setPasted(int pasted);
+  bool getDeleted();
+  void setDeleted(bool deleted);
 
 public slots:
   void paste();
@@ -31,6 +33,7 @@ private:
   bool selected;
   bool inserted = false;
   int pasted = 0;
+  bool deleted = false;
 
 protected:
   void paintEvent(QPaintEvent *event) override;
