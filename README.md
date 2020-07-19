@@ -1,10 +1,12 @@
  <img height="150" src="https://github.com/pastaalforno/SharedEditor/blob/master/Client/images/scriba_logo_cropped.png">
-  
+
 # Scriba: Jot down your ideas, share them with the world
 A **collaborative real-time editor** written in C++ using Qt GUI framework.  
 It is based on a distributed data structure called Conflict-free Replicated Data Type (**CRDT**) and implements, in particular, [LSEQ](https://hal.archives-ouvertes.fr/hal-00921633/document) strategy.
 
-[image here]
+<p align="center">
+ <img src="https://github.com/pastaalforno/SharedEditor/blob/master/Resources/demo.gif">
+</p>
 
 ## Motivation
 Project developed in the context of *Programmazione di Sistema* (Operating System Design and Programming) course at Politecnico di Torino. 
