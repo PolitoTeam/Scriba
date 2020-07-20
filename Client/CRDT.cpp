@@ -64,12 +64,17 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font,
   // qDebug() << "Symbol " << s.toJson();
 
   if (s.getValue() == '\0' || s.getValue() == '\n') {
-    if (align == Qt::AlignLeft)
+
+    if (align == Qt::AlignLeft) {
+
       s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
-    else if (align == Qt::AlignHCenter)
+    } else if (align == Qt::AlignHCenter) {
+
       s.setAlignment(SymbolFormat::Alignment::ALIGN_CENTER);
-    else if (align == Qt::AlignRight)
+    } else if (align == Qt::AlignRight) {
+
       s.setAlignment(SymbolFormat::Alignment::ALIGN_RIGHT);
+    }
   }
 
   insertChar(s, line, index);
@@ -133,8 +138,12 @@ void CRDT::localInsertGroup(int &line, int &index, QString partial, QFont font,
 }
 
 void CRDT::localChangeAlignment(int line, SymbolFormat::Alignment align) {
+
   Symbol s = _symbols[line][_symbols[line].size() - 1];
+
   s.setAlignment(align);
+  qDebug() << "changed " << s.getAlignment();
+  _symbols[line][_symbols[line].size() - 1] = s;
 
   // Broadcast
   QJsonObject message;
@@ -147,6 +156,11 @@ void CRDT::localChangeAlignment(int line, SymbolFormat::Alignment align) {
 }
 
 SymbolFormat::Alignment CRDT::getAlignmentLine(int line) {
+
+  qDebug() << "get alignment requested for: "
+           << _symbols[line][_symbols[line].size() - 1].getValue();
+  qDebug() << "received "
+           << _symbols[line][_symbols[line].size() - 1].getAlignment();
   return _symbols[line][_symbols[line].size() - 1].getAlignment();
 }
 
@@ -328,7 +342,6 @@ void CRDT::localChangeGroup(int startLine, int endLine, int startIndex,
       }
     }
     for (int i = 0; i <= endIndex; i++) {
-      qDebug() << "qui";
 
       // UPDATE INDEX & LINE
       Symbol s = _symbols[endLine][i];
@@ -470,6 +483,8 @@ void CRDT::handleRemoteAlignChange(const Symbol &s) {
   if (!(res = findPosition(s, line, index))) {
     return;
   }
+
+  _symbols[line][_symbols[line].size() - 1].setAlignment(align);
 
   // Insert in editor
   emit changeAlignment(align, line, index);

@@ -318,7 +318,7 @@ void Editor::undo() {
   ui->textEdit->document()->undo(); // the change due to the insert/delete
                                     // are automatically managed
                                     // by on_contents_change
-  // Update alignment icon
+                                    // Update alignment icon
   alignmentChanged(ui->textEdit->alignment());
 }
 
@@ -574,7 +574,14 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
   } else if (charsAdded >= 0 || charsRemoved >= 0) {*/
   if (charsRemoved == charsAdded &&
       (this->undoFlag == true || this->redoFlag == true))
-    qDebug() << "jdsbfgjsdbj " << checkAlignment(position);
+    if (!checkAlignment(position)) {
+      QTextCursor tmp_cursor = ui->textEdit->textCursor();
+      tmp_cursor.setPosition(position);
+      int tmp_line = tmp_cursor.blockNumber();
+      int tmp_index = tmp_cursor.positionInBlock();
+      crdt->localErase(tmp_line, tmp_index, charsRemoved);
+      handleLocalInsertion(position, charsAdded);
+    }
   if (!(ui->textEdit->getInserted() || ui->textEdit->getPasted()) &&
       charsAdded == charsRemoved) {
     qDebug() << "alignment";
@@ -707,6 +714,7 @@ bool Editor::checkAlignment(int position) {
   int line_m;
   int index_m;
   bool formatChange = false;
+  bool alignChange = false;
 
   // Each char in the editor is compared with the ones in CRDT
   while (true) {
@@ -732,18 +740,24 @@ bool Editor::checkAlignment(int position) {
   if (formatChange == true) {
     on_formatChange(cursor);
   } else {
+    cursor.setPosition(position);
     // Change alignment
     line_m = cursor.blockNumber();
     index_m = cursor.positionInBlock();
-    bool alignChange = false;
 
     QTextBlockFormat a = cursor.blockFormat();
+    SymbolFormat::Alignment s_align_SL = this->crdt->getAlignmentLine(line_m);
     Qt::Alignment align = a.alignment();
-    Qt::Alignment align_SL =
-        alignmentConversion(this->crdt->getAlignmentLine(line_m));
-    if (align != align_SL) {
-      qDebug() << "align: " << align;
-      qDebug() << "alignSL " << align_SL;
+
+    SymbolFormat::Alignment s_align = alignmentConversion(align);
+
+    Qt::Alignment align_SL = alignmentConversion(s_align_SL);
+
+    align_SL = alignmentConversion(s_align_SL);
+    qDebug() << "align: " << s_align << " - " << align;
+    qDebug() << "alignSL " << s_align_SL << " - " << align_SL;
+    if (s_align != s_align_SL) {
+      qDebug() << "they are different";
       alignChange = true;
     }
     this->crdt->localChangeAlignment(line_m, alignmentConversion(align));
@@ -759,8 +773,16 @@ bool Editor::checkAlignment(int position) {
 
       line_m = cursor.blockNumber();
       index_m = cursor.positionInBlock();
-      align_SL = alignmentConversion(this->crdt->getAlignmentLine(line_m));
-      if (align != align_SL) {
+
+      s_align = alignmentConversion(align);
+
+      s_align_SL = this->crdt->getAlignmentLine(line_m);
+
+      align_SL = alignmentConversion(s_align_SL);
+      qDebug() << "align: " << s_align << " - " << align;
+      qDebug() << "alignSL " << s_align_SL << " - " << align_SL;
+      if (s_align != s_align_SL) {
+        qDebug() << "they are different";
         alignChange = true;
       }
       this->crdt->localChangeAlignment(line_m, alignmentConversion(align));
@@ -769,6 +791,7 @@ bool Editor::checkAlignment(int position) {
 
   this->undoFlag = false;
   this->redoFlag = false;
+  return alignChange;
 }
 
 void Editor::on_changeAlignment(int align, int line, int index) {
@@ -1135,7 +1158,7 @@ void Editor::on_formatChange(QTextCursor c) {
 void Editor::on_addCRDTterminator() {
   QFont font;
   QColor color;
-  this->crdt->localInsert(0, 0, '\0', font, color, getCurrentAlignment());
+  this->crdt->localInsert(0, 0, '\0', font, color, Qt::AlignLeft);
 }
 
 void Editor::on_remoteCursor(int editor_id, Symbol s) {
