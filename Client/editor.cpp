@@ -33,6 +33,8 @@ Editor::Editor(QWidget *parent, Client *client)
   crdt = new CRDT(client);
   highlighter = new Highlighter(0, crdt);
 
+  ui->textEdit->setAcceptDrops(false);
+
   // Setup popup
   this->popUp = new QMessageBox(this);
   this->popUp->setText("Link copied to clipboard.");
