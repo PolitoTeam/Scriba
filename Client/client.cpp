@@ -232,7 +232,8 @@ void Client::on_jsonReceived(const QJsonObject &docObj) {
   } else if (typeVal.toString().compare(QLatin1String("operation"),
                                         Qt::CaseInsensitive) == 0) {
     int operation_type = docObj["operation_type"].toInt();
-    if (operation_type == INSERT) {
+    // comment only to change commit
+    if (operation_type == INSERT_SYMBOL) {
       QJsonObject symbol = docObj["symbol"].toObject();
       Symbol s = Symbol::fromJson(symbol);
 
@@ -573,8 +574,11 @@ void Client::on_byteArrayReceived(const QByteArray &doc) {
         }
         int operation_type = opType.toInt();
 
+        // comment only to change commit
+
         if (operation_type != PASTE && operation_type != CHANGE &&
-            operation_type != DELETE)
+            operation_type != DELETE_SYMBOL)
+
           return;
 
         const QJsonValue tot_symbolsVal =

@@ -402,6 +402,7 @@ void Server::handle_signup_updateImage_bulkOperation(
       }
       int operation_type = docObj["operation_type"].toInt();
 
+      // comment only to change commit
       if (operation_type == PASTE || operation_type == CHANGE ||
           operation_type == DELETE_SYMBOL) {
 
@@ -419,6 +420,7 @@ void Server::handle_signup_updateImage_bulkOperation(
           throw std::runtime_error("Vector shouldn't be empty.");
         }
 
+        // comment only to change commit
         if (operation_type == DELETE_SYMBOL) {
           // Remove symbols from memory
           for (Symbol s : vec) {
