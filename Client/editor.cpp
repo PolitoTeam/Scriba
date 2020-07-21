@@ -33,6 +33,7 @@ Editor::Editor(QWidget *parent, Client *client)
   crdt = new CRDT(client);
   highlighter = new Highlighter(0, crdt);
 
+  // Disable drag and drop of selected text
   ui->textEdit->setAcceptDrops(false);
 
   // Setup popup
