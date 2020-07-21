@@ -84,7 +84,7 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font,
   QJsonObject message;
   message["type"] = QStringLiteral("operation");
   message["editorId"] = _siteId;
-  message["operation_type"] = INSERT;
+  message["operation_type"] = INSERT_SYMBOL;
   message["symbol"] = s.toJson();
 
   client->sendJson(message);
@@ -282,7 +282,7 @@ void CRDT::localErase(int &line, int &index, int lenght) {
   QJsonObject message;
   message["type"] = QStringLiteral("operation");
   message["editorId"] = _siteId;
-  message["operation_type"] = DELETE;
+  message["operation_type"] = DELETE_SYMBOL;
 
   QByteArray toSend = client->createByteArrayFileContent(message, symbols);
   client->sendByteArray(toSend);
