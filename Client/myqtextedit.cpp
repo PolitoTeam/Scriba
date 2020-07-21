@@ -36,7 +36,8 @@ void MyQTextEdit::paintEvent(QPaintEvent *e) {
 
 void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
-  if (e->modifiers().testFlag(Qt::NoModifier) && e->key() != 16777219)
+  if (e->modifiers().testFlag(Qt::NoModifier) && e->key() != 16777219 &&
+      e->key() != 16777223)
     inserted = true;
 
   if (e->key() == Qt::Key_Z && e->modifiers().testFlag(Qt::ControlModifier)) {
@@ -51,7 +52,7 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
       emit redo();
     }
     // 16777219 = code of delete key
-  } else if (e->key() == 16777219) {
+  } else if (e->key() == 16777219 || e->key() == 16777223) {
     deleted = true;
     if (this->document()->isEmpty()) {
       emit resetDefaultAlignment(true);

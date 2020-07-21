@@ -95,7 +95,9 @@ Editor::Editor(QWidget *parent, Client *client)
   // using Qt creator GUI):
   // 1. Font
   comboFont = new QFontComboBox(ui->toolBar);
+
   ui->toolBar->addWidget(comboFont);
+
   connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated),
           this, &Editor::textFamily);
   comboFont->setCurrentFont(QFont("American Typewriter"));
@@ -434,6 +436,8 @@ void Editor::handleLocalInsertion(int position, int num_chars) {
     cursor.movePosition(QTextCursor::Right);
     QFont font = cursor.charFormat().font();
     ui->textEdit->update();
+    Qt::Alignment a = getCurrentAlignment();
+    qDebug() << "current alignment before inserting... " << a;
     crdt->localInsert(line, index, added.at(0).unicode(), font,
                       cursor.charFormat().foreground().color(),
                       getCurrentAlignment());
@@ -518,6 +522,7 @@ void Editor::on_contentsChange(int position, int charsRemoved, int charsAdded) {
 
   // Handle text substitution (text selected and then paste or char insertion)
   // qDebug() << "qui";
+  qDebug() << "Document is empty? " << ui->textEdit->document()->isEmpty();
   qDebug() << "position " << position;
   qDebug() << "selected: " << ui->textEdit->getSelected();
   qDebug() << "inserted: " << ui->textEdit->getInserted();
@@ -756,10 +761,10 @@ bool Editor::checkAlignment(int position) {
     Qt::Alignment align_SL = alignmentConversion(s_align_SL);
 
     align_SL = alignmentConversion(s_align_SL);
-    qDebug() << "align: " << s_align << " - " << align;
-    qDebug() << "alignSL " << s_align_SL << " - " << align_SL;
+    // qDebug() << "align: " << s_align << " - " << align;
+    // qDebug() << "alignSL " << s_align_SL << " - " << align_SL;
     if (s_align != s_align_SL) {
-      qDebug() << "they are different";
+      // qDebug() << "they are different";
       alignChange = true;
     }
     this->crdt->localChangeAlignment(line_m, alignmentConversion(align));
@@ -863,7 +868,7 @@ void Editor::on_change(const QVector<Symbol> &symbols) {
     int line, index;
 
     this->crdt->findPosition(s, line, index);
-    qDebug() << "on update: " << line << " " << index;
+    // qDebug() << "on update: " << line << " " << index;
     block = ui->textEdit->document()->findBlockByNumber(line);
 
     if (first) {
@@ -875,7 +880,7 @@ void Editor::on_change(const QVector<Symbol> &symbols) {
     tempCursor.setPosition(block.position() + index + 1,
                            QTextCursor::KeepAnchor);
   }
-  qDebug() << "pppp: " << tempCursor.position();
+  // qDebug() << "pppp: " << tempCursor.position();
   tempCursor.setCharFormat(newFormat);
 }
 
@@ -995,12 +1000,12 @@ void Editor::showEvent(QShowEvent *) {
 // Update icons in toolbar (italic, bold, ...)
 // depending on the char before cursor
 void Editor::on_currentCharFormatChanged(const QTextCharFormat &format) {
-  qDebug() << "changing";
+  // qDebug() << "changing";
   fontChanged(format.font());
   colorChanged(format.foreground().color());
   if (this->highlighter->document() != nullptr) {
     this->highlighter->setDocument(ui->textEdit->document());
-    qDebug() << "changing ...";
+    // qDebug() << "changing ...";
   }
   void on_remoteCursor(int editor_id, Symbol s);
 }
@@ -1119,10 +1124,10 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
       endIndex = index;
       endLine = line;
     } else {
-      qDebug() << "STARTLINE: " << startLine;
-      qDebug() << "EndLine: " << endLine;
-      qDebug() << "StartIndex: " << startIndex;
-      qDebug() << "EndIndex: " << endIndex;
+      // qDebug() << "STARTLINE: " << startLine;
+      // qDebug() << "EndLine: " << endLine;
+      // qDebug() << "StartIndex: " << startIndex;
+      // qDebug() << "EndIndex: " << endIndex;
       crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                              colorPrec);
       fontPrec = font;
@@ -1133,10 +1138,10 @@ void Editor::on_formatChange(const QString &changed, int start, int end) {
       endLine = line;
     }
   }
-  qDebug() << "STARTLINE: " << startLine;
+  /*qDebug() << "STARTLINE: " << startLine;
   qDebug() << "EndLine: " << endLine;
   qDebug() << "StartIndex: " << startIndex;
-  qDebug() << "EndIndex: " << endIndex;
+  qDebug() << "EndIndex: " << endIndex;*/
   crdt->localChangeGroup(startLine, endLine, startIndex, endIndex, fontPrec,
                          colorPrec);
 }
@@ -1158,6 +1163,7 @@ void Editor::on_formatChange(QTextCursor c) {
 }
 
 void Editor::on_addCRDTterminator() {
+  qDebug() << "CRDT terminator";
   QFont font;
   QColor color;
   this->crdt->localInsert(0, 0, '\0', font, color, Qt::AlignLeft);
