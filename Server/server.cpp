@@ -403,7 +403,7 @@ void Server::handle_signup_updateImage_bulkOperation(
       int operation_type = docObj["operation_type"].toInt();
 
       if (operation_type == PASTE || operation_type == CHANGE ||
-          operation_type == DELETE) {
+          operation_type == DELETE_SYMBOL) {
 
         QByteArray content_array = json_data.mid(4 + size, -1);
         quint32 content_size = qFromLittleEndian<qint32>(
@@ -419,7 +419,7 @@ void Server::handle_signup_updateImage_bulkOperation(
           throw std::runtime_error("Vector shouldn't be empty.");
         }
 
-        if (operation_type == DELETE) {
+        if (operation_type == DELETE_SYMBOL) {
           // Remove symbols from memory
           for (Symbol s : vec) {
             QString position = s.positionString();
@@ -548,7 +548,7 @@ void Server::jsonFromLoggedIn(ServerWorker *sender, const QJsonObject &docObj) {
 
     // Update symbols in server memory
     // and broadcast operation to other editors
-    if (operation_type == INSERT) {
+    if (operation_type == INSERT_SYMBOL) {
       QJsonObject symbol = docObj["symbol"].toObject();
       Symbol s = Symbol::fromJson(symbol);
       QString position = s.positionString();
