@@ -103,11 +103,10 @@ Editor::Editor(QWidget *parent, Client *client)
           this, &Editor::textFamily);
 
   // Upload custom fonts
-  QString PATH_FONTS = "/home/enrico/Desktop/repo/SharedEditor/Client/fonts";
   QSet<QString> font_list;
-  for (QString font : QDir(PATH_FONTS).entryList()) {
+  for (QString font : QDir(":/fonts").entryList()) {
     if (!font.startsWith(".")) {
-      int id = QFontDatabase::addApplicationFont(PATH_FONTS + "/" + font);
+      int id = QFontDatabase::addApplicationFont(":/fonts/" + font);
       font_list.insert(QFontDatabase::applicationFontFamilies(id).value(0));
     }
   }

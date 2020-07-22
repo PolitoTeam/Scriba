@@ -29,6 +29,28 @@
         <file>images/back_button_hover.png</file>
         <file>images/scriba.png</file>
         <file>images/check.png</file>
+        <file>fonts/Lato-Black.ttf</file>
+        <file>fonts/Lato-BlackItalic.ttf</file>
+        <file>fonts/Lato-Bold.ttf</file>
+        <file>fonts/Lato-BoldItalic.ttf</file>
+        <file>fonts/Lato-Italic.ttf</file>
+        <file>fonts/Lato-Light.ttf</file>
+        <file>fonts/Lato-LightItalic.ttf</file>
+        <file>fonts/Lato-Regular.ttf</file>
+        <file>fonts/Lato-Thin.ttf</file>
+        <file>fonts/Lato-ThinItalic.ttf</file>
+        <file>fonts/Roboto-Black.ttf</file>
+        <file>fonts/Roboto-BlackItalic.ttf</file>
+        <file>fonts/Roboto-Bold.ttf</file>
+        <file>fonts/Roboto-BoldItalic.ttf</file>
+        <file>fonts/Roboto-Italic.ttf</file>
+        <file>fonts/Roboto-Light.ttf</file>
+        <file>fonts/Roboto-LightItalic.ttf</file>
+        <file>fonts/Roboto-Medium.ttf</file>
+        <file>fonts/Roboto-MediumItalic.ttf</file>
+        <file>fonts/Roboto-Regular.ttf</file>
+        <file>fonts/Roboto-Thin.ttf</file>
+        <file>fonts/Roboto-ThinItalic.ttf</file>
     </qresource>
     <qresource prefix="/resources">
         <file>certificates/rootCA.crt</file>
