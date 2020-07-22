@@ -101,7 +101,23 @@ Editor::Editor(QWidget *parent, Client *client)
 
   connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated),
           this, &Editor::textFamily);
-  comboFont->setCurrentFont(QFont("American Typewriter"));
+
+  // Upload custom fonts
+  QString PATH_FONTS = "/home/enrico/Desktop/repo/SharedEditor/Client/fonts";
+  QSet<QString> font_list;
+  for (QString font : QDir(PATH_FONTS).entryList()) {
+    if (!font.startsWith(".")) {
+      int id = QFontDatabase::addApplicationFont(PATH_FONTS + "/" + font);
+      font_list.insert(QFontDatabase::applicationFontFamilies(id).value(0));
+    }
+  }
+  ui->textEdit->setFont(QFont("Roboto", 15));
+
+  // Remove defult system fonts and add the custom ones to the combo box
+  comboFont->clear();
+  for (QString font : font_list) {
+    comboFont->addItem(font);
+  }
 
   // 2. Size
   comboSize = new QComboBox(ui->toolBar);
