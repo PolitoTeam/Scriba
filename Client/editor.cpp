@@ -105,12 +105,14 @@ Editor::Editor(QWidget *parent, Client *client)
   // Upload custom fonts
   QSet<QString> font_list;
   for (QString font : QDir(":/fonts").entryList()) {
+    qDebug() << "font added " << font;
     if (!font.startsWith(".")) {
       int id = QFontDatabase::addApplicationFont(":/fonts/" + font);
       font_list.insert(QFontDatabase::applicationFontFamilies(id).value(0));
     }
   }
-  ui->textEdit->setFont(QFont("Roboto", 15));
+
+  ui->textEdit->setFont(QFont("Times New Roman", 15));
 
   // Remove defult system fonts and add the custom ones to the combo box
   comboFont->clear();

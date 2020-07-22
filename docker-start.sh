@@ -9,6 +9,7 @@ docker network rm shared_editor_network 2> /dev/null
 
 VOLUME=""
 if [ "$#" -eq 1 ]; then
+    echo "Volume found"
     VOLUME='-v '$1':/data/db'
 fi
 

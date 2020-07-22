@@ -9,7 +9,7 @@
 #include <qabstracttextdocumentlayout.h>
 
 MyQTextEdit::MyQTextEdit(QWidget *parent) : QTextEdit(parent) {
-  this->setFont(QFont("American Typewriter", 15));
+  this->setFont(QFont("Times New Roman", 15));
   selected = false;
 }
 
