@@ -114,7 +114,7 @@ Editor::Editor(QWidget *parent, Client *client)
 
   ui->textEdit->setFont(QFont("Times New Roman", 15));
 
-  // Remove defult system fonts and add the custom ones to the combo box
+  // Remove defult system fonts and add the custom ones to the combo boxk
   comboFont->clear();
   for (QString font : font_list) {
     comboFont->addItem(font);
