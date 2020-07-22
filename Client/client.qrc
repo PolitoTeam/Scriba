@@ -29,10 +29,6 @@
         <file>images/back_button_hover.png</file>
         <file>images/scriba.png</file>
         <file>images/check.png</file>
-        <file>cmake-build-debug/CMakeFiles/3.13.2/CompilerIdC/CMakeCCompilerId.c</file>
-        <file>cmake-build-debug/CMakeFiles/3.13.2/CompilerIdCXX/CMakeCXXCompilerId.cpp</file>
-        <file>cmake-build-debug/CMakeFiles/feature_tests.c</file>
-        <file>cmake-build-debug/CMakeFiles/feature_tests.cxx</file>
         <file>fonts/ARI.ttf</file>
         <file>fonts/ArialCE.ttf</file>
         <file>fonts/ArialCEBold.ttf</file>
