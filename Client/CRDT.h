@@ -72,7 +72,6 @@ private:
   bool generateRandomBool();
   int generateRandomNumBetween(int n1, int n2);
 
-
   int findIndexInLine(Symbol s, QVector<Symbol> line);
   void findInsertPosition(Symbol s, int &line, int &index);
   int findInsertIndexInLine(Symbol s, QVector<Symbol> line);

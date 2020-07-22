@@ -26,8 +26,7 @@ protected:
 
 private:
   QPixmap pixmap;
-  bool tooltip=true;
-
+  bool tooltip = true;
 };
 
 #endif // CLICKABLELABEL_H

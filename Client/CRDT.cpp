@@ -61,18 +61,12 @@ void CRDT::localInsert(int line, int index, ushort value, QFont font,
 
   // Generate symbol
   Symbol s(value, newPos, ++_counter, font, color);
-  // qDebug() << "Symbol " << s.toJson();
-
   if (s.getValue() == '\0' || s.getValue() == '\n') {
-    qDebug() << "inserting... " << s.getValue();
     if (align == Qt::AlignLeft) {
-      qDebug() << "Align left";
       s.setAlignment(SymbolFormat::Alignment::ALIGN_LEFT);
     } else if (align == Qt::AlignHCenter || align == Qt::AlignCenter) {
-      qDebug() << "Align center";
       s.setAlignment(SymbolFormat::Alignment::ALIGN_CENTER);
     } else if (align == Qt::AlignRight) {
-      qDebug() << "Align right";
       s.setAlignment(SymbolFormat::Alignment::ALIGN_RIGHT);
     }
   }
@@ -142,9 +136,6 @@ void CRDT::localChangeAlignment(int line, SymbolFormat::Alignment align) {
   Symbol s = _symbols[line][_symbols[line].size() - 1];
 
   s.setAlignment(align);
-  qDebug() << "changed " << s.getAlignment();
-  qDebug() << " at line: " << line;
-  qDebug() << " symbol: " << s.getValue();
   _symbols[line][_symbols[line].size() - 1] = s;
 
   // Broadcast
@@ -158,11 +149,6 @@ void CRDT::localChangeAlignment(int line, SymbolFormat::Alignment align) {
 }
 
 SymbolFormat::Alignment CRDT::getAlignmentLine(int line) {
-
-  // qDebug() << "get alignment requested for: "
-  //       << _symbols[line][_symbols[line].size() - 1].getValue();
-  // qDebug() << "received "
-  //     << _symbols[line][_symbols[line].size() - 1].getAlignment();
   return _symbols[line][_symbols[line].size() - 1].getAlignment();
 }
 
@@ -553,7 +539,6 @@ void CRDT::handleRemoteInsert(const Symbol &s) {
 
   // Insert in text editor
   emit insert(line, index, s);
-  // qDebug() << "After isnerted in the editor";
 }
 
 void CRDT::insertChar(Symbol s, int line, int index) {

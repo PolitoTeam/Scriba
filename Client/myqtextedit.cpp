@@ -48,7 +48,6 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
   } else if (e->key() == Qt::Key_Y &&
              e->modifiers().testFlag(Qt::ControlModifier)) {
     if (this->document()->isRedoAvailable()) {
-      qDebug() << "redo";
       emit redo();
     }
     // 16777219 = code of delete key
@@ -66,7 +65,6 @@ void MyQTextEdit::keyPressEvent(QKeyEvent *e) {
 
 void MyQTextEdit::paste() {
   inserted = true;
-  qDebug() << "paste";
   QTextEdit::paste();
 }
 
@@ -78,8 +76,6 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
 
   if (match.hasMatch()) {
     QString alignment = match.captured(0);
-    // qDebug()<<"alignment first line: "<<alignment;
-
     QTextBlockFormat newformat;
 
     if (*index == 0) {
@@ -97,16 +93,12 @@ void MyQTextEdit::insertFromMimeData(const QMimeData *source) {
     }
   }
   pasted = source->text().length();
-  qDebug() << "here pasted: " << pasted;
   this->QTextEdit::insertFromMimeData(source);
 }
 
 void MyQTextEdit::setLine(int *line) { this->line = line; }
-
 void MyQTextEdit::setIndex(int *index) { this->index = index; }
-
 bool MyQTextEdit::getSelected() { return selected; }
-
 bool MyQTextEdit::getInserted() { return inserted; }
 void MyQTextEdit::setInserted(bool inserted) { this->inserted = inserted; }
 int MyQTextEdit::getPasted() { return pasted; }
