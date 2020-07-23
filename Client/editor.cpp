@@ -882,7 +882,8 @@ void Editor::on_currentCharFormatChanged(const QTextCharFormat &format) {
 }
 
 void Editor::textColor() {
-  QColor col = QColorDialog::getColor(ui->textEdit->textColor(), this);
+  QColor col = QColorDialog::getColor(ui->textEdit->textColor(), this, "",
+                                      QColorDialog::DontUseNativeDialog);
   if (!col.isValid())
     return;
   ui->textEdit->setTextColor(col);
