@@ -19,14 +19,12 @@ public:
   void enableAllButtons();
   void correctlySignedup();
 
-
 private slots:
   void try_to_log();
   void on_t_pushButtonNewAccount_clicked();
   void loggedIn();
   void loginFailed(const QString &reason);
   void on_lineEditUsername_textChanged(const QString &arg);
-
 
 public slots:
   void disconnect();
@@ -41,7 +39,6 @@ private:
   void clearLineEdit();
   void addError(QString error);
   void clearError();
-
 };
 
 #endif // LOGIN_H

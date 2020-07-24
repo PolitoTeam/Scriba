@@ -49,10 +49,7 @@ void Home::newFileCompleted() {
   emit changeWidget(EDITOR);
 }
 
-void Home::openFileCompleted() {
-  // qDebug() << "openFilecompleted";
-  emit changeWidget(EDITOR);
-}
+void Home::openFileCompleted() { emit changeWidget(EDITOR); }
 
 void Home::newFileError(const QString &reason) {
   QMessageBox::critical(this, tr("Error"), reason, QMessageBox::Close);

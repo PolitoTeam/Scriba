@@ -3,7 +3,6 @@
 
 #include <QTextCursor>
 
-
 class RemoteCursor {
 public:
   RemoteCursor(QTextCursor cursor, QTextBlock initial_block, int initial_index,
@@ -18,13 +17,10 @@ public:
   QColor getColor() { return color; };
   void setColor(const QColor color);
 
-
-
 private:
   QString cursorHtml;
   QTextCursor remoteCursor;
   QColor color;
-
 };
 
 #endif // REMOTECURSOR_H

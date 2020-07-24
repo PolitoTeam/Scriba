@@ -9,7 +9,6 @@ Login::Login(QWidget *parent, Client *client)
     : QWidget(parent), ui(new Ui::Login), client(client) {
   ui->setupUi(this);
 
-
   clearError();
 
   connect(client, &Client::loggedIn, this, &Login::loggedIn);
@@ -37,19 +36,18 @@ void Login::try_to_log() {
   // Disable the connect button to prevent the user from clicking it again
   ui->pushButtonLogin->setEnabled(false);
   ui->t_pushButtonNewAccount->setEnabled(false);
-  bool empty=false;
-  if (username.isNull() || username.isEmpty()){
-      emit loginFailed("Empty username");
-      empty=true;
-
+  bool empty = false;
+  if (username.isNull() || username.isEmpty()) {
+    emit loginFailed("Empty username");
+    empty = true;
   }
-  if (password.isNull() || password.isEmpty()){
-      emit loginFailed("Empty password");
-      empty=true;
+  if (password.isNull() || password.isEmpty()) {
+    emit loginFailed("Empty password");
+    empty = true;
   }
 
   if (empty)
-      return;
+    return;
   client->login(username, password);
 }
 
@@ -91,13 +89,12 @@ void Login::on_lineEditUsername_textChanged(const QString &) {
 }
 
 void Login::correctlySignedup() {
-    // Show popup for 1 second
-
+  // Show popup for 1 second
 }
 
 void Login::addError(QString error) {
   ui->icon_error->setVisible(true);
-  qDebug()<<error;
+  qDebug() << error;
   // Append if error not already signaled
   if (!ui->labelMessage->text().contains(error)) {
     if (ui->labelMessage->text().isEmpty() || error.contains("Invalid")) {
@@ -106,13 +103,13 @@ void Login::addError(QString error) {
       ui->labelMessage->setText(ui->labelMessage->text() + "\n" + error);
     }
   }
-  if (error=="Empty email")
-      AppMainWindow::errorLineEdit(ui->lineEditUsername, true);
-  else if (error=="Empty password")
-      AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
-  else{
-      AppMainWindow::errorLineEdit(ui->lineEditUsername, true);
-      AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
+  if (error == "Empty email")
+    AppMainWindow::errorLineEdit(ui->lineEditUsername, true);
+  else if (error == "Empty password")
+    AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
+  else {
+    AppMainWindow::errorLineEdit(ui->lineEditUsername, true);
+    AppMainWindow::errorLineEdit(ui->lineEditPassword, true);
   }
 }
 
