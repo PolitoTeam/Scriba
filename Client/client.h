@@ -40,7 +40,6 @@ public:
   QString getSharedLink();
   QString getOpenedFile();
   void setOpenedFile(const QString &name);
-  int getColor();
   void checkOldPassword(const QString &old_password);
   void checkExistingOrNotUsername(const QString &username);
 
@@ -116,9 +115,6 @@ private:
   QBuffer m_buffer;
   QProgressDialog *progress;
   int progress_counter = 0;
-  QMap<int, QJsonArray> tmp_map;
-  int tmp_symbols_counter = 0;
-  int tmp_num_chunk = 0;
 };
 
 #endif // CLIENT_H

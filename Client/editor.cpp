@@ -120,6 +120,8 @@ Editor::Editor(QWidget *parent, Client *client)
     comboFont->addItem(font);
   }
 
+  comboFont->setCurrentText("Times New Roman");
+
   // 2. Size
   comboSize = new QComboBox(ui->toolBar);
   ui->toolBar->addWidget(comboSize);

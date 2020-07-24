@@ -29,24 +29,15 @@
         <file>images/back_button_hover.png</file>
         <file>images/scriba.png</file>
         <file>images/check.png</file>
-        <file>cmake-build-debug/CMakeFiles/3.13.2/CompilerIdC/CMakeCCompilerId.c</file>
-        <file>cmake-build-debug/CMakeFiles/3.13.2/CompilerIdCXX/CMakeCXXCompilerId.cpp</file>
-        <file>cmake-build-debug/CMakeFiles/feature_tests.c</file>
-        <file>cmake-build-debug/CMakeFiles/feature_tests.cxx</file>
-        <file>fonts/ARI.ttf</file>
         <file>fonts/ArialCE.ttf</file>
         <file>fonts/ArialCEBold.ttf</file>
         <file>fonts/ArialCEBoldItalic.ttf</file>
         <file>fonts/ArialCEItalic.ttf</file>
-        <file>fonts/ArialCEMTBlack.ttf</file>
         <file>fonts/cour.ttf</file>
         <file>fonts/Helvetica-Bold.ttf</file>
         <file>fonts/Helvetica-BoldOblique.ttf</file>
-        <file>fonts/helvetica-compressed-5871d14b6903a.otf</file>
-        <file>fonts/helvetica-light-587ebe5a59211.ttf</file>
         <file>fonts/Helvetica-Oblique.ttf</file>
         <file>fonts/Helvetica.ttf</file>
-        <file>fonts/SLC_.ttf</file>
         <file>fonts/times-new-roman.ttf</file>
         <file>fonts/Trebuchet MS.ttf</file>
         <file>fonts/Verdana.ttf</file>
@@ -80,7 +71,26 @@
         <file>remotecursor.h</file>
         <file>signup.cpp</file>
         <file>signup.h</file>
-        <file>fonts/helvetica-rounded-bold-5871d05ead8de.otf</file>
+        <file>fonts/times-new-roman-grassetto.ttf</file>
+        <file>fonts/times-new-roman-corsivo.ttf</file>
+        <file>fonts/timesbi.ttf</file>
+        <file>fonts/courbd.ttf</file>
+        <file>fonts/courbi.ttf</file>
+        <file>fonts/couri.ttf</file>
+        <file>fonts/Trebuchet MS Bold Italic.ttf</file>
+        <file>fonts/trebuchet-ms-grassetto.ttf</file>
+        <file>fonts/trebucit.ttf</file>
+        <file>fonts/verdanaz.ttf</file>
+        <file>fonts/verdanai.ttf</file>
+        <file>fonts/verdanab.ttf</file>
+        <file>fonts/Courier ITALIC.ttf</file>
+        <file>fonts/Courier Bold Italic.ttf</file>
+        <file>fonts/SLC_.ttf</file>
+        <file>fonts/Courier-Bold.otf</file>
+        <file>fonts/georgia.ttf</file>
+        <file>fonts/georgiab.ttf</file>
+        <file>fonts/georgiai.ttf</file>
+        <file>fonts/georgiaz.ttf</file>
     </qresource>
     <qresource prefix="/resources">
         <file>certificates/rootCA.crt</file>
